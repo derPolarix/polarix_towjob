@@ -17,6 +17,7 @@ shared_scripts {
 
 client_scripts {
     "client/*.lua",
+    "client/modules/*.lua",
     "client/nui/*.lua",
     "config/client.lua"
 }
@@ -24,11 +25,13 @@ client_scripts {
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
     "server/*.lua",
+    "server/modules/*.lua",
     "config/server.lua"
 }
 
 files {
     'locales/*.json',
+    "sql/init.sql",
     "html/*",
     "html/assets/*",
     "html/img/*",
