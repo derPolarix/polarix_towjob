@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 
 import Defaultpage from "../views/DefaultPage.vue";
 import TemplatePage from "../views/TemplatePage.vue";
+import Dashboard from "../views/Dashboard.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,6 +18,12 @@ const router = createRouter({
       name: "template",
       component: TemplatePage,
       meta: { navLabel: "Vorlage / TemplatePage" },
+    },
+    {
+      path: "/dashboard",
+      name: "dashboard",
+      component: Dashboard,
+      meta: { navLabel: "Dashboard" },
     },
     {
       path: "/",

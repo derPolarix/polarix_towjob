@@ -33,6 +33,9 @@ const navBarClick = (url: string) => {
 		case "/templatepage":
 			router.push(url);
 			break;
+		case "/dashboard":
+			router.push(url);
+			break;
 		default:
 			console.log(`Versuch zu ${url} navigieren schlug fehl. Keine Route definiert.`);
 			break;
