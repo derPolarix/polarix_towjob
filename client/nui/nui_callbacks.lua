@@ -7,3 +7,8 @@ RegisterNUICallback('closeNui', function(data, cb)
     print(json.encode(data))
     cb({ ok = true, message = 'NUI closed' })
 end)
+
+RegisterNUICallback('getAvailableJobs', function(data, cb)
+    local jobs = lib.callback.await("polarix_towjob:getAvailableJobs", false)
+    cb(jobs or {})
+end)

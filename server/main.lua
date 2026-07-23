@@ -27,6 +27,8 @@ AddEventHandler('onResourceStart', function(resourceName)
 
     loadSchema()
     LoadDatabaseToCache()
+    Areas.SeedIfEmpty()
+    Missions.SeedIfEmpty()
 end)
 
 AddEventHandler('onResourceStop', function(resourceName)
