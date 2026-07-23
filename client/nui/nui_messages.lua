@@ -2,8 +2,6 @@ local debug = require("shared.debug")
 local client = require("config.client")
 local shared = require("shared.debug")
 
-
--- Callback um UI wieder zu schließen
 function SetFocus(state)
     SetNuiFocus(state, state)
 end

@@ -1,4 +1,4 @@
--- Importieren mit: local config = require("config.client")
+-- Import with: local config = require("config.client")
 return {
 
 }

@@ -1,9 +1,6 @@
 <!-- This is a Vue 3 single-file component -->
 <template>
 	<div class="w-full h-screen relative overflow-hidden">
-		<!-- Dieses div fügt eine Development Sidebar hinzu. Über diese kann man zwischen verschiedenen Seiten navigieren.-->
-		<!-- Schaue ins Komponent rein um neue routen zu aktivieren die in router/index.ts definiert sind.-->
-		<!-- Dort kannst du bevor die route gesetzt wird auch noch eigenen Code im Switch Case einfügen.-->
 		<div v-if="isDev" class="absolute inset-y-0 left-0 z-50">
 			<Sidebar />
 		</div>
@@ -15,29 +12,20 @@
 </template>
 
 <script setup lang="ts">
-// Alle Imports die hier getätigt werden sind global verfügbar im gesamten NUI Projekt
 import { getCurrentInstance, onMounted } from "vue";
 import type { NuiMessage } from "./type";
 import { isDev } from "./main";
 import Sidebar from "@/components/app/Sidebar.vue";
 
-// Standard Zugriffe auf globale Properties welche den persistantStore und den Router bereitstellen ohne diese immer neu importieren zu müssen
 const proxy = getCurrentInstance()!.proxy!;
 const router = proxy.$router;
 const persistantStore = proxy.$persistantStore;
 
-// Einzige stelle an der handleMessage verwendet werden darf, sonst wird es später im Kompilierprozess immer wieder überschrieben
-// und damit bis auf in einer zufälligen Datei nutzbar, während alle anderne Unbrauchbar werden.
-
+// Only place allowed to handle NUI messages, so the compiled build always keeps a single message handler.
 const handleMessage = (event: MessageEvent) => {
-	// Extrahiere die Action aus der Nachricht
-	// Setze die Nachrichtendaten in const data um sie einfacher verwenden zu können
-	// Entferne diese beiden nicht!
 	const raw = event.data as any;
 	const action = (raw?.action ?? "") as NuiMessage["action"];
 
-	// Verarbeite die Nachricht basierend auf der Action
-	// Greife auf die Daten aus "data" zu, z.B. raw.data?.message
 	switch (action) {
 		case "openNui":
 			persistantStore.IsNuiOpen = true;
@@ -51,7 +39,6 @@ const handleMessage = (event: MessageEvent) => {
 	}
 };
 
-// Handle ESC key um das UI zu schließen
 const handleEscape = async (event: KeyboardEvent) => {
 	if (event.key === "Escape" && persistantStore.IsNuiOpen) {
 		try {
@@ -62,7 +49,6 @@ const handleEscape = async (event: KeyboardEvent) => {
 	}
 };
 
-// Setup event listeners
 onMounted(() => {
 	window.addEventListener("message", handleMessage);
 	window.addEventListener("keydown", handleEscape);

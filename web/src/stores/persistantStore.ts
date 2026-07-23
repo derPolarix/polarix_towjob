@@ -1,10 +1,6 @@
-// Dieser Store ist dafür gedacht übergreifende Werte zu verwalten. Für einzelne Pages sollte man zusätzlich eigene Stores erstellen./
-
-//Imports
 import { defineStore } from "pinia";
 import { nuiCallbackAsync, nuiCallback } from "@/nui/nuiCallbacks";
 
-//Types
 type PersistantState = {
 	IsNuiOpen: boolean;
   MessageData: string | null;

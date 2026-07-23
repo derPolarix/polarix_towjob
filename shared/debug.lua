@@ -1,5 +1,5 @@
--- Erweitertes Debug Modul für formatierte Konsolenausgaben
--- Importieren mit: local debug = require("shared.debug")
+-- Extended debug module for formatted console output
+-- Import with: local debug = require("shared.debug")
 
 local SharedConfig = require("config.shared")
 local prefix = "^2[" .. GetCurrentResourceName() .. "]^7 "
@@ -89,7 +89,6 @@ end
 
 return {
     DebugPrint = function(...)
-        
         if not SharedConfig.PrintDebug then return end
 
         local argCount = select("#", ...)
