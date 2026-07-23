@@ -38,12 +38,32 @@ export interface MissionAreaGroup {
   missions: Mission[];
 }
 
+export interface MapArea {
+  id: string;
+  name: string;
+  region: string;
+  map_x: number;
+  map_y: number;
+  unlock_cost: number;
+  level_required: number;
+  is_default: boolean;
+  unlocked: boolean;
+}
+
+export interface UnlockAreaResult {
+  ok: boolean;
+  reason?: string;
+  areaId?: string;
+  unlockedAreaIds?: string[];
+}
+
 export interface DashboardPayload {
   player: PlayerData;
   levelTitles: string[];
   xpThresholds: number[];
   unlockedAreaIds: string[];
   missions: MissionAreaGroup[];
+  areas: MapArea[];
   vehicles: unknown[]; // populated in Phase 7
 }
 

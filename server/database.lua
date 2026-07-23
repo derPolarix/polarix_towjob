@@ -55,6 +55,14 @@ function DB.InsertArea(area)
     })
 end
 
+function DB.GetArea(areaId)
+    return MySQL.single.await("SELECT * FROM " .. server.Tables.areas .. " WHERE id = ? AND is_active = 1", { areaId })
+end
+
+function DB.GetActiveAreas()
+    return MySQL.query.await("SELECT * FROM " .. server.Tables.areas .. " WHERE is_active = 1")
+end
+
 function DB.GetDefaultAreaIds()
     local rows = MySQL.query.await("SELECT id FROM " .. server.Tables.areas .. " WHERE is_default = 1 AND is_active = 1")
     local ids = {}

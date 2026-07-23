@@ -13,6 +13,7 @@ type DashboardGetters = {
 type DashboardActions = {
 	setPayload(payload: DashboardPayload): void;
 	setActiveTab(tab: TabKey): void;
+	addUnlockedArea(areaId: string): void;
 };
 
 export const useDashboardStore = defineStore<
@@ -56,6 +57,12 @@ export const useDashboardStore = defineStore<
 		},
 		setActiveTab(tab) {
 			this.activeTab = tab;
+		},
+		addUnlockedArea(areaId) {
+			if (!this.payload) return;
+			if (!this.payload.unlockedAreaIds.includes(areaId)) {
+				this.payload.unlockedAreaIds.push(areaId);
+			}
 		},
 	},
 });

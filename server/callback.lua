@@ -12,6 +12,7 @@ lib.callback.register("polarix_towjob:openDashboard", function(source)
         xpThresholds = sharedConfig.XPThresholds,
         unlockedAreaIds = Player.GetUnlockedAreaIds(source),
         missions = Missions.GetAvailableForPlayer(source),
+        areas = Areas.GetMapAreas(source),
         vehicles = {}, -- populated in Phase 7
     }
 end)
@@ -20,4 +21,13 @@ end)
 -- Dashboard (e.g. after an area unlock in Phase 6, or a level-up in Phase 11).
 lib.callback.register("polarix_towjob:getAvailableJobs", function(source)
     return Missions.GetAvailableForPlayer(source)
+end)
+
+-- Used by the Map tab to refresh area unlock state without reopening the whole Dashboard.
+lib.callback.register("polarix_towjob:getMapAreas", function(source)
+    return Areas.GetMapAreas(source)
+end)
+
+lib.callback.register("polarix_towjob:unlockArea", function(source, areaId)
+    return Areas.Unlock(source, areaId)
 end)

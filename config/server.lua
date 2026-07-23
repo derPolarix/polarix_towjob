@@ -26,6 +26,15 @@ return {
             level_required = 1,
             is_default = true,
         },
+        {
+            id = "area_paleto",
+            name = "Paleto Bay",
+            region = "Blaine County",
+            map_x = 30.0, map_y = 120.0, -- placeholder Leaflet pin position
+            unlock_cost = 750,
+            level_required = 2,
+            is_default = false,
+        },
     },
 
     SeedMissions = {
@@ -100,6 +109,24 @@ return {
             time_limit_minutes = 8, -- Timed mission, exercises the countdown path (Phase 9.3)
             difficulty = "medium",
             level_required = 3,
+        },
+        {
+            id = "mission_paleto_flatbed",
+            area_id = "area_paleto",
+            name = "Flooded Flatbed Recovery",
+            vehicle_model = "burrito3",
+            vehicle_label = "Vapid Burrito",
+            vehicle_colors = { primary = 1, secondary = 1 },
+            search_center = { x = -100.0, y = 6300.0, z = 30.0 },
+            search_radius = 65.0,
+            dropoff = { x = -50.0, y = 6300.0, z = 30.0, heading = 90.0 },
+            dropoff_width = 6.0,
+            dropoff_length = 10.0,
+            reward_base = 500,
+            xp_base = 70,
+            time_limit_minutes = nil,
+            difficulty = "medium",
+            level_required = 2,
         },
     },
 
