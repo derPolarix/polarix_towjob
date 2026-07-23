@@ -12,10 +12,14 @@ use_experimental_fxv2_oal 'yes'
 shared_scripts {
     '@ox_lib/init.lua',
     'shared/debug.lua',
-    "config/shared.lua"
+    "config/shared.lua",
+    "framework/*/shared.lua",
+    "framework/shared.lua"
 }
 
 client_scripts {
+    "framework/*/client.lua",
+    "framework/client.lua",
     "client/*.lua",
     "client/modules/*.lua",
     "client/nui/*.lua",
@@ -24,6 +28,8 @@ client_scripts {
 
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
+    "framework/*/server.lua",
+    "framework/server.lua",
     "server/*.lua",
     "server/modules/*.lua",
     "config/server.lua"
