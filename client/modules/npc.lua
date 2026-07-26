@@ -70,7 +70,7 @@ local function spawnNpc()
     local cfg = clientConfig.NPC
 
     lib.requestModel(cfg.model)
-    npc = CreatePed(4, cfg.model, cfg.coords.x, cfg.coords.y, cfg.coords.z - 1.0, cfg.coords.w, false, true)
+    npc = CreatePed(4, cfg.model, cfg.coords.x, cfg.coords.y, cfg.coords.z, cfg.coords.w, false, true)
     SetEntityInvincible(npc, true)
     SetBlockingOfNonTemporaryEvents(npc, true)
     FreezeEntityPosition(npc, true)
