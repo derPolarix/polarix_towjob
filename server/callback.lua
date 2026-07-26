@@ -1,4 +1,5 @@
 local sharedConfig = require("config.shared")
+local serverConfig = require("config.server")
 
 lib.callback.register("polarix_towjob:openDashboard", function(source)
     local playerData = Player.GetData(source)
@@ -13,7 +14,9 @@ lib.callback.register("polarix_towjob:openDashboard", function(source)
         unlockedAreaIds = Player.GetUnlockedAreaIds(source),
         missions = Missions.GetAvailableForPlayer(source),
         areas = Areas.GetMapAreas(source),
-        vehicles = {}, -- populated in Phase 7
+        vehicles = Vehicles.GetOwnedForPlayer(source),
+        vehicleTiers = serverConfig.VehicleTiers,
+        repairCostPerHealthPoint = serverConfig.RepairCost.perHealthPoint or 0.6,
     }
 end)
 
@@ -30,4 +33,29 @@ end)
 
 lib.callback.register("polarix_towjob:unlockArea", function(source, areaId)
     return Areas.Unlock(source, areaId)
+end)
+
+-- Used by the Vehicles tab to refresh owned vehicles/catalog without reopening the whole Dashboard.
+lib.callback.register("polarix_towjob:getOwnedVehicles", function(source)
+    return {
+        vehicles = Vehicles.GetOwnedForPlayer(source),
+        vehicleTiers = serverConfig.VehicleTiers,
+        repairCostPerHealthPoint = serverConfig.RepairCost.perHealthPoint or 0.6,
+    }
+end)
+
+lib.callback.register("polarix_towjob:purchaseVehicle", function(source, tierId)
+    return Vehicles.Purchase(source, tierId)
+end)
+
+lib.callback.register("polarix_towjob:repairVehicle", function(source, vehicleId)
+    return Vehicles.Repair(source, vehicleId)
+end)
+
+lib.callback.register("polarix_towjob:parkOutVehicle", function(source, vehicleId)
+    return Vehicles.ParkOut(source, vehicleId)
+end)
+
+lib.callback.register("polarix_towjob:storeVehicle", function(source, vehicleId, netId)
+    return Vehicles.Store(source, vehicleId, netId)
 end)

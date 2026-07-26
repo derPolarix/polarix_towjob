@@ -57,6 +57,35 @@ export interface UnlockAreaResult {
   unlockedAreaIds?: string[];
 }
 
+export type VehicleState = "stored" | "deployed";
+
+export interface OwnedVehicle {
+  id: number;
+  tier_id: string;
+  label: string;
+  model: string;
+  plate: string;
+  body_health: number;
+  engine_health: number;
+  state: VehicleState;
+}
+
+export interface VehicleTier {
+  id: string;
+  model: string;
+  label: string;
+  price: number;
+  damage_resistance: number;
+  level_required: number;
+}
+
+export interface VehicleActionResult {
+  ok: boolean;
+  reason?: string;
+  cost?: number;
+  vehicles?: OwnedVehicle[];
+}
+
 export interface DashboardPayload {
   player: PlayerData;
   levelTitles: string[];
@@ -64,7 +93,9 @@ export interface DashboardPayload {
   unlockedAreaIds: string[];
   missions: MissionAreaGroup[];
   areas: MapArea[];
-  vehicles: unknown[]; // populated in Phase 7
+  vehicles: OwnedVehicle[];
+  vehicleTiers: VehicleTier[];
+  repairCostPerHealthPoint: number;
 }
 
 export type TabKey =

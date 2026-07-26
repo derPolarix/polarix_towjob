@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import type { DashboardPayload, TabKey } from "@/types/dashboard";
+import type { DashboardPayload, OwnedVehicle, TabKey } from "@/types/dashboard";
 
 type DashboardState = {
 	payload: DashboardPayload | null;
@@ -14,6 +14,7 @@ type DashboardActions = {
 	setPayload(payload: DashboardPayload): void;
 	setActiveTab(tab: TabKey): void;
 	addUnlockedArea(areaId: string): void;
+	setVehicles(vehicles: OwnedVehicle[]): void;
 };
 
 export const useDashboardStore = defineStore<
@@ -63,6 +64,10 @@ export const useDashboardStore = defineStore<
 			if (!this.payload.unlockedAreaIds.includes(areaId)) {
 				this.payload.unlockedAreaIds.push(areaId);
 			}
+		},
+		setVehicles(vehicles) {
+			if (!this.payload) return;
+			this.payload.vehicles = vehicles;
 		},
 	},
 });

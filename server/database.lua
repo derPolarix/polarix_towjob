@@ -139,6 +139,26 @@ function DB.InsertMission(mission)
     })
 end
 
+function DB.GetOwnedVehicles(identifier)
+    return MySQL.query.await("SELECT * FROM " .. server.Tables.vehicles .. " WHERE identifier = ? ORDER BY purchased_at ASC", { identifier })
+end
+
+function DB.GetVehicle(vehicleId)
+    return MySQL.single.await("SELECT * FROM " .. server.Tables.vehicles .. " WHERE id = ?", { vehicleId })
+end
+
+function DB.GetVehicleByPlate(plate)
+    return MySQL.single.await("SELECT * FROM " .. server.Tables.vehicles .. " WHERE plate = ?", { plate })
+end
+
+function DB.CreateVehicle(identifier, tierId, plate)
+    return MySQL.insert.await("INSERT INTO " .. server.Tables.vehicles .. " (identifier, tier_id, plate) VALUES (?, ?, ?)", { identifier, tierId, plate })
+end
+
+function DB.SaveVehicleHealth(vehicleId, bodyHealth, engineHealth)
+    MySQL.update.await("UPDATE " .. server.Tables.vehicles .. " SET body_health = ?, engine_health = ? WHERE id = ?", { bodyHealth, engineHealth, vehicleId })
+end
+
 -- Joins area name/region in for Missions.GetAvailableForPlayer's grouped-by-area output.
 function DB.GetActiveMissionsWithAreas()
     return MySQL.query.await([[

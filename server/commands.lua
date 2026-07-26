@@ -35,3 +35,22 @@ RegisterCommand('towjobtestactive', function(source)
     )
     debug.DebugPrint("towjobtestactive: inserted a fake active delivery for", identifier, "- reconnect to trigger stale-delivery cleanup")
 end, false)
+
+-- Temporary: exercises Step 7.5's rental billing loop ahead of Phase 8's real mission
+-- accept flow, which is the eventual real caller of Vehicles.StartRental. Remove in Phase 14.1.
+RegisterCommand('towjobtestrental', function(source)
+    local identifier = Framework.GetPlayerIdentifier(source)
+    if not identifier then
+        debug.DebugPrint("towjobtestrental: could not resolve identifier for source", source)
+        return
+    end
+
+    local deliveryId = MySQL.insert.await(
+        "INSERT INTO " .. server.Tables.deliveries .. " (mission_id, identifier, status, used_rental) VALUES (?, ?, 'active', 1)",
+        { "debug-test-mission", identifier }
+    )
+
+    Vehicles.StartRental(source, deliveryId)
+    TriggerClientEvent("polarix_towjob:spawnRentalTruck", source, server.RentalTruck)
+    debug.DebugPrint("towjobtestrental: started rental billing for", identifier, "delivery", deliveryId)
+end, false)
