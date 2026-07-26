@@ -1,6 +1,8 @@
 local debug = require("shared.debug")
 local server = require("config.server")
 local shared = require("shared.debug")
+require("server.modules.areas")
+require("server.modules.missions")
 
 local function loadSchema()
     local sql = LoadResourceFile(GetCurrentResourceName(), "sql/init.sql")
