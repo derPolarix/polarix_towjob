@@ -65,12 +65,14 @@ function Missions.GetAvailableForPlayer(source)
     return groups
 end
 
--- Tracks, per source, the target vehicle's net-id against the delivery that's
--- currently active for them — reported by the client once it spawns the target
--- vehicle (Step 8.2.3). In-memory only (net-ids are session-scoped handles, not
--- something that belongs in the `deliveries` table). Phase 9 (attach validation)
--- and Phase 10 (damage tracking) are the intended readers via Missions.GetActiveDeliveryState.
-local activeDeliveryState = {} -- [source] = { deliveryId, targetNetId }
+-- Tracks, per source, everything about the delivery that's currently active for them:
+-- the target vehicle's net-id (reported by the client once it spawns it, Step 8.2.3),
+-- the tow truck's net-id once attached (Step 9.2), and the server-stamped timed-mission
+-- deadline (Step 9.3, set at accept time — never derived from a client-reported value).
+-- In-memory only (net-ids are session-scoped handles, not something that belongs in the
+-- `deliveries` table). Phase 10 (damage tracking) is the next intended reader via
+-- Missions.GetActiveDeliveryState.
+local activeDeliveryState = {} -- [source] = { deliveryId, targetNetId, towTruckNetId, attached, deadlineAt }
 
 RegisterNetEvent("polarix_towjob:setTargetVehicle", function(deliveryId, netId)
     local source = source
@@ -80,12 +82,86 @@ RegisterNetEvent("polarix_towjob:setTargetVehicle", function(deliveryId, netId)
     local delivery = DB.GetActiveDelivery(player.identifier)
     if not delivery or delivery.id ~= deliveryId then return end
 
-    activeDeliveryState[source] = { deliveryId = deliveryId, targetNetId = netId }
+    local state = activeDeliveryState[source]
+    if not state or state.deliveryId ~= deliveryId then
+        state = { deliveryId = deliveryId }
+        activeDeliveryState[source] = state
+    end
+    state.targetNetId = netId
+end)
+
+-- Step 9.2: the client reports both net-ids once it calls AttachVehicleToTowTruck
+-- locally; the server re-validates before trusting the attach happened at all —
+-- never assumes a client-reported "I attached it" claim (ground rule 4). Rejects a
+-- mismatched/forged target net-id and confirms the entity's model actually matches
+-- the mission's expected vehicle before flagging the delivery as attached.
+RegisterNetEvent("polarix_towjob:attachVehicle", function(deliveryId, towNetId, targetNetId)
+    local source = source
+    local player = Player.GetData(source)
+    if not player then return end
+
+    local delivery = DB.GetActiveDelivery(player.identifier)
+    if not delivery or delivery.id ~= deliveryId then return end
+
+    local state = activeDeliveryState[source]
+    if not state or state.deliveryId ~= deliveryId or state.targetNetId ~= targetNetId then
+        debug.DebugPrint("Missions.attachVehicle: rejected mismatched target net-id for source", source)
+        return
+    end
+
+    local mission = DB.GetMission(delivery.mission_id)
+    local entity = NetworkGetEntityFromNetworkId(targetNetId)
+    if not mission or not entity or entity == 0 or GetEntityModel(entity) ~= GetHashKey(mission.vehicle_model) then
+        debug.DebugPrint("Missions.attachVehicle: rejected model mismatch for source", source)
+        return
+    end
+
+    state.attached = true
+    state.towTruckNetId = towNetId
+
+    debug.DebugPrint(("Missions.attachVehicle: delivery %d attached for %s"):format(deliveryId, player.identifier))
 end)
 
 function Missions.GetActiveDeliveryState(source)
     return activeDeliveryState[source]
 end
+
+-- Shared fail path — Step 9.3 (timed-mission expiry) is the first caller; Phase 10.1
+-- (vehicle destruction) and the rental-repossession path are meant to call this same
+-- function rather than duplicating the delivery-row/notify/cleanup sequence.
+function Missions.Fail(source, deliveryId, reason)
+    local state = activeDeliveryState[source]
+    if not state or state.deliveryId ~= deliveryId then return end
+
+    DB.FailDelivery(deliveryId)
+    Vehicles.StopRental(source)
+    activeDeliveryState[source] = nil
+
+    local messages = {
+        time_limit_exceeded = "Time limit exceeded — delivery failed.",
+        vehicle_destroyed = "The vehicle was destroyed — delivery failed.",
+    }
+    TriggerClientEvent("polarix_towjob:notify", source, messages[reason] or "Delivery failed.", "error")
+    TriggerClientEvent("polarix_towjob:deliveryFailed", source, reason)
+
+    debug.DebugPrint(("Missions.Fail: delivery %d failed for source %s (%s)"):format(deliveryId, source, reason))
+end
+
+-- Step 9.3: server is the sole authority on timed-mission expiry — `deadlineAt` is
+-- stamped once at accept time (see Missions.Accept) and never re-derived from anything
+-- client-reported. A lightweight 5s sweep is enough; these are minute-scale deadlines.
+CreateThread(function()
+    while true do
+        Wait(5000)
+
+        local now = os.time()
+        for source, state in pairs(activeDeliveryState) do
+            if state.deadlineAt and now >= state.deadlineAt then
+                Missions.Fail(source, state.deliveryId, "time_limit_exceeded")
+            end
+        end
+    end
+end)
 
 Framework.OnPlayerUnload(function(source)
     activeDeliveryState[source] = nil
@@ -162,7 +238,13 @@ function Missions.Accept(source, missionId)
     local usedRental = #owned == 0
     local deliveryId = DB.CreateDelivery(missionId, player.identifier, usedRental)
 
-    local response = { ok = true, deliveryId = deliveryId, mission = mission }
+    -- Deadline is stamped here, at accept time, per the design-decisions table — the
+    -- server is the sole authority on it regardless of when/whether the client actually
+    -- reports setTargetVehicle afterward (see the merge logic in that handler above).
+    local deadlineAt = mission.time_limit_minutes and (os.time() + mission.time_limit_minutes * 60) or nil
+    activeDeliveryState[source] = { deliveryId = deliveryId, deadlineAt = deadlineAt }
+
+    local response = { ok = true, deliveryId = deliveryId, mission = mission, deadlineAt = deadlineAt }
 
     if usedRental then
         response.usedRental = true
@@ -172,6 +254,7 @@ function Missions.Accept(source, missionId)
         local parkResult = Vehicles.ParkOut(source, owned[1].id)
         if not parkResult.ok then
             DB.FailDelivery(deliveryId)
+            activeDeliveryState[source] = nil
             return { ok = false, reason = parkResult.reason }
         end
         response.vehicle = parkResult.vehicle
