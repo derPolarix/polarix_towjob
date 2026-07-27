@@ -84,6 +84,18 @@ export interface VehicleActionResult {
   reason?: string;
   cost?: number;
   vehicles?: OwnedVehicle[];
+  /** Set by the client's `parkOutVehicle` NUI callback when this Park Out also resumed a
+   * mission accepted earlier via the 2+ owned vehicles path (see AcceptMissionResult.needsParkOut). */
+  missionStarted?: boolean;
+}
+
+export interface AcceptMissionResult {
+  ok: boolean;
+  reason?: string;
+  deliveryId?: number;
+  /** True when the player owns 2+ tow trucks — the Dashboard must stay open until
+   * they Park Out one themselves; the client resumes the delivery once that happens. */
+  needsParkOut?: boolean;
 }
 
 export interface DashboardPayload {

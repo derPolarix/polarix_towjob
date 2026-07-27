@@ -83,10 +83,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
+import { usePersistantStore } from "@/stores/persistantStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { OwnedVehicle, VehicleActionResult, VehicleTier } from "@/types/dashboard";
 
 const dashboardStore = useDashboardStore();
+const persistantStore = usePersistantStore();
 
 const vehicles = ref<OwnedVehicle[]>(dashboardStore.payload?.vehicles ?? []);
 const vehicleTiers = ref<VehicleTier[]>(dashboardStore.payload?.vehicleTiers ?? []);
@@ -145,6 +147,9 @@ async function parkOut(vehicle: OwnedVehicle) {
 		const result = await nuiCallbackAsync<VehicleActionResult>("parkOutVehicle", { vehicleId: vehicle.id });
 		if (result?.ok) {
 			applyVehicles(result.vehicles);
+			if (result.missionStarted) {
+				await persistantStore.closeNui();
+			}
 		} else {
 			actionError.value = reasonMessages[result?.reason ?? ""] ?? "Could not park out this vehicle.";
 		}

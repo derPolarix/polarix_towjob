@@ -168,3 +168,14 @@ function DB.GetActiveMissionsWithAreas()
         WHERE m.is_active = 1 AND a.is_active = 1
     ]])
 end
+
+function DB.GetMission(missionId)
+    return MySQL.single.await("SELECT * FROM " .. server.Tables.missions .. " WHERE id = ? AND is_active = 1", { missionId })
+end
+
+function DB.CreateDelivery(missionId, identifier, usedRental)
+    return MySQL.insert.await(
+        "INSERT INTO " .. server.Tables.deliveries .. " (mission_id, identifier, status, used_rental) VALUES (?, ?, 'active', ?)",
+        { missionId, identifier, usedRental and 1 or 0 }
+    )
+end

@@ -43,5 +43,14 @@ RegisterNUICallback('parkOutVehicle', function(data, cb)
     if result and result.ok and result.vehicle then
         Garage.SpawnVehicle(result.vehicle)
     end
+
+    result = result or { ok = false, reason = "no_response" }
+    result.missionStarted = result.ok and Vehicle.ContinueAfterParkOut() or false
+
+    cb(result)
+end)
+
+RegisterNUICallback('acceptMission', function(data, cb)
+    local result = Vehicle.AcceptMission(data and data.missionId)
     cb(result or { ok = false, reason = "no_response" })
 end)

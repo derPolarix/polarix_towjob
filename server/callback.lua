@@ -59,3 +59,7 @@ end)
 lib.callback.register("polarix_towjob:storeVehicle", function(source, vehicleId, netId)
     return Vehicles.Store(source, vehicleId, netId)
 end)
+
+lib.callback.register("polarix_towjob:acceptMission", function(source, missionId)
+    return Missions.Accept(source, missionId)
+end)

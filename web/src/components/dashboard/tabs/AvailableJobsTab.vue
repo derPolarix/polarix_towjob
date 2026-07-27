@@ -20,6 +20,9 @@
 			</button>
 		</div>
 
+		<p v-if="infoMessage" class="text-xs text-emerald-400">{{ infoMessage }}</p>
+		<p v-if="errorMessage" class="text-xs text-red-400">{{ errorMessage }}</p>
+
 		<div v-if="groups.length === 0" class="text-white/60 text-sm">
 			No available jobs right now. Check back later or unlock more areas on the Map tab.
 		</div>
@@ -61,9 +64,9 @@
 					</div>
 					<button
 						type="button"
-						disabled
-						title="Mission acceptance is not available yet."
-						class="rounded-md bg-white/10 text-white/40 text-sm font-medium px-3 py-2 cursor-not-allowed"
+						:disabled="acceptingMissionId === mission.id"
+						class="rounded-md bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium px-3 py-2"
+						@click="accept(mission)"
 					>
 						Accept
 					</button>
@@ -76,12 +79,54 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
+import { usePersistantStore } from "@/stores/persistantStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
-import type { Mission, MissionAreaGroup, MissionDifficulty } from "@/types/dashboard";
+import type { AcceptMissionResult, Mission, MissionAreaGroup, MissionDifficulty } from "@/types/dashboard";
 
 const dashboardStore = useDashboardStore();
+const persistantStore = usePersistantStore();
 
 const groups = ref<MissionAreaGroup[]>(dashboardStore.payload?.missions ?? []);
+
+const acceptingMissionId = ref<string | null>(null);
+const infoMessage = ref("");
+const errorMessage = ref("");
+
+const acceptReasonMessages: Record<string, string> = {
+	active_delivery_exists: "You already have an active delivery.",
+	mission_not_found: "This mission is no longer available.",
+	level_too_low: "You do not meet the level requirement for this mission.",
+	area_locked: "This area is not unlocked.",
+	no_stored_vehicle: "All your tow trucks are currently deployed — store one at the depot first.",
+	no_player: "Player data unavailable, try reopening the Dashboard.",
+};
+
+async function accept(mission: Mission) {
+	acceptingMissionId.value = mission.id;
+	infoMessage.value = "";
+	errorMessage.value = "";
+
+	try {
+		const result = await nuiCallbackAsync<AcceptMissionResult>("acceptMission", { missionId: mission.id });
+
+		if (!result?.ok) {
+			errorMessage.value = acceptReasonMessages[result?.reason ?? ""] ?? "Could not accept this mission.";
+			return;
+		}
+
+		if (result.needsParkOut) {
+			infoMessage.value = "Mission accepted. You own multiple tow trucks — open the Vehicles tab and Park Out one to begin.";
+			return;
+		}
+
+		await persistantStore.closeNui();
+	} catch (error) {
+		console.error("acceptMission failed:", error);
+		errorMessage.value = "Could not accept this mission.";
+	} finally {
+		acceptingMissionId.value = null;
+	}
+}
 
 const sortKey = ref<"distance" | "reward" | "xp" | "difficulty">("distance");
 const sortDir = ref<"asc" | "desc">("asc");
