@@ -17,6 +17,7 @@ lib.callback.register("polarix_towjob:openDashboard", function(source)
         vehicles = Vehicles.GetOwnedForPlayer(source),
         vehicleTiers = serverConfig.VehicleTiers,
         repairCostPerHealthPoint = serverConfig.RepairCost.perHealthPoint or 0.6,
+        activeDelivery = Missions.GetActiveDeliverySummary(source),
     }
 end)
 
@@ -62,4 +63,12 @@ end)
 
 lib.callback.register("polarix_towjob:acceptMission", function(source, missionId)
     return Missions.Accept(source, missionId)
+end)
+
+lib.callback.register("polarix_towjob:completeDelivery", function(source, deliveryId)
+    return Missions.Complete(source, deliveryId)
+end)
+
+lib.callback.register("polarix_towjob:abortDelivery", function(source, deliveryId)
+    return Missions.Abort(source, deliveryId)
 end)

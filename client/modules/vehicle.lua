@@ -142,9 +142,9 @@ local function setupAttachInteraction(entity)
     end)
 end
 
--- Detaches/despawns the target vehicle and clears delivery state. Interface for
--- Phase 10 (complete/fail/abort) to call directly; already wired to the
--- `polarix_towjob:deliveryFailed` net event below for the Phase 9.3 timed-expiry path.
+-- Detaches/despawns the target vehicle and clears delivery state. Called directly for
+-- the Phase 10.2 in-world completion confirm, and via the `polarix_towjob:deliveryEnded`
+-- net event below for every server-driven end (complete/fail/abort).
 function Vehicle.EndDelivery(reason)
     if not currentDelivery then return end
 
@@ -165,7 +165,7 @@ function Vehicle.EndDelivery(reason)
     currentDelivery = nil
 end
 
-RegisterNetEvent("polarix_towjob:deliveryFailed", function(reason)
+RegisterNetEvent("polarix_towjob:deliveryEnded", function(reason)
     Vehicle.EndDelivery(reason)
 end)
 

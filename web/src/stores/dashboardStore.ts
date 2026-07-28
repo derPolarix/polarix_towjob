@@ -9,12 +9,14 @@ type DashboardGetters = {
 	player: (state: DashboardState) => DashboardPayload["player"] | null;
 	levelTitle: (state: DashboardState) => string;
 	xpProgress: (state: DashboardState) => { current: number; span: number; percent: number };
+	activeDelivery: (state: DashboardState) => DashboardPayload["activeDelivery"];
 };
 type DashboardActions = {
 	setPayload(payload: DashboardPayload): void;
 	setActiveTab(tab: TabKey): void;
 	addUnlockedArea(areaId: string): void;
 	setVehicles(vehicles: OwnedVehicle[]): void;
+	clearActiveDelivery(): void;
 };
 
 export const useDashboardStore = defineStore<
@@ -51,6 +53,7 @@ export const useDashboardStore = defineStore<
 
 			return { current, span, percent };
 		},
+		activeDelivery: (state) => state.payload?.activeDelivery ?? null,
 	},
 	actions: {
 		setPayload(payload) {
@@ -68,6 +71,10 @@ export const useDashboardStore = defineStore<
 		setVehicles(vehicles) {
 			if (!this.payload) return;
 			this.payload.vehicles = vehicles;
+		},
+		clearActiveDelivery() {
+			if (!this.payload) return;
+			this.payload.activeDelivery = null;
 		},
 	},
 });

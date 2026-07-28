@@ -54,3 +54,8 @@ RegisterNUICallback('acceptMission', function(data, cb)
     local result = Vehicle.AcceptMission(data and data.missionId)
     cb(result or { ok = false, reason = "no_response" })
 end)
+
+RegisterNUICallback('abortDelivery', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:abortDelivery", false, data and data.deliveryId)
+    cb(result or { ok = false, reason = "no_response" })
+end)

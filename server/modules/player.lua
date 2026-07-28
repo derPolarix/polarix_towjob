@@ -117,6 +117,28 @@ function Player.AddXP(source, amount)
     end
 end
 
+-- Called by Missions.Complete/Fail/Abort (Phase 10) to bump the relevant lifetime
+-- counter. `reward` is only meaningful for "completed" — total_earnings tracks paid-out
+-- money, not the mission's listed reward_base. Saves/broadcasts on its own since
+-- Fail/Abort have no other mutation in flight; Complete additionally calls Player.AddXP
+-- right after this, which does its own save/broadcast for the xp/level change.
+function Player.RecordDeliveryOutcome(source, outcome, reward)
+    local player = PlayerCache[source]
+    if not player then return end
+
+    if outcome == "completed" then
+        player.total_deliveries = player.total_deliveries + 1
+        player.total_earnings = player.total_earnings + (reward or 0)
+    elseif outcome == "failed" then
+        player.failed_deliveries = player.failed_deliveries + 1
+    elseif outcome == "aborted" then
+        player.aborted_deliveries = player.aborted_deliveries + 1
+    end
+
+    Player.Save(source)
+    TriggerClientEvent("polarix_towjob:playerUpdate", source, Player.GetData(source))
+end
+
 function Player.HasSkill(source, skillId)
     local player = PlayerCache[source]
     if not player then return false end

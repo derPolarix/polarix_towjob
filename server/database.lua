@@ -179,3 +179,14 @@ function DB.CreateDelivery(missionId, identifier, usedRental)
         { missionId, identifier, usedRental and 1 or 0 }
     )
 end
+
+function DB.CompleteDelivery(deliveryId, rewardPaid, xpPaid, damagePenalty)
+    MySQL.update.await(
+        "UPDATE " .. server.Tables.deliveries .. " SET status = 'completed', reward_paid = ?, xp_paid = ?, damage_penalty = ?, completed_at = NOW() WHERE id = ?",
+        { rewardPaid, xpPaid, damagePenalty, deliveryId }
+    )
+end
+
+function DB.AbortDelivery(deliveryId)
+    MySQL.update.await("UPDATE " .. server.Tables.deliveries .. " SET status = 'aborted', completed_at = NOW() WHERE id = ?", { deliveryId })
+end

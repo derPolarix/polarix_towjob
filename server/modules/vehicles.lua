@@ -43,6 +43,19 @@ local function toClientVehicle(row)
     }
 end
 
+-- Resolves a tow-truck-tier's damage_resistance from a live entity's model hash, not a
+-- stored tier_id — works uniformly for owned vehicles (any tier) and the rental (no DB
+-- row/tier_id at all, but its model matches the "standard" tier's model 1:1). Used by
+-- Missions.Complete (Phase 10.3) to reduce the towed-vehicle damage penalty.
+function Vehicles.GetDamageResistanceForModel(modelHash)
+    for _, tier in ipairs(serverConfig.VehicleTiers) do
+        if GetHashKey(tier.model) == modelHash then
+            return tier.damage_resistance or 0.0
+        end
+    end
+    return 0.0
+end
+
 function Vehicles.GetOwnedForPlayer(source)
     local player = Player.GetData(source)
     if not player then return {} end
@@ -232,10 +245,13 @@ CreateThread(function()
                     state.warned1 = false
                     TriggerClientEvent("polarix_towjob:notify", source, "Rental payment charged.", "info")
                 else
-                    DB.FailDelivery(state.deliveryId)
-                    TriggerClientEvent("polarix_towjob:notify", source, "Rental payment missed — the tow truck has been repossessed.", "error")
+                    -- Same auto-fail path as vehicle destruction/timed expiry (design-decisions
+                    -- table: "Missed rental payment → same auto-fail path") — Missions.Fail
+                    -- clears activeDeliveryState and calls Vehicles.StopRental itself, which nils
+                    -- this very `rentalState[source]` entry; safe to do mid-`pairs()` iteration
+                    -- since Lua only forbids adding new keys during traversal, not clearing existing ones.
                     TriggerClientEvent("polarix_towjob:repossessRental", source)
-                    rentalState[source] = nil
+                    Missions.Fail(source, state.deliveryId, "rental_repossessed")
                 end
             elseif remaining <= warnAt1 and not state.warned1 then
                 state.warned1 = true

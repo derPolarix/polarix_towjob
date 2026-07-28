@@ -98,6 +98,16 @@ export interface AcceptMissionResult {
   needsParkOut?: boolean;
 }
 
+export interface ActiveDeliverySummary {
+  deliveryId: number;
+  missionName: string;
+}
+
+export interface AbortDeliveryResult {
+  ok: boolean;
+  reason?: string;
+}
+
 export interface DashboardPayload {
   player: PlayerData;
   levelTitles: string[];
@@ -108,6 +118,7 @@ export interface DashboardPayload {
   vehicles: OwnedVehicle[];
   vehicleTiers: VehicleTier[];
   repairCostPerHealthPoint: number;
+  activeDelivery: ActiveDeliverySummary | null;
 }
 
 export type TabKey =

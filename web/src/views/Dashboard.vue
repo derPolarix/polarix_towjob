@@ -17,6 +17,21 @@
 			</button>
 		</nav>
 
+		<div
+			v-if="dashboardStore.activeDelivery"
+			class="mx-4 mt-3 flex items-center justify-between gap-4 rounded-md bg-amber-900/40 border border-amber-500/30 px-4 py-2 text-sm"
+		>
+			<span>Active delivery: <strong>{{ dashboardStore.activeDelivery.missionName }}</strong></span>
+			<button
+				type="button"
+				:disabled="abortingDelivery"
+				class="rounded-md bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-medium px-3 py-1.5"
+				@click="abortDelivery"
+			>
+				Abort Delivery
+			</button>
+		</div>
+
 		<main class="flex-1 overflow-y-auto bg-neutral-800/90 p-4">
 			<component :is="activeTabComponent" />
 		</main>
@@ -37,9 +52,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
-import type { TabKey } from "@/types/dashboard";
+import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
+import type { AbortDeliveryResult, TabKey } from "@/types/dashboard";
 
 import OverviewTab from "@/components/dashboard/tabs/OverviewTab.vue";
 import AvailableJobsTab from "@/components/dashboard/tabs/AvailableJobsTab.vue";
@@ -72,4 +88,24 @@ const tabComponents: Record<TabKey, unknown> = {
 };
 
 const activeTabComponent = computed(() => tabComponents[dashboardStore.activeTab]);
+
+const abortingDelivery = ref(false);
+
+async function abortDelivery() {
+	const delivery = dashboardStore.activeDelivery;
+	if (!delivery) return;
+
+	abortingDelivery.value = true;
+
+	try {
+		const result = await nuiCallbackAsync<AbortDeliveryResult>("abortDelivery", { deliveryId: delivery.deliveryId });
+		if (result?.ok) {
+			dashboardStore.clearActiveDelivery();
+		}
+	} catch (error) {
+		console.error("abortDelivery failed:", error);
+	} finally {
+		abortingDelivery.value = false;
+	}
+}
 </script>

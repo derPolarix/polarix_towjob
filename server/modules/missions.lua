@@ -119,6 +119,12 @@ RegisterNetEvent("polarix_towjob:attachVehicle", function(deliveryId, towNetId, 
     state.attached = true
     state.towTruckNetId = towNetId
 
+    -- Damage window is "attach to placement" (design-decisions table) — baseline is read
+    -- directly off the live entity here, server-side, so Missions.Complete (Phase 10.3)
+    -- never has to trust a client-reported health number, only re-read the same entity.
+    state.bodyHealthBaseline = GetVehicleBodyHealth(entity)
+    state.engineHealthBaseline = GetVehicleEngineHealth(entity)
+
     debug.DebugPrint(("Missions.attachVehicle: delivery %d attached for %s"):format(deliveryId, player.identifier))
 end)
 
@@ -126,9 +132,44 @@ function Missions.GetActiveDeliveryState(source)
     return activeDeliveryState[source]
 end
 
--- Shared fail path — Step 9.3 (timed-mission expiry) is the first caller; Phase 10.1
--- (vehicle destruction) and the rental-repossession path are meant to call this same
--- function rather than duplicating the delivery-row/notify/cleanup sequence.
+-- Shared by the immediate client-reported destruction event and the periodic sweep
+-- backstop below — resolves both tracked net-ids server-side and independently confirms
+-- destruction itself (ground rule 4: never trust a client's "it's destroyed" claim alone).
+local function isDeliveryVehicleDestroyed(state)
+    local target = state.targetNetId and NetworkGetEntityFromNetworkId(state.targetNetId)
+    local towTruck = state.towTruckNetId and NetworkGetEntityFromNetworkId(state.towTruckNetId)
+
+    local targetDestroyed = target and target ~= 0 and (not DoesEntityExist(target) or IsEntityDead(target))
+    local towTruckDestroyed = towTruck and towTruck ~= 0 and (not DoesEntityExist(towTruck) or IsEntityDead(towTruck))
+
+    return targetDestroyed or towTruckDestroyed
+end
+
+-- Step 10.1: client-side damage.lua detects destruction fast (for responsiveness) and
+-- reports it here; the sweep thread below is the backstop for a client that never gets
+-- to report (disconnect/crash at the moment of destruction).
+RegisterNetEvent("polarix_towjob:reportVehicleDestroyed", function(deliveryId)
+    local source = source
+    local player = Player.GetData(source)
+    if not player then return end
+
+    local delivery = DB.GetActiveDelivery(player.identifier)
+    if not delivery or delivery.id ~= deliveryId then return end
+
+    local state = activeDeliveryState[source]
+    if not state or state.deliveryId ~= deliveryId then return end
+
+    if not isDeliveryVehicleDestroyed(state) then
+        debug.DebugPrint("Missions.reportVehicleDestroyed: rejected unverified destruction claim for source", source)
+        return
+    end
+
+    Missions.Fail(source, deliveryId, "vehicle_destroyed")
+end)
+
+-- Shared fail path — called for timed-mission expiry (Step 9.3), vehicle destruction
+-- (Step 10.1) and missed rental payments (server/modules/vehicles.lua), so the
+-- delivery-row/notify/cleanup/counter sequence only lives in one place.
 function Missions.Fail(source, deliveryId, reason)
     local state = activeDeliveryState[source]
     if not state or state.deliveryId ~= deliveryId then return end
@@ -137,12 +178,15 @@ function Missions.Fail(source, deliveryId, reason)
     Vehicles.StopRental(source)
     activeDeliveryState[source] = nil
 
+    Player.RecordDeliveryOutcome(source, "failed")
+
     local messages = {
         time_limit_exceeded = "Time limit exceeded — delivery failed.",
         vehicle_destroyed = "The vehicle was destroyed — delivery failed.",
+        rental_repossessed = "Rental payment missed — the tow truck has been repossessed.",
     }
     TriggerClientEvent("polarix_towjob:notify", source, messages[reason] or "Delivery failed.", "error")
-    TriggerClientEvent("polarix_towjob:deliveryFailed", source, reason)
+    TriggerClientEvent("polarix_towjob:deliveryEnded", source, "failed")
 
     debug.DebugPrint(("Missions.Fail: delivery %d failed for source %s (%s)"):format(deliveryId, source, reason))
 end
@@ -158,6 +202,8 @@ CreateThread(function()
         for source, state in pairs(activeDeliveryState) do
             if state.deadlineAt and now >= state.deadlineAt then
                 Missions.Fail(source, state.deliveryId, "time_limit_exceeded")
+            elseif state.attached and isDeliveryVehicleDestroyed(state) then
+                Missions.Fail(source, state.deliveryId, "vehicle_destroyed")
             end
         end
     end
@@ -230,6 +276,10 @@ function Missions.Accept(source, missionId)
         dropoff = { x = row.dropoff_x, y = row.dropoff_y, z = row.dropoff_z, heading = row.dropoff_heading },
         dropoff_width = row.dropoff_width,
         dropoff_length = row.dropoff_length,
+        -- Sent down so the client's live placement preview (Step 10.2) stays in sync with the
+        -- server's own authoritative tolerance (Missions.Complete) without requiring server-only
+        -- config from client code (client_scripts can't require() a server_scripts-only file).
+        dropoff_heading_tolerance = serverConfig.DeliveryHeadingTolerance or 25.0,
         reward_base = row.reward_base,
         xp_base = row.xp_base,
         time_limit_minutes = row.time_limit_minutes,
@@ -265,4 +315,135 @@ function Missions.Accept(source, missionId)
     debug.DebugPrint(("Missions.Accept: %s accepted mission %s (delivery %d)"):format(player.identifier, missionId, deliveryId))
 
     return response
+end
+
+-- Used by polarix_towjob:openDashboard so the Dashboard can show an "active delivery"
+-- banner with an Abort action (Step 10.4 — abort is Dashboard-only, no in-world trigger).
+function Missions.GetActiveDeliverySummary(source)
+    local player = Player.GetData(source)
+    if not player then return nil end
+
+    local delivery = DB.GetActiveDelivery(player.identifier)
+    if not delivery then return nil end
+
+    local mission = DB.GetMission(delivery.mission_id)
+    return { deliveryId = delivery.id, missionName = mission and mission.name or "Unknown Job" }
+end
+
+-- Rotates `coords` into the dropoff rectangle's local frame (heading-aligned) and checks
+-- both the position bound (mission's own dropoff_width/dropoff_length) and the heading
+-- tolerance (config.server.DeliveryHeadingTolerance). Mirrors the client-side preview in
+-- client/modules/delivery.lua — that copy is display-only, this one is authoritative.
+local function isWithinDropoffZone(mission, coords, heading)
+    local center = vector3(mission.dropoff_x, mission.dropoff_y, mission.dropoff_z)
+    local rad = math.rad(mission.dropoff_heading or 0.0)
+    local lengthDir = vector3(-math.sin(rad), math.cos(rad), 0.0)
+    local widthDir = vector3(math.cos(rad), math.sin(rad), 0.0)
+
+    local delta = coords - center
+    local projLength = delta.x * lengthDir.x + delta.y * lengthDir.y
+    local projWidth = delta.x * widthDir.x + delta.y * widthDir.y
+
+    if math.abs(projLength) > (mission.dropoff_length or 10.0) / 2 then return false end
+    if math.abs(projWidth) > (mission.dropoff_width or 6.0) / 2 then return false end
+
+    local headingDiff = (heading - (mission.dropoff_heading or 0.0)) % 360.0
+    if headingDiff > 180.0 then headingDiff = 360.0 - headingDiff end
+
+    return headingDiff <= (serverConfig.DeliveryHeadingTolerance or 25.0)
+end
+
+-- Step 10.3: server computes the final damage penalty itself from health values it reads
+-- directly off the tracked entities (baseline captured at attach time, Step 9.2's handler
+-- above) — never from a client-reported number. Also re-validates the towed vehicle's
+-- actual position/heading against the dropoff rectangle before paying out.
+function Missions.Complete(source, deliveryId)
+    local player = Player.GetData(source)
+    if not player then return { ok = false, reason = "no_player" } end
+
+    local delivery = DB.GetActiveDelivery(player.identifier)
+    if not delivery or delivery.id ~= deliveryId then
+        return { ok = false, reason = "no_active_delivery" }
+    end
+
+    local state = activeDeliveryState[source]
+    if not state or state.deliveryId ~= deliveryId or not state.attached then
+        return { ok = false, reason = "not_attached" }
+    end
+
+    local mission = DB.GetMission(delivery.mission_id)
+    if not mission then return { ok = false, reason = "mission_not_found" } end
+
+    local target = state.targetNetId and NetworkGetEntityFromNetworkId(state.targetNetId)
+    if not target or target == 0 or not DoesEntityExist(target) then
+        return { ok = false, reason = "vehicle_missing" }
+    end
+
+    local vehicleCoords = GetEntityCoords(target)
+    local vehicleHeading = GetEntityHeading(target)
+    if not isWithinDropoffZone(mission, vehicleCoords, vehicleHeading) then
+        return { ok = false, reason = "not_in_zone" }
+    end
+
+    local bodyLoss = math.max(0, (state.bodyHealthBaseline or 1000.0) - GetVehicleBodyHealth(target))
+    local engineLoss = math.max(0, (state.engineHealthBaseline or 1000.0) - GetVehicleEngineHealth(target))
+
+    local towTruck = state.towTruckNetId and NetworkGetEntityFromNetworkId(state.towTruckNetId)
+    local resistance = (towTruck and towTruck ~= 0) and Vehicles.GetDamageResistanceForModel(GetEntityModel(towTruck)) or 0.0
+    local skillReduction = 0.0 -- Phase 11 dependency, stub at 0% until Skills.GetDamageReduction exists
+
+    local reductionFactor = math.max(0, 1 - resistance - skillReduction)
+    local healthLoss = (bodyLoss + engineLoss) * reductionFactor
+
+    local damagePenalty = math.floor(healthLoss * (serverConfig.DamagePenaltyPerHealthPoint or 0.5) + 0.5)
+    local cap = math.floor(mission.reward_base * (serverConfig.DamagePenaltyCapPercent or 0.30))
+    damagePenalty = math.min(damagePenalty, cap)
+
+    local rewardPaid = math.max(0, mission.reward_base - damagePenalty)
+    local xpPaid = mission.xp_base
+
+    Framework.AddMoney(source, rewardPaid)
+
+    DB.CompleteDelivery(deliveryId, rewardPaid, xpPaid, damagePenalty)
+    Vehicles.StopRental(source)
+    activeDeliveryState[source] = nil
+
+    Player.RecordDeliveryOutcome(source, "completed", rewardPaid)
+    Player.AddXP(source, xpPaid)
+
+    local message = damagePenalty > 0
+        and ("Delivery complete! $%d earned (-$%d damage), +%d XP."):format(rewardPaid, damagePenalty, xpPaid)
+        or ("Delivery complete! $%d earned, +%d XP."):format(rewardPaid, xpPaid)
+    TriggerClientEvent("polarix_towjob:notify", source, message, "success")
+    TriggerClientEvent("polarix_towjob:deliveryEnded", source, "completed")
+
+    debug.DebugPrint(("Missions.Complete: delivery %d completed for %s (reward %d, penalty %d)"):format(deliveryId, player.identifier, rewardPaid, damagePenalty))
+
+    return { ok = true, reward = rewardPaid, xp = xpPaid, damagePenalty = damagePenalty }
+end
+
+-- Step 10.4: player-initiated cancel, Dashboard-only (no in-world trigger — confirmed
+-- with user). Detach/despawn of the target vehicle happens client-side via the same
+-- `polarix_towjob:deliveryEnded` event Complete/Fail already use.
+function Missions.Abort(source, deliveryId)
+    local player = Player.GetData(source)
+    if not player then return { ok = false, reason = "no_player" } end
+
+    local delivery = DB.GetActiveDelivery(player.identifier)
+    if not delivery or delivery.id ~= deliveryId then
+        return { ok = false, reason = "no_active_delivery" }
+    end
+
+    DB.AbortDelivery(deliveryId)
+    Vehicles.StopRental(source)
+    activeDeliveryState[source] = nil
+
+    Player.RecordDeliveryOutcome(source, "aborted")
+
+    TriggerClientEvent("polarix_towjob:notify", source, "Delivery aborted.", "info")
+    TriggerClientEvent("polarix_towjob:deliveryEnded", source, "aborted")
+
+    debug.DebugPrint(("Missions.Abort: delivery %d aborted for %s"):format(deliveryId, player.identifier))
+
+    return { ok = true }
 end

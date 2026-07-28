@@ -150,5 +150,15 @@ return {
     -- Scaled by missing health: cost = perHealthPoint * (maxHealth - currentHealth), summed body+engine
     RepairCost = { mode = "scaled", perHealthPoint = 0.6 },
 
+    -- Converts accrued towed-vehicle body+engine health loss (0-1000 each, from attach to
+    -- placement) into a dollar penalty, before the DamagePenaltyCapPercent cap is applied.
+    DamagePenaltyPerHealthPoint = 0.5,
+
     DamagePenaltyCapPercent = 0.30,
+
+    -- Heading tolerance (degrees) for the delivery-zone placement check — the position bound
+    -- is already the mission's own dropoff_width/dropoff_length rectangle, this only gates how
+    -- closely the towed vehicle's heading must match dropoff_heading. Ground rule 3 names this
+    -- as a future Admin Settings (Phase 13) runtime-editable value; static here until then.
+    DeliveryHeadingTolerance = 25.0,
 }
