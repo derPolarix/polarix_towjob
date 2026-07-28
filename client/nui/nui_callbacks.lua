@@ -64,3 +64,18 @@ RegisterNUICallback('abortDelivery', function(data, cb)
     local result = lib.callback.await("polarix_towjob:abortDelivery", false, data and data.deliveryId)
     cb(result or { ok = false, reason = "no_response" })
 end)
+
+RegisterNUICallback('getLeaderboard', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:getLeaderboard", false)
+    cb(result or { entries = {}, own = nil })
+end)
+
+RegisterNUICallback('getRecentDeliveries', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:getRecentDeliveries", false, data and data.limit)
+    cb(result or { entries = {} })
+end)
+
+RegisterNUICallback('getDeliveryHistory', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:getDeliveryHistory", false, data and data.offset)
+    cb(result or { entries = {}, total = 0, offset = 0, pageSize = 20 })
+end)

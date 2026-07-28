@@ -190,3 +190,34 @@ end
 function DB.AbortDelivery(deliveryId)
     MySQL.update.await("UPDATE " .. server.Tables.deliveries .. " SET status = 'aborted', completed_at = NOW() WHERE id = ?", { deliveryId })
 end
+
+function DB.GetTopEarners(limit)
+    return MySQL.query.await(
+        "SELECT identifier, name, level, total_earnings FROM " .. server.Tables.players .. " ORDER BY total_earnings DESC LIMIT ?",
+        { limit }
+    )
+end
+
+function DB.GetPlayerRank(identifier)
+    return MySQL.scalar.await([[
+        SELECT COUNT(*) + 1 FROM ]] .. server.Tables.players .. [[
+        WHERE total_earnings > (SELECT total_earnings FROM ]] .. server.Tables.players .. [[ WHERE identifier = ?)
+    ]], { identifier }) or 1
+end
+
+-- LEFT JOIN, not DB.GetMission's `is_active = 1`-filtered lookup: a deactivated or
+-- (per Step 13.3) hard-deleted mission template must not erase its own delivery history.
+function DB.GetDeliveryHistory(identifier, limit, offset)
+    return MySQL.query.await([[
+        SELECT d.id, d.status, d.reward_paid, d.xp_paid, d.damage_penalty, d.started_at, d.completed_at, m.name AS mission_name
+        FROM ]] .. server.Tables.deliveries .. [[ d
+        LEFT JOIN ]] .. server.Tables.missions .. [[ m ON m.id = d.mission_id
+        WHERE d.identifier = ?
+        ORDER BY d.started_at DESC
+        LIMIT ? OFFSET ?
+    ]], { identifier, limit, offset })
+end
+
+function DB.GetDeliveryCount(identifier)
+    return MySQL.scalar.await("SELECT COUNT(*) FROM " .. server.Tables.deliveries .. " WHERE identifier = ?", { identifier }) or 0
+end

@@ -76,3 +76,15 @@ end)
 lib.callback.register("polarix_towjob:abortDelivery", function(source, deliveryId)
     return Missions.Abort(source, deliveryId)
 end)
+
+lib.callback.register("polarix_towjob:getLeaderboard", function(source)
+    return Deliveries.GetLeaderboard(source)
+end)
+
+lib.callback.register("polarix_towjob:getRecentDeliveries", function(source, limit)
+    return Deliveries.GetRecentForPlayer(source, limit)
+end)
+
+lib.callback.register("polarix_towjob:getDeliveryHistory", function(source, offset)
+    return Deliveries.GetHistoryPage(source, offset)
+end)

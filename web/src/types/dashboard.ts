@@ -138,6 +138,42 @@ export interface AbortDeliveryResult {
   reason?: string;
 }
 
+export type DeliveryStatus = "active" | "completed" | "failed" | "aborted";
+
+export interface LeaderboardEntry {
+  rank: number;
+  name: string;
+  level: number;
+  total_earnings: number;
+}
+
+export interface LeaderboardResult {
+  entries: LeaderboardEntry[];
+  own: LeaderboardEntry | null;
+}
+
+export interface DeliveryHistoryEntry {
+  id: number;
+  missionName: string;
+  status: DeliveryStatus;
+  rewardPaid: number;
+  xpPaid: number;
+  damagePenalty: number;
+  startedAt: string;
+  completedAt: string | null;
+}
+
+export interface RecentDeliveriesResult {
+  entries: DeliveryHistoryEntry[];
+}
+
+export interface DeliveryHistoryResult {
+  entries: DeliveryHistoryEntry[];
+  total: number;
+  offset: number;
+  pageSize: number;
+}
+
 export interface DashboardPayload {
   player: PlayerData;
   levelTitles: string[];
