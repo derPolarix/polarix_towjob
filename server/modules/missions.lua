@@ -36,8 +36,11 @@ function Missions.GetAvailableForPlayer(source)
     local groups = {}
     local groupIndex = {}
 
+    local levelReduction = Skills.GetLevelRequirementReduction(source)
+
     for _, row in ipairs(DB.GetActiveMissionsWithAreas() or {}) do
-        if row.level_required <= player.level and unlockedAreaIds[row.area_id] then
+        local effectiveLevelRequired = math.max(1, row.level_required - levelReduction)
+        if effectiveLevelRequired <= player.level and unlockedAreaIds[row.area_id] then
             local group = groupIndex[row.area_id]
             if not group then
                 group = { area_id = row.area_id, area_name = row.area_name, region = row.area_region, missions = {} }
@@ -238,7 +241,8 @@ function Missions.Accept(source, missionId)
         return { ok = false, reason = "mission_not_found" }
     end
 
-    if row.level_required > player.level then
+    local effectiveLevelRequired = math.max(1, row.level_required - Skills.GetLevelRequirementReduction(source))
+    if effectiveLevelRequired > player.level then
         return { ok = false, reason = "level_too_low" }
     end
 
@@ -390,16 +394,25 @@ function Missions.Complete(source, deliveryId)
 
     local towTruck = state.towTruckNetId and NetworkGetEntityFromNetworkId(state.towTruckNetId)
     local resistance = (towTruck and towTruck ~= 0) and Vehicles.GetDamageResistanceForModel(GetEntityModel(towTruck)) or 0.0
-    local skillReduction = 0.0 -- Phase 11 dependency, stub at 0% until Skills.GetDamageReduction exists
+    local skillReduction = Skills.GetDamageReduction(source)
 
     local reductionFactor = math.max(0, 1 - resistance - skillReduction)
     local healthLoss = (bodyLoss + engineLoss) * reductionFactor
 
     local damagePenalty = math.floor(healthLoss * (serverConfig.DamagePenaltyPerHealthPoint or 0.5) + 0.5)
+    -- Cap is always a fraction of the mission's listed reward_base, never the
+    -- Economy-branch-bonused amount below — confirmed with user, keeps the cap
+    -- independent of the payout_bonus skill.
     local cap = math.floor(mission.reward_base * (serverConfig.DamagePenaltyCapPercent or 0.30))
     damagePenalty = math.min(damagePenalty, cap)
 
-    local rewardPaid = math.max(0, mission.reward_base - damagePenalty)
+    -- Economy branch ("Fair Rates") bonuses the reward before the damage penalty is
+    -- subtracted — confirmed with user — so the bonus is additive on top, not eaten by
+    -- a damage-cap that also scales with it.
+    local payoutBonus = Skills.GetPayoutBonus(source)
+    local bonusedReward = math.floor(mission.reward_base * (1 + payoutBonus) + 0.5)
+
+    local rewardPaid = math.max(0, bonusedReward - damagePenalty)
     local xpPaid = mission.xp_base
 
     Framework.AddMoney(source, rewardPaid)

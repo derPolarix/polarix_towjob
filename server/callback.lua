@@ -1,5 +1,4 @@
 local sharedConfig = require("config.shared")
-local serverConfig = require("config.server")
 
 lib.callback.register("polarix_towjob:openDashboard", function(source)
     local playerData = Player.GetData(source)
@@ -15,9 +14,10 @@ lib.callback.register("polarix_towjob:openDashboard", function(source)
         missions = Missions.GetAvailableForPlayer(source),
         areas = Areas.GetMapAreas(source),
         vehicles = Vehicles.GetOwnedForPlayer(source),
-        vehicleTiers = serverConfig.VehicleTiers,
-        repairCostPerHealthPoint = serverConfig.RepairCost.perHealthPoint or 0.6,
+        vehicleTiers = Vehicles.GetTiersForPlayer(source),
+        repairCostPerHealthPoint = Vehicles.GetRepairCostPerHealthPoint(source),
         activeDelivery = Missions.GetActiveDeliverySummary(source),
+        skillBranches = sharedConfig.Skills.branches,
     }
 end)
 
@@ -40,8 +40,8 @@ end)
 lib.callback.register("polarix_towjob:getOwnedVehicles", function(source)
     return {
         vehicles = Vehicles.GetOwnedForPlayer(source),
-        vehicleTiers = serverConfig.VehicleTiers,
-        repairCostPerHealthPoint = serverConfig.RepairCost.perHealthPoint or 0.6,
+        vehicleTiers = Vehicles.GetTiersForPlayer(source),
+        repairCostPerHealthPoint = Vehicles.GetRepairCostPerHealthPoint(source),
     }
 end)
 
@@ -59,6 +59,10 @@ end)
 
 lib.callback.register("polarix_towjob:storeVehicle", function(source, vehicleId, netId)
     return Vehicles.Store(source, vehicleId, netId)
+end)
+
+lib.callback.register("polarix_towjob:unlockSkill", function(source, skillId)
+    return Skills.Unlock(source, skillId)
 end)
 
 lib.callback.register("polarix_towjob:acceptMission", function(source, missionId)

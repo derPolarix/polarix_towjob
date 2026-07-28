@@ -56,6 +56,31 @@ function Vehicles.GetDamageResistanceForModel(modelHash)
     return 0.0
 end
 
+-- Tier catalog with the player's own Economy-branch purchase discount already applied to
+-- `price`, so the Vehicles tab's displayed price always matches what Purchase actually
+-- charges — the client never has to know the discount rate itself to show a correct number.
+function Vehicles.GetTiersForPlayer(source)
+    local discount = Skills.GetPurchaseDiscount(source)
+    local list = {}
+    for _, tier in ipairs(serverConfig.VehicleTiers) do
+        list[#list + 1] = {
+            id = tier.id,
+            model = tier.model,
+            label = tier.label,
+            price = math.floor(tier.price * (1 - discount) + 0.5),
+            damage_resistance = tier.damage_resistance,
+            level_required = tier.level_required,
+        }
+    end
+    return list
+end
+
+-- Same idea as GetTiersForPlayer above, for the Repair action's displayed per-health-point rate.
+function Vehicles.GetRepairCostPerHealthPoint(source)
+    local base = serverConfig.RepairCost.perHealthPoint or 0.6
+    return base * (1 - Skills.GetRepairDiscount(source))
+end
+
 function Vehicles.GetOwnedForPlayer(source)
     local player = Player.GetData(source)
     if not player then return {} end
@@ -79,9 +104,7 @@ function Vehicles.GetDeployedForPlayer(source)
     return list
 end
 
--- Economy skill branch (e2 "Bulk Discount") reduces this cost — Phase 11 dependency,
--- purchase runs at full price until Skills.GetPurchaseDiscount exists (same stub
--- pattern Phase 10.1 uses for damage-penalty reduction).
+-- Economy skill branch (e2 "Bulk Discount") reduces this cost via Skills.GetPurchaseDiscount.
 function Vehicles.Purchase(source, tierId)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
@@ -93,11 +116,13 @@ function Vehicles.Purchase(source, tierId)
         return { ok = false, reason = "level_too_low" }
     end
 
-    if Framework.GetMoney(source) < tier.price then
+    local price = math.floor(tier.price * (1 - Skills.GetPurchaseDiscount(source)) + 0.5)
+
+    if Framework.GetMoney(source) < price then
         return { ok = false, reason = "insufficient_funds" }
     end
 
-    Framework.RemoveMoney(source, tier.price)
+    Framework.RemoveMoney(source, price)
 
     local plate = generatePlate()
     DB.CreateVehicle(player.identifier, tierId, plate)
@@ -107,7 +132,7 @@ function Vehicles.Purchase(source, tierId)
     return { ok = true, vehicles = Vehicles.GetOwnedForPlayer(source) }
 end
 
--- Same Economy-branch discount stub as Purchase above — full cost until Phase 11.
+-- Same Economy-branch discount as Purchase above, via Skills.GetRepairDiscount.
 function Vehicles.Repair(source, vehicleId)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
@@ -122,7 +147,7 @@ function Vehicles.Repair(source, vehicleId)
         return { ok = false, reason = "already_full_health" }
     end
 
-    local cost = math.floor(missing * (serverConfig.RepairCost.perHealthPoint or 0.6) + 0.5)
+    local cost = math.floor(missing * (serverConfig.RepairCost.perHealthPoint or 0.6) * (1 - Skills.GetRepairDiscount(source)) + 0.5)
 
     if Framework.GetMoney(source) < cost then
         return { ok = false, reason = "insufficient_funds" }

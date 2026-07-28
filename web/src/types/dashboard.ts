@@ -98,6 +98,36 @@ export interface AcceptMissionResult {
   needsParkOut?: boolean;
 }
 
+export interface SkillEffects {
+  damage_penalty_reduction?: number;
+  payout_bonus?: number;
+  purchase_discount?: number;
+  repair_discount?: number;
+  level_requirement_reduction?: number;
+  area_unlock_discount?: number;
+}
+
+export interface SkillNode {
+  id: string;
+  name: string;
+  desc: string;
+  cost: number;
+  requires: string | null;
+  effects: SkillEffects;
+}
+
+export interface SkillBranch {
+  name: string;
+  icon: string;
+  skills: SkillNode[];
+}
+
+export interface UnlockSkillResult {
+  ok: boolean;
+  reason?: string;
+  player?: PlayerData;
+}
+
 export interface ActiveDeliverySummary {
   deliveryId: number;
   missionName: string;
@@ -119,6 +149,7 @@ export interface DashboardPayload {
   vehicleTiers: VehicleTier[];
   repairCostPerHealthPoint: number;
   activeDelivery: ActiveDeliverySummary | null;
+  skillBranches: SkillBranch[];
 }
 
 export type TabKey =

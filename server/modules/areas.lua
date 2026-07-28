@@ -20,12 +20,16 @@ function Areas.SeedIfEmpty()
 end
 
 -- Full active-area list for the Map tab, each flagged `unlocked` from this player's
--- perspective (default areas + polarix_towjob_player_areas rows).
+-- perspective (default areas + polarix_towjob_player_areas rows). `unlock_cost` already
+-- has this player's Access-branch discount applied (Skills.GetAreaUnlockDiscount) so the
+-- displayed price always matches what Areas.Unlock actually charges.
 function Areas.GetMapAreas(source)
     local unlockedIds = {}
     for _, id in ipairs(Player.GetUnlockedAreaIds(source)) do
         unlockedIds[id] = true
     end
+
+    local discount = Skills.GetAreaUnlockDiscount(source)
 
     local areas = {}
     for _, row in ipairs(DB.GetActiveAreas() or {}) do
@@ -35,7 +39,7 @@ function Areas.GetMapAreas(source)
             region = row.region,
             map_x = row.map_x,
             map_y = row.map_y,
-            unlock_cost = row.unlock_cost,
+            unlock_cost = math.floor((row.unlock_cost or 0) * (1 - discount) + 0.5),
             level_required = row.level_required,
             is_default = row.is_default == 1,
             unlocked = unlockedIds[row.id] == true,
@@ -67,7 +71,8 @@ function Areas.Unlock(source, areaId)
         return { ok = false, reason = "level_too_low" }
     end
 
-    local cost = area.unlock_cost or 0
+    -- Access branch ("Local Rates") reduces this cost via Skills.GetAreaUnlockDiscount.
+    local cost = math.floor((area.unlock_cost or 0) * (1 - Skills.GetAreaUnlockDiscount(source)) + 0.5)
     if cost > 0 then
         if Framework.GetMoney(source) < cost then
             return { ok = false, reason = "insufficient_funds" }

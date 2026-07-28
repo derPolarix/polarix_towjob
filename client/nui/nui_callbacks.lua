@@ -50,6 +50,11 @@ RegisterNUICallback('parkOutVehicle', function(data, cb)
     cb(result)
 end)
 
+RegisterNUICallback('unlockSkill', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:unlockSkill", false, data and data.skillId)
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
 RegisterNUICallback('acceptMission', function(data, cb)
     local result = Vehicle.AcceptMission(data and data.missionId)
     cb(result or { ok = false, reason = "no_response" })
