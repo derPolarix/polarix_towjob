@@ -75,10 +75,11 @@ function Vehicles.GetTiersForPlayer(source)
     return list
 end
 
--- Same idea as GetTiersForPlayer above, for the Repair action's displayed per-health-point rate.
+-- Same idea as GetTiersForPlayer above, for the Repair action's displayed per-health-point
+-- rate. Reads the base rate through Settings (Phase 13) so an admin edit is reflected
+-- immediately, falling back to config/server.lua's RepairCost.perHealthPoint on first boot.
 function Vehicles.GetRepairCostPerHealthPoint(source)
-    local base = serverConfig.RepairCost.perHealthPoint or 0.6
-    return base * (1 - Skills.GetRepairDiscount(source))
+    return Settings.GetRepairCostPerHealthPoint() * (1 - Skills.GetRepairDiscount(source))
 end
 
 function Vehicles.GetOwnedForPlayer(source)
@@ -147,7 +148,7 @@ function Vehicles.Repair(source, vehicleId)
         return { ok = false, reason = "already_full_health" }
     end
 
-    local cost = math.floor(missing * (serverConfig.RepairCost.perHealthPoint or 0.6) * (1 - Skills.GetRepairDiscount(source)) + 0.5)
+    local cost = math.floor(missing * Settings.GetRepairCostPerHealthPoint() * (1 - Skills.GetRepairDiscount(source)) + 0.5)
 
     if Framework.GetMoney(source) < cost then
         return { ok = false, reason = "insufficient_funds" }
@@ -255,7 +256,9 @@ CreateThread(function()
         Wait(30000)
 
         local now = os.time()
-        local intervalSeconds = serverConfig.RentalIntervalMinutes * 60
+        -- Interval/price read fresh from Settings every tick (not cached at thread start) so
+        -- a Phase 13 admin edit takes effect on the next tick, no resource restart needed.
+        local intervalSeconds = Settings.GetRentalIntervalMinutes() * 60
         local warnAt5 = (serverConfig.RentalWarningMinutesBefore[1] or 5) * 60
         local warnAt1 = (serverConfig.RentalWarningMinutesBefore[2] or 1) * 60
 
@@ -263,8 +266,9 @@ CreateThread(function()
             local remaining = intervalSeconds - (now - state.lastCharge)
 
             if remaining <= 0 then
-                if Framework.GetMoney(source) >= serverConfig.RentalPricePerCharge then
-                    Framework.RemoveMoney(source, serverConfig.RentalPricePerCharge)
+                local price = Settings.GetRentalPricePerCharge()
+                if Framework.GetMoney(source) >= price then
+                    Framework.RemoveMoney(source, price)
                     state.lastCharge = now
                     state.warned5 = false
                     state.warned1 = false

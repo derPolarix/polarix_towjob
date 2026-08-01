@@ -58,6 +58,10 @@ const handleMessage = (event: MessageEvent) => {
 		case "activeDeliveryEnded":
 			activeDeliveryStore.clear();
 			break;
+		case "openAdminSettings":
+			persistantStore.IsNuiOpen = true;
+			router.push("/admin");
+			break;
 		default:
 			break;
 	}

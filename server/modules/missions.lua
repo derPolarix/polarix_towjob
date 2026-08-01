@@ -228,7 +228,11 @@ end)
 -- There's no "reuse the already-deployed entity" path since the client has no
 -- guarantee that entity still exists — reject with `no_stored_vehicle` and let the
 -- player store it via the parking zone first, same as any other stuck state.
-function Missions.Accept(source, missionId)
+-- `bypassGates` is never client-controlled — the public polarix_towjob:acceptMission
+-- callback always calls this with it omitted; only AdminMissions.TestRun (Phase 13, which
+-- re-checks Framework.IsAdmin itself) passes true, to skip the mission-availability gates
+-- (level/area-lock) for QA purposes without touching the player-state checks below them.
+function Missions.Accept(source, missionId, bypassGates)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
 
@@ -242,7 +246,7 @@ function Missions.Accept(source, missionId)
     end
 
     local effectiveLevelRequired = math.max(1, row.level_required - Skills.GetLevelRequirementReduction(source))
-    if effectiveLevelRequired > player.level then
+    if not bypassGates and effectiveLevelRequired > player.level then
         return { ok = false, reason = "level_too_low" }
     end
 
@@ -255,7 +259,7 @@ function Missions.Accept(source, missionId)
     for _, id in ipairs(Player.GetUnlockedAreaIds(source)) do
         unlockedAreaIds[id] = true
     end
-    if not unlockedAreaIds[row.area_id] then
+    if not bypassGates and not unlockedAreaIds[row.area_id] then
         return { ok = false, reason = "area_locked" }
     end
 
@@ -283,7 +287,8 @@ function Missions.Accept(source, missionId)
         -- Sent down so the client's live placement preview (Step 10.2) stays in sync with the
         -- server's own authoritative tolerance (Missions.Complete) without requiring server-only
         -- config from client code (client_scripts can't require() a server_scripts-only file).
-        dropoff_heading_tolerance = serverConfig.DeliveryHeadingTolerance or 25.0,
+        -- Reads through Settings so a Phase 13 admin edit is reflected on the next accept.
+        dropoff_heading_tolerance = Settings.GetDeliveryHeadingTolerance(),
         reward_base = row.reward_base,
         xp_base = row.xp_base,
         time_limit_minutes = row.time_limit_minutes,
@@ -354,7 +359,7 @@ local function isWithinDropoffZone(mission, coords, heading)
     local headingDiff = (heading - (mission.dropoff_heading or 0.0)) % 360.0
     if headingDiff > 180.0 then headingDiff = 360.0 - headingDiff end
 
-    return headingDiff <= (serverConfig.DeliveryHeadingTolerance or 25.0)
+    return headingDiff <= Settings.GetDeliveryHeadingTolerance()
 end
 
 -- Step 10.3: server computes the final damage penalty itself from health values it reads
@@ -400,20 +405,26 @@ function Missions.Complete(source, deliveryId)
     local healthLoss = (bodyLoss + engineLoss) * reductionFactor
 
     local damagePenalty = math.floor(healthLoss * (serverConfig.DamagePenaltyPerHealthPoint or 0.5) + 0.5)
-    -- Cap is always a fraction of the mission's listed reward_base, never the
+
+    -- Phase 13's global reward_multiplier is a base economy-tuning knob, applied to
+    -- reward_base before anything else (cap included) so an admin's multiplier scales the
+    -- mission's whole economy proportionally, not just the payout on top.
+    local effectiveRewardBase = mission.reward_base * Settings.GetRewardMultiplier()
+
+    -- Cap is always a fraction of the (multiplier-adjusted) reward_base, never the
     -- Economy-branch-bonused amount below — confirmed with user, keeps the cap
-    -- independent of the payout_bonus skill.
-    local cap = math.floor(mission.reward_base * (serverConfig.DamagePenaltyCapPercent or 0.30))
+    -- independent of the player's own payout_bonus skill.
+    local cap = math.floor(effectiveRewardBase * Settings.GetDamagePenaltyCapPercent())
     damagePenalty = math.min(damagePenalty, cap)
 
     -- Economy branch ("Fair Rates") bonuses the reward before the damage penalty is
     -- subtracted — confirmed with user — so the bonus is additive on top, not eaten by
     -- a damage-cap that also scales with it.
     local payoutBonus = Skills.GetPayoutBonus(source)
-    local bonusedReward = math.floor(mission.reward_base * (1 + payoutBonus) + 0.5)
+    local bonusedReward = math.floor(effectiveRewardBase * (1 + payoutBonus) + 0.5)
 
     local rewardPaid = math.max(0, bonusedReward - damagePenalty)
-    local xpPaid = mission.xp_base
+    local xpPaid = math.floor(mission.xp_base * Settings.GetXpMultiplier() + 0.5)
 
     Framework.AddMoney(source, rewardPaid)
 

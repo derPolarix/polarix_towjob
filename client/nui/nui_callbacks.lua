@@ -79,3 +79,81 @@ RegisterNUICallback('getDeliveryHistory', function(data, cb)
     local result = lib.callback.await("polarix_towjob:getDeliveryHistory", false, data and data.offset)
     cb(result or { entries = {}, total = 0, offset = 0, pageSize = 20 })
 end)
+
+-- Phase 13: Admin Settings UI. Server-side Framework.IsAdmin is re-checked inside every
+-- one of the polarix_towjob:admin* lib.callbacks below (ground rule 4) — these are thin
+-- dispatchers only, same shape as every other callback in this file.
+
+RegisterNUICallback('adminListMissions', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:adminListMissions", false)
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
+RegisterNUICallback('adminCreateMission', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:adminCreateMission", false, data)
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
+RegisterNUICallback('adminUpdateMission', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:adminUpdateMission", false, data and data.missionId, data and data.mission)
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
+RegisterNUICallback('adminSetMissionActive', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:adminSetMissionActive", false, data and data.missionId, data and data.isActive)
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
+RegisterNUICallback('adminDeleteMission', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:adminDeleteMission", false, data and data.missionId)
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
+RegisterNUICallback('adminTestRunMission', function(data, cb)
+    local result = Vehicle.AdminTestRunMission(data and data.missionId)
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
+RegisterNUICallback('adminListAreas', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:adminListAreas", false)
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
+RegisterNUICallback('adminCreateArea', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:adminCreateArea", false, data)
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
+RegisterNUICallback('adminUpdateArea', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:adminUpdateArea", false, data and data.areaId, data and data.area)
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
+RegisterNUICallback('adminSetAreaActive', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:adminSetAreaActive", false, data and data.areaId, data and data.isActive)
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
+RegisterNUICallback('adminGetSettings', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:adminGetSettings", false)
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
+RegisterNUICallback('adminSetSetting', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:adminSetSetting", false, data and data.key, data and data.value)
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
+RegisterNUICallback('adminGetCurrentPosition', function(data, cb)
+    cb(Admin.GetCurrentPosition())
+end)
+
+RegisterNUICallback('adminSetDropoffPreview', function(data, cb)
+    Admin.SetDropoffPreview(data)
+    cb({ ok = true })
+end)
+
+RegisterNUICallback('adminSetSearchPreview', function(data, cb)
+    Admin.SetSearchPreview(data)
+    cb({ ok = true })
+end)

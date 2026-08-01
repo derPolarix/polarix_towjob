@@ -196,8 +196,11 @@ local function beginDelivery(deliveryId, mission, deadlineAt)
     Framework.Notify(("New tow job: %s"):format(mission.name), "info")
 end
 
-function Vehicle.AcceptMission(missionId)
-    local result = lib.callback.await("polarix_towjob:acceptMission", false, missionId)
+-- Shared by the normal accept path and the Phase 13 admin "test mission" button — both
+-- servers-side calls (polarix_towjob:acceptMission / polarix_towjob:adminTestRunMission)
+-- return the exact same response shape, so the client-side spawn orchestration only needs
+-- to exist once.
+local function handleAcceptResult(result)
     if not result then
         return { ok = false, reason = "no_response" }
     end
@@ -220,6 +223,19 @@ function Vehicle.AcceptMission(missionId)
     beginDelivery(result.deliveryId, result.mission, result.deadlineAt)
 
     return result
+end
+
+function Vehicle.AcceptMission(missionId)
+    local result = lib.callback.await("polarix_towjob:acceptMission", false, missionId)
+    return handleAcceptResult(result)
+end
+
+-- Phase 13.3: QA test-run button — server-side gate bypass lives entirely in
+-- AdminMissions.TestRun/Missions.Accept; the client orchestration is identical to a normal
+-- accept once the server has responded ok, so it's reused verbatim via handleAcceptResult.
+function Vehicle.AdminTestRunMission(missionId)
+    local result = lib.callback.await("polarix_towjob:adminTestRunMission", false, missionId)
+    return handleAcceptResult(result)
 end
 
 -- Called after a successful `parkOutVehicle` NUI callback (client/nui/nui_callbacks.lua)

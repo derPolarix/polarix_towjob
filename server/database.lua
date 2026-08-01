@@ -221,3 +221,92 @@ end
 function DB.GetDeliveryCount(identifier)
     return MySQL.scalar.await("SELECT COUNT(*) FROM " .. server.Tables.deliveries .. " WHERE identifier = ?", { identifier }) or 0
 end
+
+-- Phase 13: admin CRUD helpers. Unlike DB.GetArea/DB.GetMission (player-facing, hard-filtered
+-- to is_active = 1), these intentionally return every row so the Admin UI can see/manage
+-- deactivated content too.
+function DB.GetAllAreasAdmin()
+    return MySQL.query.await("SELECT * FROM " .. server.Tables.areas .. " ORDER BY id")
+end
+
+function DB.AreaIdExists(areaId)
+    return (MySQL.scalar.await("SELECT COUNT(*) FROM " .. server.Tables.areas .. " WHERE id = ?", { areaId }) or 0) > 0
+end
+
+function DB.UpdateArea(areaId, area)
+    MySQL.update.await(
+        "UPDATE " .. server.Tables.areas .. " SET name=?, region=?, map_x=?, map_y=?, unlock_cost=?, level_required=?, is_default=? WHERE id=?",
+        { area.name, area.region, area.map_x, area.map_y, area.unlock_cost or 0, area.level_required or 1, area.is_default and 1 or 0, areaId }
+    )
+end
+
+function DB.SetAreaActive(areaId, isActive)
+    MySQL.update.await("UPDATE " .. server.Tables.areas .. " SET is_active = ? WHERE id = ?", { isActive and 1 or 0, areaId })
+end
+
+-- LEFT JOIN (not DB.GetActiveMissionsWithAreas' is_active-filtered join) so a mission
+-- whose area was deactivated still shows up for editing.
+function DB.GetAllMissionsAdmin()
+    return MySQL.query.await([[
+        SELECT m.*, a.name AS area_name
+        FROM ]] .. server.Tables.missions .. [[ m
+        LEFT JOIN ]] .. server.Tables.areas .. [[ a ON a.id = m.area_id
+        ORDER BY m.id
+    ]])
+end
+
+function DB.MissionIdExists(missionId)
+    return (MySQL.scalar.await("SELECT COUNT(*) FROM " .. server.Tables.missions .. " WHERE id = ?", { missionId }) or 0) > 0
+end
+
+-- Flat column shape (matches DB.GetAllMissionsAdmin's SELECT output and the admin form) —
+-- unlike DB.InsertMission, which keeps its nested search_center/dropoff shape because
+-- config/server.lua's SeedMissions data is written that way and Missions.SeedIfEmpty
+-- depends on it unchanged.
+function DB.UpdateMission(missionId, mission, adminIdentifier)
+    MySQL.update.await("UPDATE " .. server.Tables.missions .. [[ SET
+        area_id=?, name=?, vehicle_model=?, vehicle_label=?, vehicle_colors=?,
+        search_center_x=?, search_center_y=?, search_center_z=?, search_radius=?,
+        dropoff_x=?, dropoff_y=?, dropoff_z=?, dropoff_heading=?, dropoff_width=?, dropoff_length=?,
+        reward_base=?, xp_base=?, time_limit_minutes=?, difficulty=?, level_required=?, updated_by=?
+        WHERE id=?
+    ]], {
+        mission.area_id, mission.name, mission.vehicle_model, mission.vehicle_label,
+        json.encode(mission.vehicle_colors or {}),
+        mission.search_center_x, mission.search_center_y, mission.search_center_z, mission.search_radius or 60.0,
+        mission.dropoff_x, mission.dropoff_y, mission.dropoff_z, mission.dropoff_heading or 0.0,
+        mission.dropoff_width or 6.0, mission.dropoff_length or 10.0,
+        mission.reward_base, mission.xp_base, mission.time_limit_minutes, mission.difficulty or "easy",
+        mission.level_required or 1, adminIdentifier, missionId,
+    })
+end
+
+function DB.SetMissionActive(missionId, isActive, adminIdentifier)
+    MySQL.update.await("UPDATE " .. server.Tables.missions .. " SET is_active = ?, updated_by = ? WHERE id = ?", { isActive and 1 or 0, adminIdentifier, missionId })
+end
+
+-- DB.InsertMission (seed + admin create) doesn't know about the audit columns, so admin
+-- create calls this right after to stamp both created_by/updated_by in one statement.
+function DB.SetMissionCreatedBy(missionId, adminIdentifier)
+    MySQL.update.await("UPDATE " .. server.Tables.missions .. " SET created_by = ?, updated_by = ? WHERE id = ?", { adminIdentifier, adminIdentifier, missionId })
+end
+
+function DB.CountDeliveriesForMission(missionId)
+    return MySQL.scalar.await("SELECT COUNT(*) FROM " .. server.Tables.deliveries .. " WHERE mission_id = ?", { missionId }) or 0
+end
+
+function DB.DeleteMissionHard(missionId)
+    MySQL.query.await("DELETE FROM " .. server.Tables.missions .. " WHERE id = ?", { missionId })
+end
+
+function DB.GetAllSettings()
+    return MySQL.query.await("SELECT * FROM " .. server.Tables.settings)
+end
+
+function DB.UpsertSetting(key, value, adminIdentifier)
+    MySQL.query.await(
+        "INSERT INTO " .. server.Tables.settings .. " (setting_key, setting_value, updated_by) VALUES (?, ?, ?) " ..
+        "ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_by = VALUES(updated_by)",
+        { key, json.encode(value), adminIdentifier }
+    )
+end
