@@ -1,7 +1,7 @@
 -- Import with: local config = require("config.shared")
 return {
     Debug = false,
-    PrintDebug = true,
+    PrintDebug = false,
 
     Framework = "qbox", -- "qbox" | "qb-core" | "esx"
 

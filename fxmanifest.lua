@@ -4,8 +4,8 @@ game "gta5"
 
 -- Resource metadata
 author "derPolarix"
-description ""
-version "0.0.0"
+description "Tow job resource with dashboard, mission/skill/vehicle progression and admin settings UI (qbox / qb-core / esx)"
+version "1.0.0"
 lua54 'yes'
 use_experimental_fxv2_oal 'yes'
 
@@ -52,10 +52,20 @@ files {
 
 ui_page "html/index.html"
 
--- ui_page "http://localhost:5050"
-
 ox_libs {
     'locale',
     'math',
     'table',
+}
+
+-- ox_target is deliberately NOT listed here — ground rule 5 requires a native-fallback path
+-- whenever it isn't running, so it must stay a soft, GetResourceState()-checked dependency.
+-- Framework core (qbx_core / qb-core / es_extended) and the per-framework vehicle-keys
+-- resources are the same story: only one is ever active per config/shared.lua's Framework
+-- value, and every reference to them is already runtime-guarded (see framework/**, ground
+-- rule 1, Phase 0.3) — listing one as a hard dependency would break resource start on servers
+-- running either of the other two frameworks.
+dependencies {
+    'ox_lib',
+    'oxmysql',
 }

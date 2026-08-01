@@ -40,13 +40,6 @@ const handleMessage = (event: MessageEvent) => {
 	const action = (raw?.action ?? "") as NuiMessage["action"];
 
 	switch (action) {
-		case "openNui":
-			persistantStore.IsNuiOpen = true;
-			router.push("/defaultpage");
-			break;
-		case "updateMessage":
-			persistantStore.MessageData = raw.data?.message ?? null;
-			break;
 		case "openDashboard":
 			dashboardStore.setPayload(raw.data as DashboardPayload);
 			persistantStore.IsNuiOpen = true;

@@ -6,20 +6,6 @@ function SetFocus(state)
     SetNuiFocus(state, state)
 end
 
-function OpenNui()
-    SetFocus(true)
-    SendNUIMessage({
-        action = 'openNui'
-    })
-end
-
-function CloseNui()
-    SetFocus(false)
-    SendNUIMessage({
-        action = 'closeNui'
-    })
-end
-
 function SendMessage(action, data)
     SendNUIMessage({
         action = action,

@@ -3,7 +3,6 @@ import { nuiCallbackAsync, nuiCallback } from "@/nui/nuiCallbacks";
 
 type PersistantState = {
 	IsNuiOpen: boolean;
-  MessageData: string | null;
 };
 type PersistantGetters = {
 	isNuiOpen: (state: PersistantState) => boolean;
@@ -23,7 +22,6 @@ export const usePersistantStore = defineStore<
 	{
 		state: (): PersistantState => ({
 			IsNuiOpen: true,
-      MessageData: null,
 		}),
 		getters: {
 			isNuiOpen: (state) => state.IsNuiOpen,
@@ -34,7 +32,7 @@ export const usePersistantStore = defineStore<
 			},
 			async closeNui() {
 				this.IsNuiOpen = false;
-				await nuiCallbackAsync("closeNui", {message: this.MessageData});
+				await nuiCallbackAsync("closeNui");
 			},
 		},
 	},

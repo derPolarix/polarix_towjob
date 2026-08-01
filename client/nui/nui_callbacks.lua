@@ -4,7 +4,6 @@ local shared = require("shared.debug")
 
 RegisterNUICallback('closeNui', function(data, cb)
     SetNuiFocus(false, false)
-    print(json.encode(data))
     cb({ ok = true, message = 'NUI closed' })
 end)
 
