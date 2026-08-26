@@ -46,6 +46,9 @@ export interface MapArea {
   points: MapAreaPoint[];
   unlock_cost: number;
   level_required: number;
+  reward_multiplier: number;
+  xp_multiplier: number;
+  note: string | null;
   is_default: boolean;
   unlocked: boolean;
 }
