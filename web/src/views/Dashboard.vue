@@ -113,8 +113,7 @@ import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { AbortDeliveryResult, TabKey } from "@/types/dashboard";
 
 import OverviewTab from "@/components/dashboard/tabs/OverviewTab.vue";
-import AvailableJobsTab from "@/components/dashboard/tabs/AvailableJobsTab.vue";
-import MapTab from "@/components/dashboard/tabs/MapTab.vue";
+import AreasTab from "@/components/dashboard/tabs/AreasTab.vue";
 import VehiclesTab from "@/components/dashboard/tabs/VehiclesTab.vue";
 import LeaderboardTab from "@/components/dashboard/tabs/LeaderboardTab.vue";
 import SkilltreeTab from "@/components/dashboard/tabs/SkilltreeTab.vue";
@@ -135,14 +134,9 @@ onUnmounted(() => clearInterval(timer));
 const time = computed(() => now.value.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
 const date = computed(() => now.value.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }));
 
-const openJobsCount = computed(() =>
-	(dashboardStore.payload?.missions ?? []).reduce((sum, group) => sum + group.missions.length, 0),
-);
-
 const navItems = computed(() => [
 	{ key: "overview" as TabKey, label: "Dashboard", icon: "tabler:layout-dashboard", badge: "" },
-	{ key: "jobs" as TabKey, label: "Available Jobs", icon: "tabler:package", badge: String(openJobsCount.value) },
-	{ key: "map" as TabKey, label: "Map", icon: "tabler:map", badge: "" },
+	{ key: "areas" as TabKey, label: "Areas", icon: "tabler:map", badge: "" },
 	{ key: "vehicles" as TabKey, label: "Vehicles", icon: "tabler:truck", badge: String(dashboardStore.payload?.vehicles.length ?? 0) },
 	{ key: "leaderboard" as TabKey, label: "Leaderboard", icon: "tabler:trophy", badge: "" },
 	{ key: "skilltree" as TabKey, label: "Skilltree", icon: "tabler:bolt", badge: "" },
@@ -151,8 +145,7 @@ const navItems = computed(() => [
 
 const tabComponents: Record<TabKey, unknown> = {
 	overview: OverviewTab,
-	jobs: AvailableJobsTab,
-	map: MapTab,
+	areas: AreasTab,
 	vehicles: VehiclesTab,
 	leaderboard: LeaderboardTab,
 	skilltree: SkilltreeTab,

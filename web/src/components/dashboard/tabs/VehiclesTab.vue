@@ -2,6 +2,27 @@
 	<div style="display:flex;flex-direction:column;gap:20px">
 		<p v-if="actionError" style="font-size:12px;color:#d24b3a;margin:0">{{ actionError }}</p>
 
+		<div v-if="dashboardStore.payload?.rentalActive" style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+			<div style="display:flex;align-items:center;gap:12px">
+				<div style="width:40px;height:40px;border-radius:11px;background:rgba(34,197,94,0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+					<iconify-icon icon="tabler:truck" width="20" style="color:#22c55e"></iconify-icon>
+				</div>
+				<div>
+					<div style="font-size:14px;font-weight:700;color:#1b1f24">Active rental — {{ dashboardStore.payload?.rentalTruckLabel ?? 'Rental Flatbed' }}</div>
+					<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:2px">${{ dashboardStore.payload?.rentalPricePerCharge ?? 0 }} every {{ dashboardStore.payload?.rentalIntervalMinutes ?? 0 }} min</div>
+				</div>
+			</div>
+			<button
+				type="button"
+				style="padding:10px 18px;border-radius:10px;border:1px solid #dfe2e6;background:#fff;color:#dc2626;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer"
+				:disabled="returningRental || !!dashboardStore.activeDelivery"
+				:title="dashboardStore.activeDelivery ? 'Finish your current delivery first' : ''"
+				@click="returnRental"
+			>
+				{{ returningRental ? 'Returning…' : 'Return rental' }}
+			</button>
+		</div>
+
 		<!-- Garage -->
 		<div>
 			<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
@@ -108,10 +129,33 @@ import { onMounted, ref } from "vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { usePersistantStore } from "@/stores/persistantStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
-import type { OwnedVehicle, VehicleActionResult, VehicleTier } from "@/types/dashboard";
+import type { OwnedVehicle, ReturnRentalResult, VehicleActionResult, VehicleTier } from "@/types/dashboard";
 
 const dashboardStore = useDashboardStore();
 const persistantStore = usePersistantStore();
+
+const returningRental = ref(false);
+
+async function returnRental() {
+	returningRental.value = true;
+	actionError.value = "";
+
+	try {
+		const result = await nuiCallbackAsync<ReturnRentalResult>("returnRental");
+		if (result?.ok) {
+			dashboardStore.setRentalActive(false);
+		} else if (result?.reason === "delivery_in_progress") {
+			actionError.value = "Finish your current delivery before returning the rental.";
+		} else {
+			actionError.value = "Could not return the rental.";
+		}
+	} catch (error) {
+		console.error("returnRental failed:", error);
+		actionError.value = "Could not return the rental.";
+	} finally {
+		returningRental.value = false;
+	}
+}
 
 const vehicles = ref<OwnedVehicle[]>(dashboardStore.payload?.vehicles ?? []);
 const vehicleTiers = ref<VehicleTier[]>(dashboardStore.payload?.vehicleTiers ?? []);

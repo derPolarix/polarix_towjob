@@ -9,7 +9,10 @@
 				<div style="margin-top:9px;font-size:13px;color:#9aa1ab;display:flex;align-items:center;gap:14px">
 					<span>Lvl {{ player?.level ?? 1 }}</span>
 					<span style="color:#454c56">·</span>
-					<span>{{ openJobsCount }} jobs open</span>
+					<span style="display:inline-flex;align-items:center;gap:6px">
+						<span :style="{ width: '7px', height: '7px', borderRadius: '50%', background: dashboardStore.onCall ? '#22c55e' : '#6b7280' }"></span>
+						{{ dashboardStore.onCall ? 'On-call — pager active' : 'Off-call' }}
+					</span>
 					<span style="color:#454c56">·</span>
 					<span style="display:inline-flex;align-items:center;gap:6px">
 						<span :style="{ width: '7px', height: '7px', borderRadius: '50%', background: dashboardStore.activeDelivery ? '#22c55e' : '#6b7280' }"></span>
@@ -17,10 +20,19 @@
 					</span>
 				</div>
 			</div>
-			<button class="accent-btn" style="padding:13px 20px;font-size:14px" @click="dashboardStore.setActiveTab('jobs')">
-				Browse jobs <iconify-icon icon="tabler:arrow-right" width="18"></iconify-icon>
+			<button
+				class="accent-btn"
+				type="button"
+				:disabled="togglingOnCall"
+				:style="dashboardStore.onCall ? 'padding:13px 20px;font-size:14px;background:#dc2626;color:#fff' : 'padding:13px 20px;font-size:14px'"
+				@click="toggleOnCall"
+			>
+				{{ togglingOnCall ? 'Working…' : dashboardStore.onCall ? 'Go off-call' : 'Go on-call' }}
+				<iconify-icon :icon="dashboardStore.onCall ? 'tabler:phone-off' : 'tabler:phone-ringing'" width="18"></iconify-icon>
 			</button>
 		</div>
+
+		<p v-if="onCallError" style="margin:0;font-size:12px;color:#d24b3a">{{ onCallError }}</p>
 
 		<!-- Stat cards -->
 		<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
@@ -52,10 +64,9 @@
 						<iconify-icon icon="tabler:truck" width="32" style="color:#aab0b8"></iconify-icon>
 					</div>
 					<div style="font-size:15px;font-weight:600;color:#3c424b;margin-top:16px">No active delivery</div>
-					<div style="font-size:13px;color:#9aa1ab;margin-top:4px">Accept a job to start earning</div>
-					<button style="margin-top:18px;background:#22262d;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:8px" @click="dashboardStore.setActiveTab('jobs')">
-						Browse jobs <iconify-icon icon="tabler:arrow-right" width="16"></iconify-icon>
-					</button>
+					<div style="font-size:13px;color:#9aa1ab;margin-top:4px">
+						{{ dashboardStore.onCall ? "You're on-call — the pager will ring with a job" : 'Go on-call above to start receiving jobs' }}
+					</div>
 				</div>
 			</div>
 
@@ -90,7 +101,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
-import type { DeliveryHistoryEntry, DeliveryStatus, RecentDeliveriesResult } from "@/types/dashboard";
+import type { DeliveryHistoryEntry, DeliveryStatus, RecentDeliveriesResult, ToggleOnCallResult } from "@/types/dashboard";
 
 const RECENT_LIMIT = 5;
 
@@ -99,9 +110,40 @@ const player = computed(() => dashboardStore.player);
 
 const recentJobs = ref<DeliveryHistoryEntry[]>([]);
 
-const openJobsCount = computed(() =>
-	(dashboardStore.payload?.missions ?? []).reduce((sum, group) => sum + group.missions.length, 0),
-);
+const togglingOnCall = ref(false);
+const onCallError = ref("");
+
+const onCallReasonMessages: Record<string, string> = {
+	active_delivery_exists: "Finish your current delivery before going on-call.",
+	no_deployed_vehicle: "Park out a tow truck from the Vehicles tab first.",
+	no_player: "Player data unavailable, try reopening the Dashboard.",
+};
+
+async function toggleOnCall() {
+	togglingOnCall.value = true;
+	onCallError.value = "";
+
+	try {
+		const result = await nuiCallbackAsync<ToggleOnCallResult>("toggleOnCall", { onCall: !dashboardStore.onCall });
+
+		if (result?.ok) {
+			dashboardStore.setOnCall(result.onCall ?? !dashboardStore.onCall);
+			return;
+		}
+
+		if (result?.reason === "needs_rental") {
+			dashboardStore.openRentalPrompt();
+			return;
+		}
+
+		onCallError.value = onCallReasonMessages[result?.reason ?? ""] ?? "Could not update on-call status.";
+	} catch (error) {
+		console.error("toggleOnCall failed:", error);
+		onCallError.value = "Could not update on-call status.";
+	} finally {
+		togglingOnCall.value = false;
+	}
+}
 
 const statusIcons: Record<DeliveryStatus, string> = {
 	active: "tabler:road",
