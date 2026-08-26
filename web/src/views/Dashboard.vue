@@ -1,58 +1,113 @@
 <template>
-	<div class="relative w-full h-full flex flex-col text-white">
-		<nav class="flex gap-1 px-4 pt-4">
-			<button
-				v-for="tab in tabs"
-				:key="tab.key"
-				type="button"
-				class="px-3 py-2 rounded-t-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
-				:class="
-					dashboardStore.activeTab === tab.key
-						? 'bg-neutral-800 text-white'
-						: 'bg-neutral-900/60 text-white/60 hover:text-white'
-				"
-				@click="dashboardStore.setActiveTab(tab.key)"
-			>
-				{{ tab.label }}
-			</button>
-		</nav>
+	<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(120% 120% at 50% 0%,#1c1f25 0%,#101216 70%);--accent:#22c55e;font-family:'Archivo',system-ui,sans-serif">
+		<div style="width:1366px;height:1024px;display:flex;background:#e7e9ec;border-radius:22px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,0.55),0 0 0 1px rgba(255,255,255,0.04);font-size:14px;color:#1b1f24">
 
-		<div
-			v-if="dashboardStore.activeDelivery"
-			class="mx-4 mt-3 flex items-center justify-between gap-4 rounded-md bg-amber-900/40 border border-amber-500/30 px-4 py-2 text-sm"
-		>
-			<span>Active delivery: <strong>{{ dashboardStore.activeDelivery.missionName }}</strong></span>
-			<button
-				type="button"
-				:disabled="abortingDelivery"
-				class="rounded-md bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-medium px-3 py-1.5"
-				@click="abortDelivery"
-			>
-				Abort Delivery
-			</button>
-		</div>
+			<!-- SIDEBAR -->
+			<aside style="width:242px;flex-shrink:0;background:#22262d;display:flex;flex-direction:column;color:#c9ced6">
+				<div style="padding:18px 18px 13px;display:flex;align-items:center;gap:12px">
+					<div style="width:40px;height:40px;border-radius:12px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+						<iconify-icon icon="tabler:truck" width="23" style="color:#22262d"></iconify-icon>
+					</div>
+					<div style="flex:1;min-width:0">
+						<div style="font-weight:700;font-size:16px;color:#fff;line-height:1.05">Polarix</div>
+						<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#7a818c;margin-top:2px">Tow Ops</div>
+					</div>
+				</div>
+				<div style="height:3px;margin:2px 18px 0;border-radius:2px;background:repeating-linear-gradient(45deg,var(--accent) 0 8px,#2e333b 8px 16px);opacity:0.55"></div>
 
-		<main class="flex-1 overflow-y-auto bg-neutral-800/90 p-4">
-			<component :is="activeTabComponent" />
-		</main>
+				<nav style="flex:1;overflow-y:auto;padding:16px 12px;display:flex;flex-direction:column;gap:3px">
+					<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#5b626c;padding:0 10px 8px">Menu</div>
+					<button
+						v-for="item in navItems"
+						:key="item.key"
+						type="button"
+						style="position:relative;display:flex;align-items:center;gap:12px;width:100%;padding:10px 13px;border:none;border-radius:10px;cursor:pointer;font-family:inherit;font-size:14px;text-align:left"
+						:style="{ background: dashboardStore.activeTab === item.key ? 'rgba(34,197,94,0.12)' : 'transparent', color: dashboardStore.activeTab === item.key ? '#ffffff' : '#9aa1ab' }"
+						@click="dashboardStore.setActiveTab(item.key)"
+					>
+						<span style="position:absolute;left:-12px;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)" :style="{ opacity: dashboardStore.activeTab === item.key ? '1' : '0' }"></span>
+						<iconify-icon :icon="item.icon" width="19" :style="{ color: dashboardStore.activeTab === item.key ? '#22c55e' : '#7a818c', flexShrink: '0' }"></iconify-icon>
+						<span style="flex:1" :style="{ fontWeight: dashboardStore.activeTab === item.key ? '600' : '500' }">{{ item.label }}</span>
+						<span v-if="item.badge" style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;min-width:18px;text-align:center;padding:1px 6px;border-radius:8px;background:var(--accent);color:#22262d">{{ item.badge }}</span>
+					</button>
+				</nav>
 
-		<div class="absolute bottom-4 left-4 min-w-[220px] rounded-md bg-neutral-900/80 px-4 py-3">
-			<div class="flex items-center justify-between gap-4">
-				<span class="font-semibold">{{ dashboardStore.player?.name }}</span>
-				<span class="text-sm text-white/70">Lvl {{ dashboardStore.player?.level }} · {{ dashboardStore.levelTitle }}</span>
-			</div>
-			<div class="mt-2 h-2 overflow-hidden rounded-full bg-neutral-700">
-				<div class="h-full bg-emerald-500" :style="{ width: dashboardStore.xpProgress.percent + '%' }" />
-			</div>
-			<div class="mt-1 text-xs text-white/60">
-				{{ dashboardStore.player?.xp }} XP · {{ dashboardStore.player?.skill_points }} skill points available
-			</div>
+				<div style="padding:0 12px 6px">
+					<div style="padding:12px;border-radius:14px;background:#2b3039;border:1px solid #353b45">
+						<div style="display:flex;align-items:center;gap:10px">
+							<div style="width:38px;height:38px;border-radius:11px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#22262d;flex-shrink:0">{{ initial }}</div>
+							<div style="flex:1;min-width:0">
+								<div style="font-weight:600;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ player?.name ?? '—' }}</div>
+								<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#7a818c;margin-top:1px">{{ dashboardStore.levelTitle }} · Lvl {{ player?.level ?? 1 }}</div>
+							</div>
+						</div>
+						<div style="margin-top:11px;display:flex;align-items:center;gap:8px">
+							<div style="flex:1;height:5px;border-radius:3px;background:#3a414b;overflow:hidden">
+								<div style="height:100%;background:var(--accent)" :style="{ width: dashboardStore.xpProgress.percent + '%' }"></div>
+							</div>
+							<span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#7a818c">{{ player?.xp ?? 0 }} XP</span>
+						</div>
+					</div>
+				</div>
+				<button style="margin:6px 12px 14px;display:flex;align-items:center;gap:10px;padding:10px 13px;border:none;background:transparent;color:#7a818c;font-family:inherit;font-size:13px;cursor:pointer;border-radius:10px" @click="closeNui">
+					<iconify-icon icon="tabler:logout" width="18"></iconify-icon> Exit
+				</button>
+			</aside>
+
+			<!-- MAIN -->
+			<main class="px-main" style="flex:1;display:flex;flex-direction:column;min-width:0;background:#e7e9ec">
+				<header style="height:62px;flex-shrink:0;display:flex;align-items:center;gap:14px;padding:0 22px;background:#fff;border-bottom:1px solid #dfe2e6">
+					<div style="display:flex;align-items:center;gap:10px;height:38px;width:380px;max-width:42%;padding:9px 14px;border-radius:11px;background:#f1f2f4;border:1px solid #e4e6e9">
+						<iconify-icon icon="tabler:search" width="17" style="color:#9aa1ab"></iconify-icon>
+						<input placeholder="Search missions or vehicles…" style="flex:1;border:none;background:transparent;outline:none;font-size:13px;color:#1b1f24;font-family:inherit" />
+					</div>
+					<div style="flex:1"></div>
+					<div style="display:flex;align-items:center;gap:7px;padding:6px 8px 6px 12px;border-radius:20px;background:#f1f2f4;border:1px solid #e4e6e9">
+						<iconify-icon icon="tabler:bolt" width="15" style="color:var(--accent)"></iconify-icon>
+						<span style="font-size:12px;color:#6b7280;font-weight:500">Skill points</span>
+						<span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:#1b1f24;background:#fff;border:1px solid #e4e6e9;border-radius:10px;padding:1px 8px">{{ player?.skill_points ?? 0 }}</span>
+					</div>
+					<div style="text-align:right;line-height:1.15;padding:0 4px">
+						<div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:#1b1f24">{{ time }}</div>
+						<div style="font-size:10px;color:#9aa1ab">{{ date }}</div>
+					</div>
+					<button style="width:36px;height:36px;border-radius:10px;border:1px solid #e4e6e9;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280" @click="closeNui"><iconify-icon icon="tabler:x" width="18"></iconify-icon></button>
+				</header>
+
+				<div style="flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px">
+					<div
+						v-if="dashboardStore.activeDelivery"
+						style="display:flex;align-items:center;justify-content:space-between;gap:16px;border-radius:14px;background:#fff;border:1px solid #fecaca;padding:14px 18px"
+					>
+						<div style="display:flex;align-items:center;gap:12px">
+							<div style="width:36px;height:36px;border-radius:10px;background:rgba(239,68,68,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+								<iconify-icon icon="tabler:truck" width="18" style="color:#dc2626"></iconify-icon>
+							</div>
+							<div>
+								<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#dc2626">Active delivery</div>
+								<div style="font-size:14px;font-weight:700;color:#1b1f24;margin-top:2px">{{ dashboardStore.activeDelivery.missionName }}</div>
+							</div>
+						</div>
+						<button
+							type="button"
+							:disabled="abortingDelivery"
+							style="background:#dc2626;color:#fff;border:none;border-radius:10px;padding:9px 16px;font-family:inherit;font-weight:600;font-size:12px;cursor:pointer"
+							:style="{ opacity: abortingDelivery ? 0.5 : 1, cursor: abortingDelivery ? 'not-allowed' : 'pointer' }"
+							@click="abortDelivery"
+						>
+							Abort delivery
+						</button>
+					</div>
+
+					<component :is="activeTabComponent" />
+				</div>
+			</main>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, getCurrentInstance, onMounted, onUnmounted, ref } from "vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { AbortDeliveryResult, TabKey } from "@/types/dashboard";
@@ -65,17 +120,34 @@ import LeaderboardTab from "@/components/dashboard/tabs/LeaderboardTab.vue";
 import SkilltreeTab from "@/components/dashboard/tabs/SkilltreeTab.vue";
 import HistoryTab from "@/components/dashboard/tabs/HistoryTab.vue";
 
+const proxy = getCurrentInstance()!.proxy!;
+const persistantStore = proxy.$persistantStore;
 const dashboardStore = useDashboardStore();
 
-const tabs: { key: TabKey; label: string }[] = [
-	{ key: "overview", label: "Overview" },
-	{ key: "jobs", label: "Available Jobs" },
-	{ key: "map", label: "Map" },
-	{ key: "vehicles", label: "Vehicles" },
-	{ key: "leaderboard", label: "Leaderboard" },
-	{ key: "skilltree", label: "Skilltree" },
-	{ key: "history", label: "History" },
-];
+const player = computed(() => dashboardStore.player);
+const initial = computed(() => (player.value?.name?.[0] ?? "?").toUpperCase());
+
+const now = ref(new Date());
+let timer: ReturnType<typeof setInterval>;
+onMounted(() => { timer = setInterval(() => { now.value = new Date(); }, 1000); });
+onUnmounted(() => clearInterval(timer));
+
+const time = computed(() => now.value.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+const date = computed(() => now.value.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }));
+
+const openJobsCount = computed(() =>
+	(dashboardStore.payload?.missions ?? []).reduce((sum, group) => sum + group.missions.length, 0),
+);
+
+const navItems = computed(() => [
+	{ key: "overview" as TabKey, label: "Dashboard", icon: "tabler:layout-dashboard", badge: "" },
+	{ key: "jobs" as TabKey, label: "Available Jobs", icon: "tabler:package", badge: String(openJobsCount.value) },
+	{ key: "map" as TabKey, label: "Map", icon: "tabler:map", badge: "" },
+	{ key: "vehicles" as TabKey, label: "Vehicles", icon: "tabler:truck", badge: String(dashboardStore.payload?.vehicles.length ?? 0) },
+	{ key: "leaderboard" as TabKey, label: "Leaderboard", icon: "tabler:trophy", badge: "" },
+	{ key: "skilltree" as TabKey, label: "Skilltree", icon: "tabler:bolt", badge: "" },
+	{ key: "history" as TabKey, label: "History", icon: "tabler:history", badge: "" },
+]);
 
 const tabComponents: Record<TabKey, unknown> = {
 	overview: OverviewTab,
@@ -108,4 +180,40 @@ async function abortDelivery() {
 		abortingDelivery.value = false;
 	}
 }
+
+async function closeNui() {
+	try {
+		await persistantStore.closeNui();
+	} catch (error) {
+		console.error("closeNui failed:", error);
+	}
+}
 </script>
+
+<style>
+iconify-icon { display: inline-flex; }
+
+.accent-btn {
+	background: var(--accent);
+	color: #0f2417;
+	border: none;
+	border-radius: 11px;
+	font-family: inherit;
+	font-weight: 700;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	gap: 9px;
+}
+.accent-btn:hover {
+	filter: brightness(0.92);
+}
+.accent-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.px-main ::-webkit-scrollbar { width: 9px; height: 9px; }
+.px-main ::-webkit-scrollbar-thumb { background: #c9cdd3; border-radius: 8px; }
+.px-main ::-webkit-scrollbar-track { background: transparent; }
+</style>
