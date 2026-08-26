@@ -234,21 +234,71 @@ function Vehicles.Store(source, vehicleId, netId)
 
     debug.DebugPrint(("Vehicles.Store: %s stored vehicle %d"):format(player.identifier, vehicleId))
 
+    -- Storing your only deployed vehicle mid on-call breaks the "on-call always implies a
+    -- deployed vehicle" invariant the pager scheduler relies on — OnCall clears itself rather
+    -- than leaving a player on-call with nothing to dispatch a page to.
+    OnCall.HandleVehicleStored(source)
+
     return { ok = true, vehicles = Vehicles.GetOwnedForPlayer(source) }
 end
 
--- Rental billing (Step 7.5). `Vehicles.StartRental`/`StopRental` are the interface
--- Phase 8's mission-accept/complete flow will call; not wired to any real accept flow
--- yet since Phase 8 doesn't exist in this build. Exercised standalone in the meantime
--- via /towjobtestrental (server/commands.lua), same precedent as /towjobtestactive.
-local rentalState = {} -- [source] = { lastCharge, warned5, warned1, deliveryId }
+-- Rental billing (Step 7.5). `standalone` distinguishes an on-call rental (spawned via
+-- OnCall.StartStandaloneRental with no delivery yet, persists across however many paged jobs
+-- the player runs on it) from the older delivery-scoped rental Missions.Accept still spawns
+-- for the Admin "Test mission" bypass path — only the latter should be torn down the instant
+-- its one delivery ends; see Vehicles.OnDeliveryEnded below.
+local rentalState = {} -- [source] = { lastCharge, warned5, warned1, deliveryId, standalone }
 
-function Vehicles.StartRental(source, deliveryId)
-    rentalState[source] = { lastCharge = os.time(), warned5 = false, warned1 = false, deliveryId = deliveryId }
+function Vehicles.StartRental(source, deliveryId, standalone)
+    rentalState[source] = { lastCharge = os.time(), warned5 = false, warned1 = false, deliveryId = deliveryId, standalone = standalone or false }
 end
 
 function Vehicles.StopRental(source)
     rentalState[source] = nil
+end
+
+function Vehicles.IsRentalActive(source)
+    return rentalState[source] ~= nil
+end
+
+-- Called once OnCall.AcceptOffer's delivery is created, so a missed payment mid-delivery
+-- still routes through Missions.Fail (deliveryId now set) instead of the no-delivery
+-- repossession path.
+function Vehicles.SetRentalDeliveryId(source, deliveryId)
+    local state = rentalState[source]
+    if state then state.deliveryId = deliveryId end
+end
+
+-- Called from Missions.Complete/Fail/Abort instead of a blanket StopRental — a standalone
+-- on-call rental should survive the delivery it was just used for (the player keeps driving
+-- the same truck, on-call resumes waiting for the next page); only the delivery-scoped
+-- admin-test-run rental gets fully torn down here.
+function Vehicles.OnDeliveryEnded(source)
+    local state = rentalState[source]
+    if not state then return end
+
+    if state.standalone then
+        state.deliveryId = nil
+    else
+        Vehicles.StopRental(source)
+    end
+end
+
+-- Explicit "give the rental back" action (Vehicles tab) — only valid for a standalone
+-- rental with no delivery currently riding on it.
+function Vehicles.ReturnRental(source)
+    local state = rentalState[source]
+    if not state or not state.standalone then
+        return { ok = false, reason = "no_active_rental" }
+    end
+    if state.deliveryId then
+        return { ok = false, reason = "delivery_in_progress" }
+    end
+
+    rentalState[source] = nil
+    TriggerClientEvent("polarix_towjob:repossessRental", source)
+
+    return { ok = true }
 end
 
 CreateThread(function()
@@ -275,12 +325,20 @@ CreateThread(function()
                     TriggerClientEvent("polarix_towjob:notify", source, "Rental payment charged.", "info")
                 else
                     -- Same auto-fail path as vehicle destruction/timed expiry (design-decisions
-                    -- table: "Missed rental payment → same auto-fail path") — Missions.Fail
-                    -- clears activeDeliveryState and calls Vehicles.StopRental itself, which nils
-                    -- this very `rentalState[source]` entry; safe to do mid-`pairs()` iteration
-                    -- since Lua only forbids adding new keys during traversal, not clearing existing ones.
+                    -- table: "Missed rental payment → same auto-fail path") when a delivery is
+                    -- actually riding on this rental. A standalone on-call rental with no
+                    -- deliveryId (not currently on a paged job) has nothing for Missions.Fail to
+                    -- fail — just clear on-call and the rental state directly instead.
+                    -- Cleared before either branch runs (not after) so mid-`pairs()` iteration is
+                    -- safe and neither branch can double-clear a nil'd-out entry.
                     TriggerClientEvent("polarix_towjob:repossessRental", source)
-                    Missions.Fail(source, state.deliveryId, "rental_repossessed")
+                    local deliveryId = state.deliveryId
+                    rentalState[source] = nil
+                    if deliveryId then
+                        Missions.Fail(source, deliveryId, "rental_repossessed")
+                    else
+                        OnCall.HandleRentalRepossessed(source)
+                    end
                 end
             elseif remaining <= warnAt1 and not state.warned1 then
                 state.warned1 = true
