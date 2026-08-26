@@ -19,10 +19,10 @@ function Missions.SeedIfEmpty()
     debug.DebugPrint(("Missions.SeedIfEmpty: seeded %d mission(s)"):format(#seeds))
 end
 
--- Grouped by area for the Available Jobs tab; sorting (reward/xp/distance/difficulty)
--- happens client-side (Step 5.4), this only filters by level + unlocked areas and
--- attaches a server-computed distance so the client can't spoof its own position.
-function Missions.GetAvailableForPlayer(source)
+-- Level/area-eligibility filter shared by the pager's random pick below and (inline)
+-- Missions.Accept's own gate check — replaces the old Available Jobs list query
+-- (Missions.GetAvailableForPlayer) now that jobs are paged rather than browsed.
+local function getEligibleMissionRows(source)
     local player = Player.GetData(source)
     if not player then return {} end
 
@@ -31,41 +31,65 @@ function Missions.GetAvailableForPlayer(source)
         unlockedAreaIds[id] = true
     end
 
-    local playerCoords = GetEntityCoords(GetPlayerPed(source))
-
-    local groups = {}
-    local groupIndex = {}
-
     local levelReduction = Skills.GetLevelRequirementReduction(source)
+    local eligible = {}
 
     for _, row in ipairs(DB.GetActiveMissionsWithAreas() or {}) do
         local effectiveLevelRequired = math.max(1, row.level_required - levelReduction)
         if effectiveLevelRequired <= player.level and unlockedAreaIds[row.area_id] then
-            local group = groupIndex[row.area_id]
-            if not group then
-                group = { area_id = row.area_id, area_name = row.area_name, region = row.area_region, missions = {} }
-                groupIndex[row.area_id] = group
-                groups[#groups + 1] = group
-            end
-
-            local searchCenter = vector3(row.search_center_x, row.search_center_y, row.search_center_z)
-
-            group.missions[#group.missions + 1] = {
-                id = row.id,
-                name = row.name,
-                vehicle_label = row.vehicle_label,
-                vehicle_colors = row.vehicle_colors and json.decode(row.vehicle_colors) or nil,
-                reward_base = row.reward_base,
-                xp_base = row.xp_base,
-                difficulty = row.difficulty,
-                time_limit_minutes = row.time_limit_minutes,
-                level_required = row.level_required,
-                distance = math.floor(#(playerCoords - searchCenter) + 0.5),
-            }
+            eligible[#eligible + 1] = row
         end
     end
 
-    return groups
+    return eligible
+end
+
+-- Called by the on-call scheduler (server/modules/oncall.lua) to pick one job to page.
+-- Deliberately no `distance`/exact coords here — the old Available Jobs payload already
+-- didn't send raw search/dropoff coords, and a pager offer sends even less (no client-side
+-- distance calc to spoof-check against, since there's no list to sort by it anymore).
+function Missions.PickRandomForPager(source)
+    local eligible = getEligibleMissionRows(source)
+    if #eligible == 0 then return nil end
+
+    local row = eligible[math.random(1, #eligible)]
+
+    return {
+        id = row.id,
+        name = row.name,
+        vehicle_label = row.vehicle_label,
+        difficulty = row.difficulty,
+        reward_base = row.reward_base,
+        xp_base = row.xp_base,
+        time_limit_minutes = row.time_limit_minutes,
+        level_required = row.level_required,
+        area_name = row.area_name,
+    }
+end
+
+-- Shared by Missions.Accept and Missions.AcceptViaOnCall — the client-safe mission payload
+-- both hand off to the find/attach/tow/deliver loop is identical either way.
+local function buildMissionPayload(row)
+    return {
+        id = row.id,
+        name = row.name,
+        vehicle_model = row.vehicle_model,
+        vehicle_label = row.vehicle_label,
+        vehicle_colors = row.vehicle_colors and json.decode(row.vehicle_colors) or nil,
+        search_center = { x = row.search_center_x, y = row.search_center_y, z = row.search_center_z },
+        search_radius = row.search_radius,
+        dropoff = { x = row.dropoff_x, y = row.dropoff_y, z = row.dropoff_z, heading = row.dropoff_heading },
+        dropoff_width = row.dropoff_width,
+        dropoff_length = row.dropoff_length,
+        -- Sent down so the client's live placement preview (Step 10.2) stays in sync with the
+        -- server's own authoritative tolerance (Missions.Complete) without requiring server-only
+        -- config from client code (client_scripts can't require() a server_scripts-only file).
+        -- Reads through Settings so a Phase 13 admin edit is reflected on the next accept.
+        dropoff_heading_tolerance = Settings.GetDeliveryHeadingTolerance(),
+        reward_base = row.reward_base,
+        xp_base = row.xp_base,
+        time_limit_minutes = row.time_limit_minutes,
+    }
 end
 
 -- Tracks, per source, everything about the delivery that's currently active for them:
@@ -178,8 +202,9 @@ function Missions.Fail(source, deliveryId, reason)
     if not state or state.deliveryId ~= deliveryId then return end
 
     DB.FailDelivery(deliveryId)
-    Vehicles.StopRental(source)
+    Vehicles.OnDeliveryEnded(source)
     activeDeliveryState[source] = nil
+    OnCall.HandleDeliveryEnded(source)
 
     Player.RecordDeliveryOutcome(source, "failed")
 
@@ -216,7 +241,10 @@ Framework.OnPlayerUnload(function(source)
     activeDeliveryState[source] = nil
 end)
 
--- Step 8.1: validates and starts a delivery. Vehicle assignment follows the
+-- Step 8.1: validates and starts a delivery. No longer reachable from normal play (jobs are
+-- paged, not accepted from a list — see Missions.AcceptViaOnCall) — kept solely as the
+-- vehicle-provisioning path for the Phase 13 admin "Test mission" button, which needs to work
+-- regardless of the admin's own owned/deployed-vehicle state. Vehicle assignment follows the
 -- ownership rules from Phase 7's design-decision table:
 --   0 owned            -> rental auto-used
 --   1 owned (stored)    -> that vehicle auto-parked-out and spawned
@@ -228,8 +256,7 @@ end)
 -- There's no "reuse the already-deployed entity" path since the client has no
 -- guarantee that entity still exists — reject with `no_stored_vehicle` and let the
 -- player store it via the parking zone first, same as any other stuck state.
--- `bypassGates` is never client-controlled — the public polarix_towjob:acceptMission
--- callback always calls this with it omitted; only AdminMissions.TestRun (Phase 13, which
+-- `bypassGates` is never client-controlled — only AdminMissions.TestRun (Phase 13, which
 -- re-checks Framework.IsAdmin itself) passes true, to skip the mission-availability gates
 -- (level/area-lock) for QA purposes without touching the player-state checks below them.
 function Missions.Accept(source, missionId, bypassGates)
@@ -273,26 +300,7 @@ function Missions.Accept(source, missionId, bypassGates)
         return { ok = false, reason = "no_stored_vehicle" }
     end
 
-    local mission = {
-        id = row.id,
-        name = row.name,
-        vehicle_model = row.vehicle_model,
-        vehicle_label = row.vehicle_label,
-        vehicle_colors = row.vehicle_colors and json.decode(row.vehicle_colors) or nil,
-        search_center = { x = row.search_center_x, y = row.search_center_y, z = row.search_center_z },
-        search_radius = row.search_radius,
-        dropoff = { x = row.dropoff_x, y = row.dropoff_y, z = row.dropoff_z, heading = row.dropoff_heading },
-        dropoff_width = row.dropoff_width,
-        dropoff_length = row.dropoff_length,
-        -- Sent down so the client's live placement preview (Step 10.2) stays in sync with the
-        -- server's own authoritative tolerance (Missions.Complete) without requiring server-only
-        -- config from client code (client_scripts can't require() a server_scripts-only file).
-        -- Reads through Settings so a Phase 13 admin edit is reflected on the next accept.
-        dropoff_heading_tolerance = Settings.GetDeliveryHeadingTolerance(),
-        reward_base = row.reward_base,
-        xp_base = row.xp_base,
-        time_limit_minutes = row.time_limit_minutes,
-    }
+    local mission = buildMissionPayload(row)
 
     local usedRental = #owned == 0
     local deliveryId = DB.CreateDelivery(missionId, player.identifier, usedRental)
@@ -324,6 +332,53 @@ function Missions.Accept(source, missionId, bypassGates)
     debug.DebugPrint(("Missions.Accept: %s accepted mission %s (delivery %d)"):format(player.identifier, missionId, deliveryId))
 
     return response
+end
+
+-- On-call pager's accept path (server/modules/oncall.lua's OnCall.AcceptOffer is the only
+-- caller). Deliberately doesn't share Missions.Accept's body: on-call's own precondition is
+-- that a vehicle (owned or rental) is *already* deployed, so unlike Accept there's no
+-- rental-spawn / auto-park-out / needsParkOut branching here — the client just starts the
+-- find/attach loop against the truck the player is already driving around.
+function Missions.AcceptViaOnCall(source, missionId, usedRental)
+    local player = Player.GetData(source)
+    if not player then return { ok = false, reason = "no_player" } end
+
+    if DB.GetActiveDelivery(player.identifier) then
+        return { ok = false, reason = "active_delivery_exists" }
+    end
+
+    local row = DB.GetMission(missionId)
+    if not row then
+        return { ok = false, reason = "mission_not_found" }
+    end
+
+    local effectiveLevelRequired = math.max(1, row.level_required - Skills.GetLevelRequirementReduction(source))
+    if effectiveLevelRequired > player.level then
+        return { ok = false, reason = "level_too_low" }
+    end
+
+    local area = DB.GetArea(row.area_id)
+    if not area then
+        return { ok = false, reason = "mission_not_found" }
+    end
+
+    local unlockedAreaIds = {}
+    for _, id in ipairs(Player.GetUnlockedAreaIds(source)) do
+        unlockedAreaIds[id] = true
+    end
+    if not unlockedAreaIds[row.area_id] then
+        return { ok = false, reason = "area_locked" }
+    end
+
+    local mission = buildMissionPayload(row)
+    local deliveryId = DB.CreateDelivery(missionId, player.identifier, usedRental)
+
+    local deadlineAt = mission.time_limit_minutes and (os.time() + mission.time_limit_minutes * 60) or nil
+    activeDeliveryState[source] = { deliveryId = deliveryId, deadlineAt = deadlineAt }
+
+    debug.DebugPrint(("Missions.AcceptViaOnCall: %s accepted paged mission %s (delivery %d)"):format(player.identifier, missionId, deliveryId))
+
+    return { ok = true, deliveryId = deliveryId, mission = mission, deadlineAt = deadlineAt }
 end
 
 -- Used by polarix_towjob:openDashboard so the Dashboard can show an "active delivery"
@@ -429,8 +484,9 @@ function Missions.Complete(source, deliveryId)
     Framework.AddMoney(source, rewardPaid)
 
     DB.CompleteDelivery(deliveryId, rewardPaid, xpPaid, damagePenalty)
-    Vehicles.StopRental(source)
+    Vehicles.OnDeliveryEnded(source)
     activeDeliveryState[source] = nil
+    OnCall.HandleDeliveryEnded(source)
 
     Player.RecordDeliveryOutcome(source, "completed", rewardPaid)
     Player.AddXP(source, xpPaid)
@@ -459,8 +515,9 @@ function Missions.Abort(source, deliveryId)
     end
 
     DB.AbortDelivery(deliveryId)
-    Vehicles.StopRental(source)
+    Vehicles.OnDeliveryEnded(source)
     activeDeliveryState[source] = nil
+    OnCall.HandleDeliveryEnded(source)
 
     Player.RecordDeliveryOutcome(source, "aborted")
 

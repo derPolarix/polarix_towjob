@@ -159,7 +159,8 @@ function DB.SaveVehicleHealth(vehicleId, bodyHealth, engineHealth)
     MySQL.update.await("UPDATE " .. server.Tables.vehicles .. " SET body_health = ?, engine_health = ? WHERE id = ?", { bodyHealth, engineHealth, vehicleId })
 end
 
--- Joins area name/region in for Missions.GetAvailableForPlayer's grouped-by-area output.
+-- Joins area name/region in for the on-call pager's eligibility filter (Missions.lua's
+-- getEligibleMissionRows/PickRandomForPager).
 function DB.GetActiveMissionsWithAreas()
     return MySQL.query.await([[
         SELECT m.*, a.name AS area_name, a.region AS area_region
