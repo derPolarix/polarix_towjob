@@ -34,12 +34,16 @@ export interface AdminMission {
   delivery_count: number;
 }
 
+export interface AdminAreaPoint {
+  x: number;
+  y: number;
+}
+
 export interface AdminArea {
   id: string;
   name: string;
   region: string;
-  map_x: number;
-  map_y: number;
+  points: AdminAreaPoint[];
   unlock_cost: number;
   level_required: number;
   is_default: boolean;

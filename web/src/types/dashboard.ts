@@ -34,12 +34,16 @@ export interface PagerOffer {
   expiresAt: number;
 }
 
+export interface MapAreaPoint {
+  x: number;
+  y: number;
+}
+
 export interface MapArea {
   id: string;
   name: string;
   region: string;
-  map_x: number;
-  map_y: number;
+  points: MapAreaPoint[];
   unlock_cost: number;
   level_required: number;
   is_default: boolean;
