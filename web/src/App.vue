@@ -11,6 +11,12 @@
 			<ActiveDeliveryUi />
 		</div>
 
+		<!-- On-call pager + rental prompt: both must interrupt gameplay regardless of
+		     whether the Dashboard is open, so they're mounted unconditionally like the
+		     HUD above rather than living inside a route. -->
+		<PagerUi />
+		<RentalPromptModal />
+
 		<main class="w-full h-full" v-show="persistantStore.IsNuiOpen">
 			<router-view />
 		</main>
@@ -20,11 +26,13 @@
 <script setup lang="ts">
 import { getCurrentInstance, onMounted } from "vue";
 import type { NuiMessage } from "./type";
-import type { DashboardPayload } from "@/types/dashboard";
+import type { DashboardPayload, PagerOffer } from "@/types/dashboard";
 import type { ActiveDeliveryUpdate } from "@/types/delivery";
 import { isDev } from "./main";
 import Sidebar from "@/components/app/Sidebar.vue";
 import ActiveDeliveryUi from "@/views/ActiveDeliveryUi.vue";
+import PagerUi from "@/views/PagerUi.vue";
+import RentalPromptModal from "@/components/app/RentalPromptModal.vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { useActiveDeliveryStore } from "@/stores/activeDeliveryStore";
 
@@ -55,6 +63,15 @@ const handleMessage = (event: MessageEvent) => {
 			persistantStore.IsNuiOpen = true;
 			router.push("/admin");
 			break;
+		case "onCallStateUpdate":
+			dashboardStore.setOnCall(Boolean((raw.data as { onCall?: boolean })?.onCall));
+			break;
+		case "pagerOffer":
+			dashboardStore.setPagerOffer(raw.data as PagerOffer);
+			break;
+		case "pagerOfferCleared":
+			dashboardStore.clearPagerOffer();
+			break;
 		default:
 			break;
 	}
@@ -73,5 +90,11 @@ const handleEscape = async (event: KeyboardEvent) => {
 onMounted(() => {
 	window.addEventListener("message", handleMessage);
 	window.addEventListener("keydown", handleEscape);
+
+	if (isDev) {
+		import("@/dev/sampleData").then(({ sampleDashboardPayload }) => {
+			dashboardStore.setPayload(sampleDashboardPayload);
+		});
+	}
 });
 </script>
