@@ -42,6 +42,21 @@
 					<input v-model.number="form.unlock_cost" type="number" min="0" class="admin-input" />
 				</label>
 
+				<label class="admin-label">
+					Reward multiplier
+					<input v-model.number="form.reward_multiplier" type="number" min="0" max="10" step="0.1" class="admin-input" />
+				</label>
+
+				<label class="admin-label">
+					XP multiplier
+					<input v-model.number="form.xp_multiplier" type="number" min="0" max="10" step="0.1" class="admin-input" />
+				</label>
+
+				<label style="grid-column:span 2" class="admin-label">
+					Note (shown to players, optional)
+					<input v-model="form.note" type="text" maxlength="140" class="admin-input" />
+				</label>
+
 				<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:#3c424b;margin-top:18px">
 					<input v-model="form.is_default" type="checkbox" />
 					Default area (free, pre-unlocked for everyone)
@@ -121,6 +136,9 @@ const form = reactive({
 	points: [] as { x: number; y: number }[],
 	unlock_cost: 0,
 	level_required: 1,
+	reward_multiplier: 1.0,
+	xp_multiplier: 1.0,
+	note: "",
 	is_default: false,
 });
 
@@ -170,6 +188,9 @@ function startNew() {
 	form.region = "";
 	form.unlock_cost = 0;
 	form.level_required = 1;
+	form.reward_multiplier = 1.0;
+	form.xp_multiplier = 1.0;
+	form.note = "";
 	form.is_default = false;
 	form.points = [];
 	renderShape();
@@ -183,6 +204,9 @@ function selectArea(area: AdminArea) {
 	form.region = area.region;
 	form.unlock_cost = area.unlock_cost;
 	form.level_required = area.level_required;
+	form.reward_multiplier = area.reward_multiplier;
+	form.xp_multiplier = area.xp_multiplier;
+	form.note = area.note ?? "";
 	form.is_default = area.is_default;
 	form.points = area.points.map((point) => ({ x: point.x, y: point.y }));
 	renderShape();
@@ -213,6 +237,9 @@ async function save() {
 			points: form.points,
 			unlock_cost: form.unlock_cost,
 			level_required: form.level_required,
+			reward_multiplier: form.reward_multiplier,
+			xp_multiplier: form.xp_multiplier,
+			note: form.note.trim() || null,
 			is_default: form.is_default,
 		};
 

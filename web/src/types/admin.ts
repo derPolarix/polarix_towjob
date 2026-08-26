@@ -46,6 +46,9 @@ export interface AdminArea {
   points: AdminAreaPoint[];
   unlock_cost: number;
   level_required: number;
+  reward_multiplier: number;
+  xp_multiplier: number;
+  note: string | null;
   is_default: boolean;
   is_active: boolean;
 }
