@@ -1,15 +1,18 @@
 import { defineStore } from "pinia";
-import type { DashboardPayload, OwnedVehicle, PlayerData, TabKey } from "@/types/dashboard";
+import type { DashboardPayload, OwnedVehicle, PagerOffer, PlayerData, TabKey } from "@/types/dashboard";
 
 type DashboardState = {
 	payload: DashboardPayload | null;
 	activeTab: TabKey;
+	pagerOffer: PagerOffer | null;
+	rentalPromptOpen: boolean;
 };
 type DashboardGetters = {
 	player: (state: DashboardState) => DashboardPayload["player"] | null;
 	levelTitle: (state: DashboardState) => string;
 	xpProgress: (state: DashboardState) => { current: number; span: number; percent: number };
 	activeDelivery: (state: DashboardState) => DashboardPayload["activeDelivery"];
+	onCall: (state: DashboardState) => boolean;
 };
 type DashboardActions = {
 	setPayload(payload: DashboardPayload): void;
@@ -18,6 +21,12 @@ type DashboardActions = {
 	setVehicles(vehicles: OwnedVehicle[]): void;
 	setPlayer(player: PlayerData): void;
 	clearActiveDelivery(): void;
+	setOnCall(onCall: boolean): void;
+	setRentalActive(active: boolean): void;
+	setPagerOffer(offer: PagerOffer): void;
+	clearPagerOffer(): void;
+	openRentalPrompt(): void;
+	closeRentalPrompt(): void;
 };
 
 export const useDashboardStore = defineStore<
@@ -29,9 +38,12 @@ export const useDashboardStore = defineStore<
 	state: (): DashboardState => ({
 		payload: null,
 		activeTab: "overview",
+		pagerOffer: null,
+		rentalPromptOpen: false,
 	}),
 	getters: {
 		player: (state) => state.payload?.player ?? null,
+		onCall: (state) => state.payload?.onCall ?? false,
 		levelTitle: (state) => {
 			const level = state.payload?.player.level ?? 1;
 			return state.payload?.levelTitles[level - 1] ?? "";
@@ -80,6 +92,26 @@ export const useDashboardStore = defineStore<
 		clearActiveDelivery() {
 			if (!this.payload) return;
 			this.payload.activeDelivery = null;
+		},
+		setOnCall(onCall) {
+			if (!this.payload) return;
+			this.payload.onCall = onCall;
+		},
+		setRentalActive(active) {
+			if (!this.payload) return;
+			this.payload.rentalActive = active;
+		},
+		setPagerOffer(offer) {
+			this.pagerOffer = offer;
+		},
+		clearPagerOffer() {
+			this.pagerOffer = null;
+		},
+		openRentalPrompt() {
+			this.rentalPromptOpen = true;
+		},
+		closeRentalPrompt() {
+			this.rentalPromptOpen = false;
 		},
 	},
 });

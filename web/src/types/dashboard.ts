@@ -18,24 +18,20 @@ export interface VehicleColors {
 
 export type MissionDifficulty = "easy" | "medium" | "hard";
 
-export interface Mission {
+/** Sent when the on-call pager pings with a randomly-picked job (server/modules/oncall.lua).
+ * No `vehicle_colors`/exact coords — same "don't show exact point" rule the old Available
+ * Jobs list followed, now enforced by construction since there's no longer a browsable list. */
+export interface PagerOffer {
   id: string;
   name: string;
   vehicle_label: string;
-  vehicle_colors: VehicleColors | null;
+  difficulty: MissionDifficulty;
   reward_base: number;
   xp_base: number;
-  difficulty: MissionDifficulty;
   time_limit_minutes: number | null;
   level_required: number;
-  distance: number;
-}
-
-export interface MissionAreaGroup {
-  area_id: string;
   area_name: string;
-  region: string;
-  missions: Mission[];
+  expiresAt: number;
 }
 
 export interface MapArea {
@@ -89,13 +85,35 @@ export interface VehicleActionResult {
   missionStarted?: boolean;
 }
 
-export interface AcceptMissionResult {
+export interface ToggleOnCallResult {
+  ok: boolean;
+  reason?: string;
+  onCall?: boolean;
+}
+
+/** Response to the "Get rental truck" confirm — used only for a zero-owned-vehicle
+ * player going on-call for the first time (see OverviewTab's rental-prompt flow). */
+export interface StartStandaloneRentalResult {
+  ok: boolean;
+  reason?: string;
+  onCall?: boolean;
+}
+
+export interface ReturnRentalResult {
+  ok: boolean;
+  reason?: string;
+}
+
+export interface AcceptPageResult {
   ok: boolean;
   reason?: string;
   deliveryId?: number;
-  /** True when the player owns 2+ tow trucks — the Dashboard must stay open until
-   * they Park Out one themselves; the client resumes the delivery once that happens. */
-  needsParkOut?: boolean;
+  deadlineAt?: number | null;
+}
+
+export interface DeclinePageResult {
+  ok: boolean;
+  reason?: string;
 }
 
 export interface SkillEffects {
@@ -179,19 +197,22 @@ export interface DashboardPayload {
   levelTitles: string[];
   xpThresholds: number[];
   unlockedAreaIds: string[];
-  missions: MissionAreaGroup[];
   areas: MapArea[];
   vehicles: OwnedVehicle[];
   vehicleTiers: VehicleTier[];
   repairCostPerHealthPoint: number;
   activeDelivery: ActiveDeliverySummary | null;
   skillBranches: SkillBranch[];
+  onCall: boolean;
+  rentalActive: boolean;
+  rentalPricePerCharge: number;
+  rentalIntervalMinutes: number;
+  rentalTruckLabel: string;
 }
 
 export type TabKey =
   | "overview"
-  | "jobs"
-  | "map"
+  | "areas"
   | "vehicles"
   | "leaderboard"
   | "skilltree"
