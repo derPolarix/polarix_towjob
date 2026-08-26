@@ -57,15 +57,15 @@ import type { MapArea, UnlockAreaResult } from "@/types/dashboard";
 const dashboardStore = useDashboardStore();
 
 // Same gta_map.jpg asset + CRS.Simple setup as ../polarix_truckerjob's OrderRouteMap.vue.
-// Unlike that component, `map_x`/`map_y` here are already stored in Leaflet coord-space
+// Unlike that component, `points` here are already stored in Leaflet coord-space
 // (see polarix_towjob_areas schema comment) — no GTA-world-to-pixel conversion needed,
-// the same pin position is reused verbatim on read as was captured on write (Phase 13).
+// the same polygon vertices are reused verbatim on read as were captured on write (Phase 13).
 const IMG_WIDTH = 4096;
 const IMG_HEIGHT = 6144;
 
 const mapContainer = ref<HTMLDivElement>();
 let map: L.Map | null = null;
-let pinLayer: L.LayerGroup | null = null;
+let areaLayer: L.LayerGroup | null = null;
 
 const areas = ref<MapArea[]>(dashboardStore.payload?.areas ?? []);
 const selectedArea = ref<MapArea | null>(null);
@@ -80,27 +80,26 @@ const reasonMessages: Record<string, string> = {
 	no_player: "Player data unavailable, try reopening the Dashboard.",
 };
 
-function areaLatLng(area: MapArea): L.LatLngExpression {
-	return [area.map_y, area.map_x];
+function areaLatLngs(area: MapArea): L.LatLngExpression[] {
+	return area.points.map((point) => [point.y, point.x]);
 }
 
-function pinIcon(unlocked: boolean): L.DivIcon {
-	return L.divIcon({
-		className: "area-marker",
-		html: `<div class="area-marker-pin" style="background:${unlocked ? "#22c55e" : "#9aa1ab"};"></div>`,
-		iconSize: [20, 20],
-		iconAnchor: [10, 10],
-	});
-}
-
-function renderPins() {
-	if (!map || !pinLayer) return;
-	pinLayer.clearLayers();
+function renderAreas() {
+	if (!map || !areaLayer) return;
+	areaLayer.clearLayers();
 
 	for (const area of areas.value) {
-		const marker = L.marker(areaLatLng(area), { icon: pinIcon(area.unlocked) }).addTo(pinLayer);
-		marker.bindTooltip(`${area.name} (${area.region})`, { direction: "top", offset: [0, -12] });
-		marker.on("click", () => {
+		if (area.points.length < 3) continue;
+
+		const color = area.unlocked ? "#22c55e" : "#9aa1ab";
+		const polygon = L.polygon(areaLatLngs(area), {
+			color,
+			weight: 2,
+			fillColor: color,
+			fillOpacity: area.unlocked ? 0.25 : 0.15,
+		}).addTo(areaLayer);
+		polygon.bindTooltip(`${area.name} (${area.region})`, { direction: "center" });
+		polygon.on("click", () => {
 			unlockError.value = "";
 			selectedArea.value = area.unlocked ? null : area;
 		});
@@ -121,7 +120,7 @@ async function confirmUnlock() {
 			const area = areas.value.find((a) => a.id === unlockedId);
 			if (area) area.unlocked = true;
 			dashboardStore.addUnlockedArea(unlockedId);
-			renderPins();
+			renderAreas();
 			selectedArea.value = null;
 		} else {
 			unlockError.value = reasonMessages[result?.reason ?? ""] ?? "Unlock failed.";
@@ -148,20 +147,20 @@ onMounted(async () => {
 			[IMG_HEIGHT, IMG_WIDTH],
 		]).addTo(map);
 
-		pinLayer = L.layerGroup().addTo(map);
+		areaLayer = L.layerGroup().addTo(map);
 		map.fitBounds([
 			[0, 0],
 			[IMG_HEIGHT, IMG_WIDTH],
 		]);
 
-		renderPins();
+		renderAreas();
 	}
 
 	try {
 		const fresh = await nuiCallbackAsync<MapArea[]>("getMapAreas");
 		if (Array.isArray(fresh)) {
 			areas.value = fresh;
-			renderPins();
+			renderAreas();
 		}
 	} catch (error) {
 		console.error("getMapAreas failed:", error);
@@ -172,25 +171,12 @@ onBeforeUnmount(() => {
 	if (map) {
 		map.remove();
 		map = null;
-		pinLayer = null;
+		areaLayer = null;
 	}
 });
 </script>
 
 <style>
-.area-marker {
-	background: transparent !important;
-	border: none !important;
-}
-
-.area-marker-pin {
-	width: 16px;
-	height: 16px;
-	border-radius: 50%;
-	border: 2px solid rgba(255, 255, 255, 0.85);
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-}
-
 .leaflet-container {
 	background: #1c1917 !important;
 }

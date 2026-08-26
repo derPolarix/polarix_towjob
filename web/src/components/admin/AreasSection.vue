@@ -49,8 +49,18 @@
 			</div>
 
 			<div style="background:#fff;border:1px solid #dfe2e6;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
-				<div style="font-size:13px;font-weight:700;color:#1b1f24">
-					Map pin — click the map to set this area's position ({{ form.map_x.toFixed(1) }}, {{ form.map_y.toFixed(1) }})
+				<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+					<div style="font-size:13px;font-weight:700;color:#1b1f24">
+						Area shape — click the map to add vertices ({{ form.points.length }} point{{ form.points.length === 1 ? "" : "s" }}, min 3)
+					</div>
+					<div style="display:flex;gap:6px">
+						<button type="button" style="border-radius:8px;background:#fff;border:1px solid #dfe2e6;color:#3c424b;font-family:inherit;font-weight:600;font-size:12px;padding:6px 10px;cursor:pointer" :disabled="form.points.length === 0" @click="undoPoint">
+							Undo point
+						</button>
+						<button type="button" style="border-radius:8px;background:#fff;border:1px solid #dfe2e6;color:#3c424b;font-family:inherit;font-weight:600;font-size:12px;padding:6px 10px;cursor:pointer" :disabled="form.points.length === 0" @click="clearPoints">
+							Clear
+						</button>
+					</div>
 				</div>
 				<div ref="mapContainer" style="width:100%;height:260px;border-radius:11px;overflow:hidden;border:1px solid #dfe2e6" />
 			</div>
@@ -84,11 +94,11 @@ import { useAdminStore } from "@/stores/adminStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { AdminActionResult, AdminArea } from "@/types/admin";
 
-// Same CRS.Simple/gta_map.jpg setup as ../components/dashboard/tabs/MapTab.vue (Phase 6) —
-// duplicated rather than shared, since MapTab.vue is tightly coupled to the player-facing
+// Same CRS.Simple/gta_map.jpg setup as ../components/dashboard/tabs/AreasTab.vue (Phase 6) —
+// duplicated rather than shared, since AreasTab.vue is tightly coupled to the player-facing
 // unlock flow (its own store/panel logic) and this component additionally needs
-// click-to-place-pin, which MapTab.vue intentionally doesn't have. Same asset, same
-// IMG_WIDTH/IMG_HEIGHT, same map_x/map_y = Leaflet coord-space convention either way.
+// click-to-add-vertex polygon drawing, which AreasTab.vue intentionally doesn't have. Same
+// asset, same IMG_WIDTH/IMG_HEIGHT, same points = Leaflet coord-space convention either way.
 const IMG_WIDTH = 4096;
 const IMG_HEIGHT = 6144;
 
@@ -96,7 +106,8 @@ const adminStore = useAdminStore();
 
 const mapContainer = ref<HTMLDivElement>();
 let map: L.Map | null = null;
-let pinMarker: L.Marker | null = null;
+let areaPolygon: L.Polygon | L.Polyline | null = null;
+let vertexLayer: L.LayerGroup | null = null;
 
 const editingId = ref<string | null>(null);
 const selectedIsActive = ref(true);
@@ -107,24 +118,48 @@ const errorMessage = ref("");
 const form = reactive({
 	name: "",
 	region: "",
-	map_x: 0,
-	map_y: 0,
+	points: [] as { x: number; y: number }[],
 	unlock_cost: 0,
 	level_required: 1,
 	is_default: false,
 });
 
-function placePin(x: number, y: number) {
-	form.map_x = x;
-	form.map_y = y;
-	if (!map) return;
+function renderShape() {
+	if (!map || !vertexLayer) return;
 
-	const latlng: L.LatLngExpression = [y, x];
-	if (pinMarker) {
-		pinMarker.setLatLng(latlng);
-	} else {
-		pinMarker = L.marker(latlng).addTo(map);
+	vertexLayer.clearLayers();
+	if (areaPolygon) {
+		map.removeLayer(areaPolygon);
+		areaPolygon = null;
 	}
+
+	if (form.points.length === 0) return;
+
+	const latlngs: L.LatLngExpression[] = form.points.map((point) => [point.y, point.x]);
+
+	areaPolygon =
+		form.points.length >= 3
+			? L.polygon(latlngs, { color: "#22c55e", weight: 2, fillColor: "#22c55e", fillOpacity: 0.2 }).addTo(map)
+			: L.polyline(latlngs, { color: "#22c55e", weight: 2, dashArray: "4 4" }).addTo(map);
+
+	for (const latlng of latlngs) {
+		L.circleMarker(latlng, { radius: 5, color: "#22c55e", weight: 2, fillColor: "#fff", fillOpacity: 1 }).addTo(vertexLayer);
+	}
+}
+
+function addPoint(x: number, y: number) {
+	form.points.push({ x, y });
+	renderShape();
+}
+
+function undoPoint() {
+	form.points.pop();
+	renderShape();
+}
+
+function clearPoints() {
+	form.points = [];
+	renderShape();
 }
 
 function startNew() {
@@ -136,7 +171,8 @@ function startNew() {
 	form.unlock_cost = 0;
 	form.level_required = 1;
 	form.is_default = false;
-	placePin(IMG_WIDTH / 2, IMG_HEIGHT / 2);
+	form.points = [];
+	renderShape();
 }
 
 function selectArea(area: AdminArea) {
@@ -148,12 +184,22 @@ function selectArea(area: AdminArea) {
 	form.unlock_cost = area.unlock_cost;
 	form.level_required = area.level_required;
 	form.is_default = area.is_default;
-	placePin(area.map_x, area.map_y);
+	form.points = area.points.map((point) => ({ x: point.x, y: point.y }));
+	renderShape();
+	if (map && form.points.length > 0) {
+		const bounds: L.LatLngTuple[] = form.points.map((point) => [point.y, point.x]);
+		map.fitBounds(bounds, { maxZoom: 0, padding: [20, 20] });
+	}
 }
 
 async function save() {
 	if (!form.name.trim()) {
 		errorMessage.value = "Name is required.";
+		return;
+	}
+
+	if (form.points.length < 3) {
+		errorMessage.value = "Area needs at least 3 points.";
 		return;
 	}
 
@@ -164,8 +210,7 @@ async function save() {
 		const payload = {
 			name: form.name,
 			region: form.region,
-			map_x: form.map_x,
-			map_y: form.map_y,
+			points: form.points,
 			unlock_cost: form.unlock_cost,
 			level_required: form.level_required,
 			is_default: form.is_default,
@@ -234,8 +279,10 @@ onMounted(() => {
 			[IMG_HEIGHT, IMG_WIDTH],
 		]);
 
+		vertexLayer = L.layerGroup().addTo(map);
+
 		map.on("click", (event: L.LeafletMouseEvent) => {
-			placePin(event.latlng.lng, event.latlng.lat);
+			addPoint(event.latlng.lng, event.latlng.lat);
 		});
 	}
 
@@ -246,7 +293,8 @@ onBeforeUnmount(() => {
 	if (map) {
 		map.remove();
 		map = null;
-		pinMarker = null;
+		areaPolygon = null;
+		vertexLayer = null;
 	}
 });
 </script>
