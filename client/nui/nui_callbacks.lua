@@ -7,11 +7,6 @@ RegisterNUICallback('closeNui', function(data, cb)
     cb({ ok = true, message = 'NUI closed' })
 end)
 
-RegisterNUICallback('getAvailableJobs', function(data, cb)
-    local jobs = lib.callback.await("polarix_towjob:getAvailableJobs", false)
-    cb(jobs or {})
-end)
-
 RegisterNUICallback('getMapAreas', function(data, cb)
     local areas = lib.callback.await("polarix_towjob:getMapAreas", false)
     cb(areas or {})
@@ -54,8 +49,31 @@ RegisterNUICallback('unlockSkill', function(data, cb)
     cb(result or { ok = false, reason = "no_response" })
 end)
 
-RegisterNUICallback('acceptMission', function(data, cb)
-    local result = Vehicle.AcceptMission(data and data.missionId)
+RegisterNUICallback('toggleOnCall', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:toggleOnCall", false, data and data.onCall)
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
+RegisterNUICallback('startStandaloneRental', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:startStandaloneRental", false)
+    if result and result.ok and result.rental then
+        Garage.SpawnRental(result.rental)
+    end
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
+RegisterNUICallback('returnRental', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:returnRental", false)
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
+RegisterNUICallback('acceptPage', function(data, cb)
+    local result = Vehicle.AcceptPagerOffer()
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
+RegisterNUICallback('declinePage', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:declinePage", false)
     cb(result or { ok = false, reason = "no_response" })
 end)
 

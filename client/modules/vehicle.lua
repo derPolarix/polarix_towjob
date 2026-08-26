@@ -196,10 +196,10 @@ local function beginDelivery(deliveryId, mission, deadlineAt)
     Framework.Notify(("New tow job: %s"):format(mission.name), "info")
 end
 
--- Shared by the normal accept path and the Phase 13 admin "test mission" button — both
--- servers-side calls (polarix_towjob:acceptMission / polarix_towjob:adminTestRunMission)
--- return the exact same response shape, so the client-side spawn orchestration only needs
--- to exist once.
+-- Vehicle-provisioning spawn orchestration for the Phase 13 admin "test mission" button —
+-- the only remaining caller now that a normal accept goes through the pager (see
+-- Vehicle.AcceptPagerOffer below, which never needs rental/park-out spawning since on-call's
+-- own precondition is that a vehicle is already deployed).
 local function handleAcceptResult(result)
     if not result then
         return { ok = false, reason = "no_response" }
@@ -225,9 +225,18 @@ local function handleAcceptResult(result)
     return result
 end
 
-function Vehicle.AcceptMission(missionId)
-    local result = lib.callback.await("polarix_towjob:acceptMission", false, missionId)
-    return handleAcceptResult(result)
+-- On-call pager's accept path — unlike a normal accept, the vehicle is always already
+-- deployed (on-call's own precondition), so the server response never carries
+-- usedRental/vehicle/needsParkOut and handleAcceptResult's spawn branches are skipped
+-- entirely; just start the find/attach loop against the truck already out.
+function Vehicle.AcceptPagerOffer()
+    local result = lib.callback.await("polarix_towjob:acceptPage", false)
+    if not result then return { ok = false, reason = "no_response" } end
+    if not result.ok then return result end
+
+    beginDelivery(result.deliveryId, result.mission, result.deadlineAt)
+
+    return result
 end
 
 -- Phase 13.3: QA test-run button — server-side gate bypass lives entirely in

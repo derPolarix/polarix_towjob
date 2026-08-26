@@ -1,4 +1,5 @@
 local sharedConfig = require("config.shared")
+local serverConfig = require("config.server")
 
 lib.callback.register("polarix_towjob:openDashboard", function(source)
     local playerData = Player.GetData(source)
@@ -11,23 +12,21 @@ lib.callback.register("polarix_towjob:openDashboard", function(source)
         levelTitles = sharedConfig.LevelTitles,
         xpThresholds = sharedConfig.XPThresholds,
         unlockedAreaIds = Player.GetUnlockedAreaIds(source),
-        missions = Missions.GetAvailableForPlayer(source),
         areas = Areas.GetMapAreas(source),
         vehicles = Vehicles.GetOwnedForPlayer(source),
         vehicleTiers = Vehicles.GetTiersForPlayer(source),
         repairCostPerHealthPoint = Vehicles.GetRepairCostPerHealthPoint(source),
         activeDelivery = Missions.GetActiveDeliverySummary(source),
         skillBranches = sharedConfig.Skills.branches,
+        onCall = OnCall.IsOnCall(source),
+        rentalActive = Vehicles.IsRentalActive(source),
+        rentalPricePerCharge = Settings.GetRentalPricePerCharge(),
+        rentalIntervalMinutes = Settings.GetRentalIntervalMinutes(),
+        rentalTruckLabel = serverConfig.RentalTruck.label,
     }
 end)
 
--- Used by the Available Jobs tab to refresh its list without reopening the whole
--- Dashboard (e.g. after an area unlock in Phase 6, or a level-up in Phase 11).
-lib.callback.register("polarix_towjob:getAvailableJobs", function(source)
-    return Missions.GetAvailableForPlayer(source)
-end)
-
--- Used by the Map tab to refresh area unlock state without reopening the whole Dashboard.
+-- Used by the Areas tab to refresh area unlock state without reopening the whole Dashboard.
 lib.callback.register("polarix_towjob:getMapAreas", function(source)
     return Areas.GetMapAreas(source)
 end)
@@ -65,8 +64,24 @@ lib.callback.register("polarix_towjob:unlockSkill", function(source, skillId)
     return Skills.Unlock(source, skillId)
 end)
 
-lib.callback.register("polarix_towjob:acceptMission", function(source, missionId)
-    return Missions.Accept(source, missionId)
+lib.callback.register("polarix_towjob:toggleOnCall", function(source, wantOn)
+    return OnCall.SetOnCall(source, wantOn)
+end)
+
+lib.callback.register("polarix_towjob:startStandaloneRental", function(source)
+    return OnCall.StartStandaloneRental(source)
+end)
+
+lib.callback.register("polarix_towjob:returnRental", function(source)
+    return Vehicles.ReturnRental(source)
+end)
+
+lib.callback.register("polarix_towjob:acceptPage", function(source)
+    return OnCall.AcceptOffer(source)
+end)
+
+lib.callback.register("polarix_towjob:declinePage", function(source)
+    return OnCall.DeclineOffer(source)
 end)
 
 lib.callback.register("polarix_towjob:completeDelivery", function(source, deliveryId)
