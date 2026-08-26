@@ -43,12 +43,11 @@ function DB.GetAreaCount()
 end
 
 function DB.InsertArea(area)
-    MySQL.insert.await("INSERT INTO " .. server.Tables.areas .. " (id, name, region, map_x, map_y, unlock_cost, level_required, is_default) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", {
+    MySQL.insert.await("INSERT INTO " .. server.Tables.areas .. " (id, name, region, points, unlock_cost, level_required, is_default) VALUES (?, ?, ?, ?, ?, ?, ?)", {
         area.id,
         area.name,
         area.region,
-        area.map_x,
-        area.map_y,
+        json.encode(area.points or {}),
         area.unlock_cost or 0,
         area.level_required or 1,
         area.is_default and 1 or 0,
@@ -236,8 +235,8 @@ end
 
 function DB.UpdateArea(areaId, area)
     MySQL.update.await(
-        "UPDATE " .. server.Tables.areas .. " SET name=?, region=?, map_x=?, map_y=?, unlock_cost=?, level_required=?, is_default=? WHERE id=?",
-        { area.name, area.region, area.map_x, area.map_y, area.unlock_cost or 0, area.level_required or 1, area.is_default and 1 or 0, areaId }
+        "UPDATE " .. server.Tables.areas .. " SET name=?, region=?, points=?, unlock_cost=?, level_required=?, is_default=? WHERE id=?",
+        { area.name, area.region, json.encode(area.points or {}), area.unlock_cost or 0, area.level_required or 1, area.is_default and 1 or 0, areaId }
     )
 end
 

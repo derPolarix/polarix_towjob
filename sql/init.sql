@@ -19,8 +19,7 @@ CREATE TABLE IF NOT EXISTS polarix_towjob_areas (
     id            VARCHAR(36)  PRIMARY KEY,
     name          VARCHAR(100),
     region        VARCHAR(50),
-    map_x         FLOAT,          -- Leaflet coord-space X for the unlock pin
-    map_y         FLOAT,          -- Leaflet coord-space Y for the unlock pin
+    points        JSON,           -- polygon vertices in Leaflet coord-space, [{x,y}, ...], min 3
     unlock_cost   INT      DEFAULT 0,
     level_required INT     DEFAULT 1,
     is_default    TINYINT(1) DEFAULT 0,    -- pre-unlocked for everyone

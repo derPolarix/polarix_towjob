@@ -7,6 +7,17 @@ local function requireAdmin(source)
     return true
 end
 
+-- An area is a polygon, not a pin — needs at least 3 vertices to enclose any space.
+local function isValidPoints(points)
+    if type(points) ~= "table" or #points < 3 then return false end
+    for _, point in ipairs(points) do
+        if type(point) ~= "table" or type(point.x) ~= "number" or type(point.y) ~= "number" then
+            return false
+        end
+    end
+    return true
+end
+
 local function slugify(name)
     local base = "area_" .. (name or "area"):lower():gsub("[^%w]+", "_"):gsub("^_+", ""):gsub("_+$", "")
     if base == "area_" then base = "area_untitled" end
@@ -28,21 +39,22 @@ function AdminAreas.ListForAdmin(source)
     for _, row in ipairs(rows) do
         row.is_active = row.is_active == 1
         row.is_default = row.is_default == 1
+        row.points = row.points and json.decode(row.points) or {}
     end
 
     return { ok = true, areas = rows }
 end
 
--- map_x/map_y are Leaflet coord-space (captured by the admin clicking the reused Phase 6
--- map component, see MapTab.vue's own comment) — never a GTA world position, no conversion
--- needed here. unlock_cost falls back to Settings.GetDefaultAreaUnlockCost() when the admin
--- leaves it blank, matching Step 13.5's "default area unlock cost" setting.
+-- points are Leaflet coord-space polygon vertices (captured by the admin clicking the reused
+-- Phase 6 map component, see MapTab.vue's own comment) — never GTA world positions, no
+-- conversion needed here. unlock_cost falls back to Settings.GetDefaultAreaUnlockCost() when
+-- the admin leaves it blank, matching Step 13.5's "default area unlock cost" setting.
 function AdminAreas.Create(source, area)
     local ok, reason = requireAdmin(source)
     if not ok then return { ok = false, reason = reason } end
 
     if not area.name or area.name == "" then return { ok = false, reason = "invalid_name" } end
-    if area.map_x == nil or area.map_y == nil then return { ok = false, reason = "invalid_position" } end
+    if not isValidPoints(area.points) then return { ok = false, reason = "invalid_position" } end
 
     local areaId = slugify(area.name)
     area.id = areaId
@@ -63,7 +75,7 @@ function AdminAreas.Update(source, areaId, area)
     if not DB.AreaIdExists(areaId) then return { ok = false, reason = "not_found" } end
 
     if not area.name or area.name == "" then return { ok = false, reason = "invalid_name" } end
-    if area.map_x == nil or area.map_y == nil then return { ok = false, reason = "invalid_position" } end
+    if not isValidPoints(area.points) then return { ok = false, reason = "invalid_position" } end
 
     DB.UpdateArea(areaId, area)
 
