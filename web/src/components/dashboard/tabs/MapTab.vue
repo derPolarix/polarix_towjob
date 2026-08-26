@@ -1,32 +1,46 @@
 <template>
-	<div class="relative w-full h-full">
-		<div ref="mapContainer" class="w-full h-full rounded-md overflow-hidden" />
-
-		<div
-			v-if="selectedArea"
-			class="absolute top-4 right-4 w-72 rounded-md bg-neutral-900/90 border border-white/10 p-4 text-white"
-		>
-			<div class="flex items-center justify-between">
-				<h3 class="font-semibold">{{ selectedArea.name }}</h3>
-				<button type="button" class="text-white/50 hover:text-white" @click="selectedArea = null">✕</button>
+	<div style="display:flex;flex-direction:column;gap:14px;height:100%">
+		<div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+			<div>
+				<div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:#1b1f24">Area map</div>
+				<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:4px">Click a pin to unlock a new operating area</div>
 			</div>
-			<div class="mt-1 text-xs text-white/60">{{ selectedArea.region }}</div>
-
-			<div class="mt-3 text-sm space-y-1">
-				<div>Unlock cost: <span class="text-emerald-400 font-semibold">${{ selectedArea.unlock_cost }}</span></div>
-				<div>Level required: {{ selectedArea.level_required }}</div>
+			<div style="display:flex;align-items:center;gap:16px">
+				<div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#6b7280"><span style="width:11px;height:11px;border-radius:50%;background:var(--accent)"></span>Unlocked</div>
+				<div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#6b7280"><span style="width:11px;height:11px;border-radius:50%;background:#9aa1ab"></span>Locked</div>
 			</div>
+		</div>
 
-			<p v-if="unlockError" class="mt-2 text-xs text-red-400">{{ unlockError }}</p>
+		<div style="position:relative;flex:1;border-radius:16px;overflow:hidden;border:1px solid #dfe2e6">
+			<div ref="mapContainer" style="width:100%;height:100%" />
 
-			<button
-				type="button"
-				:disabled="unlocking"
-				class="mt-3 w-full rounded-md bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-2 text-sm font-medium"
-				@click="confirmUnlock"
+			<div
+				v-if="selectedArea"
+				style="position:absolute;top:16px;right:16px;width:280px;border-radius:14px;background:#fff;border:1px solid #dfe2e6;box-shadow:0 14px 34px rgba(0,0,0,0.18);padding:16px"
 			>
-				{{ unlocking ? "Unlocking..." : "Unlock area" }}
-			</button>
+				<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+					<span style="font-size:15px;font-weight:700;color:#1b1f24">{{ selectedArea.name }}</span>
+					<button type="button" style="background:transparent;border:none;cursor:pointer;color:#9aa1ab;font-size:16px;line-height:1;padding:0" @click="selectedArea = null">✕</button>
+				</div>
+				<div style="font-size:12px;color:#9aa1ab;margin-top:2px">{{ selectedArea.region }}</div>
+
+				<div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;font-size:13px">
+					<div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">Unlock cost</span><span style="color:var(--accent);font-weight:700">${{ selectedArea.unlock_cost }}</span></div>
+					<div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">Level required</span><span style="color:#1b1f24;font-weight:600">Lvl {{ selectedArea.level_required }}</span></div>
+				</div>
+
+				<p v-if="unlockError" style="margin:10px 0 0;font-size:12px;color:#d24b3a">{{ unlockError }}</p>
+
+				<button
+					class="accent-btn"
+					type="button"
+					:disabled="unlocking"
+					style="margin-top:14px;width:100%;padding:11px;font-size:13px;justify-content:center"
+					@click="confirmUnlock"
+				>
+					{{ unlocking ? "Unlocking…" : "Unlock area" }}
+				</button>
+			</div>
 		</div>
 	</div>
 </template>
@@ -73,7 +87,7 @@ function areaLatLng(area: MapArea): L.LatLngExpression {
 function pinIcon(unlocked: boolean): L.DivIcon {
 	return L.divIcon({
 		className: "area-marker",
-		html: `<div class="area-marker-pin" style="background:${unlocked ? "#059669" : "#57534e"};"></div>`,
+		html: `<div class="area-marker-pin" style="background:${unlocked ? "#22c55e" : "#9aa1ab"};"></div>`,
 		iconSize: [20, 20],
 		iconAnchor: [10, 10],
 	});
