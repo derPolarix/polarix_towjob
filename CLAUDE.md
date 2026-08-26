@@ -10,6 +10,9 @@ FiveM resource for a tow job. Stack: Lua (client/server) + Vue 3 NUI
 
 Supports **qbox**, **qb-core**, and **esx**. Active framework set in `config/shared.lua`. Framework-specific code lives in adapter files - never call framework globals directly. Always go through the adapter so the rest of the codebase stays framework-agnostic.
 
+## Comments
+Keep Code comments to a minimal, only explain otherwise non understandable workarounds.
+
 ## Structure
 
 ```
