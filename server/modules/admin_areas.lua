@@ -18,6 +18,10 @@ local function isValidPoints(points)
     return true
 end
 
+local function isValidMultiplier(value)
+    return value == nil or (type(value) == "number" and value >= 0 and value <= 10)
+end
+
 local function slugify(name)
     local base = "area_" .. (name or "area"):lower():gsub("[^%w]+", "_"):gsub("^_+", ""):gsub("_+$", "")
     if base == "area_" then base = "area_untitled" end
@@ -55,6 +59,9 @@ function AdminAreas.Create(source, area)
 
     if not area.name or area.name == "" then return { ok = false, reason = "invalid_name" } end
     if not isValidPoints(area.points) then return { ok = false, reason = "invalid_position" } end
+    if not isValidMultiplier(area.reward_multiplier) or not isValidMultiplier(area.xp_multiplier) then
+        return { ok = false, reason = "invalid_multiplier" }
+    end
 
     local areaId = slugify(area.name)
     area.id = areaId
@@ -76,6 +83,9 @@ function AdminAreas.Update(source, areaId, area)
 
     if not area.name or area.name == "" then return { ok = false, reason = "invalid_name" } end
     if not isValidPoints(area.points) then return { ok = false, reason = "invalid_position" } end
+    if not isValidMultiplier(area.reward_multiplier) or not isValidMultiplier(area.xp_multiplier) then
+        return { ok = false, reason = "invalid_multiplier" }
+    end
 
     DB.UpdateArea(areaId, area)
 

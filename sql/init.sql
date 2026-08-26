@@ -22,6 +22,9 @@ CREATE TABLE IF NOT EXISTS polarix_towjob_areas (
     points        JSON,           -- polygon vertices in Leaflet coord-space, [{x,y}, ...], min 3
     unlock_cost   INT      DEFAULT 0,
     level_required INT     DEFAULT 1,
+    reward_multiplier DECIMAL(4,2) DEFAULT 1.00,   -- stacks with Settings.GetRewardMultiplier() (missions.lua Complete)
+    xp_multiplier DECIMAL(4,2) DEFAULT 1.00,       -- stacks with Settings.GetXpMultiplier() (missions.lua Complete)
+    note          VARCHAR(140) DEFAULT NULL,       -- short admin note/tag, e.g. "High traffic" (display-only)
     is_default    TINYINT(1) DEFAULT 0,    -- pre-unlocked for everyone
     is_active     TINYINT(1) DEFAULT 1,
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP

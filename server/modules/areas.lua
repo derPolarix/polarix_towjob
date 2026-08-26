@@ -40,6 +40,9 @@ function Areas.GetMapAreas(source)
             points = row.points and json.decode(row.points) or {},
             unlock_cost = math.floor((row.unlock_cost or 0) * (1 - discount) + 0.5),
             level_required = row.level_required,
+            reward_multiplier = tonumber(row.reward_multiplier) or 1.0,
+            xp_multiplier = tonumber(row.xp_multiplier) or 1.0,
+            note = row.note,
             is_default = row.is_default == 1,
             unlocked = unlockedIds[row.id] == true,
         }

@@ -461,10 +461,18 @@ function Missions.Complete(source, deliveryId)
 
     local damagePenalty = math.floor(healthLoss * (serverConfig.DamagePenaltyPerHealthPoint or 0.5) + 0.5)
 
+    -- Area reward/xp multipliers (polarix_towjob_areas) stack multiplicatively with the
+    -- global Settings ones — same composition point as the comment below, so an area's
+    -- modifier scales the whole economy proportionally too, not just the payout on top.
+    -- Falls back to neutral 1.0 if the mission's area was deactivated/deleted since creation.
+    local missionArea = DB.GetArea(mission.area_id)
+    local areaRewardMultiplier = missionArea and tonumber(missionArea.reward_multiplier) or 1.0
+    local areaXpMultiplier = missionArea and tonumber(missionArea.xp_multiplier) or 1.0
+
     -- Phase 13's global reward_multiplier is a base economy-tuning knob, applied to
     -- reward_base before anything else (cap included) so an admin's multiplier scales the
     -- mission's whole economy proportionally, not just the payout on top.
-    local effectiveRewardBase = mission.reward_base * Settings.GetRewardMultiplier()
+    local effectiveRewardBase = mission.reward_base * Settings.GetRewardMultiplier() * areaRewardMultiplier
 
     -- Cap is always a fraction of the (multiplier-adjusted) reward_base, never the
     -- Economy-branch-bonused amount below — confirmed with user, keeps the cap
@@ -479,7 +487,7 @@ function Missions.Complete(source, deliveryId)
     local bonusedReward = math.floor(effectiveRewardBase * (1 + payoutBonus) + 0.5)
 
     local rewardPaid = math.max(0, bonusedReward - damagePenalty)
-    local xpPaid = math.floor(mission.xp_base * Settings.GetXpMultiplier() + 0.5)
+    local xpPaid = math.floor(mission.xp_base * Settings.GetXpMultiplier() * areaXpMultiplier + 0.5)
 
     Framework.AddMoney(source, rewardPaid)
 

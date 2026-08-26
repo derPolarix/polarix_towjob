@@ -43,13 +43,20 @@ function DB.GetAreaCount()
 end
 
 function DB.InsertArea(area)
-    MySQL.insert.await("INSERT INTO " .. server.Tables.areas .. " (id, name, region, points, unlock_cost, level_required, is_default) VALUES (?, ?, ?, ?, ?, ?, ?)", {
+    MySQL.insert.await(
+        "INSERT INTO " .. server.Tables.areas .. [[ (
+            id, name, region, points, unlock_cost, level_required,
+            reward_multiplier, xp_multiplier, note, is_default
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]], {
         area.id,
         area.name,
         area.region,
         json.encode(area.points or {}),
         area.unlock_cost or 0,
         area.level_required or 1,
+        area.reward_multiplier or 1.0,
+        area.xp_multiplier or 1.0,
+        area.note,
         area.is_default and 1 or 0,
     })
 end
@@ -235,8 +242,14 @@ end
 
 function DB.UpdateArea(areaId, area)
     MySQL.update.await(
-        "UPDATE " .. server.Tables.areas .. " SET name=?, region=?, points=?, unlock_cost=?, level_required=?, is_default=? WHERE id=?",
-        { area.name, area.region, json.encode(area.points or {}), area.unlock_cost or 0, area.level_required or 1, area.is_default and 1 or 0, areaId }
+        "UPDATE " .. server.Tables.areas .. [[ SET
+            name=?, region=?, points=?, unlock_cost=?, level_required=?,
+            reward_multiplier=?, xp_multiplier=?, note=?, is_default=?
+        WHERE id=?]],
+        {
+            area.name, area.region, json.encode(area.points or {}), area.unlock_cost or 0, area.level_required or 1,
+            area.reward_multiplier or 1.0, area.xp_multiplier or 1.0, area.note, area.is_default and 1 or 0, areaId,
+        }
     )
 end
 
