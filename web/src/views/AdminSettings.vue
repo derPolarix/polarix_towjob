@@ -39,6 +39,7 @@
 import { computed, getCurrentInstance, onMounted } from "vue";
 import { useAdminStore } from "@/stores/adminStore";
 import type { AdminSection } from "@/types/admin";
+import { isDev } from "@/main";
 import MissionsSection from "@/components/admin/MissionsSection.vue";
 import AreasSection from "@/components/admin/AreasSection.vue";
 import SettingsSection from "@/components/admin/SettingsSection.vue";
@@ -66,6 +67,15 @@ function close() {
 }
 
 onMounted(() => {
+	if (isDev) {
+		import("@/dev/sampleData").then(({ sampleAdminAreas, sampleAdminMissions, sampleAdminSettings }) => {
+			adminStore.areas = sampleAdminAreas;
+			adminStore.missions = sampleAdminMissions;
+			adminStore.settings = sampleAdminSettings;
+		});
+		return;
+	}
+
 	adminStore.fetchAreas();
 	adminStore.fetchMissions();
 	adminStore.fetchSettings();
