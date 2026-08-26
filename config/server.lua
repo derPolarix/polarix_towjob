@@ -147,6 +147,17 @@ return {
     RentalIntervalMinutes = 15,
     RentalWarningMinutesBefore = { 5, 1 }, -- notify at 5min and 1min before a missed charge repossesses
 
+    -- On-call pager (replaces the old browsable Available Jobs list): while on-call with no
+    -- active delivery, the server waits a random delay in this range, then pages a randomly
+    -- picked eligible mission. Declining/timing out doesn't reduce/penalize the player
+    -- economically — it just multiplies this same random-delay wait by the player's current
+    -- consecutive-decline streak (reset to 0 on any accept), so repeatedly re-rolling for a
+    -- better job costs increasingly more real time instead of money/XP.
+    PagerMinIntervalMinutes = 2,
+    PagerMaxIntervalMinutes = 8,
+    PagerOfferTimeoutSeconds = 30,
+    PagerDeclineCooldownMinutes = 5,
+
     -- Scaled by missing health: cost = perHealthPoint * (maxHealth - currentHealth), summed body+engine
     RepairCost = { mode = "scaled", perHealthPoint = 0.6 },
 
