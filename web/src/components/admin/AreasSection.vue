@@ -1,79 +1,71 @@
 <template>
-	<div class="h-full flex">
-		<aside class="w-56 shrink-0 border-r border-white/10 overflow-y-auto p-2 space-y-1">
-			<button
-				type="button"
-				class="w-full text-left rounded-md bg-emerald-600 hover:bg-emerald-500 text-xs font-medium px-3 py-2 mb-2"
-				@click="startNew"
-			>
-				+ New Area
+	<div style="height:100%;display:flex">
+		<aside style="width:230px;flex-shrink:0;border-right:1px solid #dfe2e6;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px;background:#f6f7f8">
+			<button type="button" class="accent-btn" style="width:100%;padding:10px;font-size:12px;justify-content:center;margin-bottom:4px" @click="startNew">
+				<iconify-icon icon="tabler:plus" width="15"></iconify-icon> New area
 			</button>
 
 			<button
 				v-for="area in adminStore.areas"
 				:key="area.id"
 				type="button"
-				class="w-full text-left rounded-md px-3 py-2 text-sm transition-colors"
-				:class="editingId === area.id ? 'bg-neutral-700' : 'bg-neutral-800/50 hover:bg-neutral-800'"
+				style="width:100%;text-align:left;border-radius:10px;padding:10px 12px;border:1px solid transparent;cursor:pointer;font-family:inherit"
+				:style="editingId === area.id ? 'background:#22262d;border-color:#22262d' : 'background:#fff;border-color:#dfe2e6'"
 				@click="selectArea(area)"
 			>
-				<div class="font-medium truncate">{{ area.name }}</div>
-				<div class="text-xs text-white/40">{{ area.is_active ? "active" : "inactive" }}{{ area.is_default ? " · default" : "" }}</div>
+				<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" :style="{ color: editingId === area.id ? '#fff' : '#1b1f24' }">{{ area.name }}</div>
+				<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;margin-top:3px;color:#9aa1ab">{{ area.is_active ? "active" : "inactive" }}{{ area.is_default ? " · default" : "" }}</div>
 			</button>
 		</aside>
 
-		<div class="flex-1 overflow-y-auto p-4 space-y-3">
-			<p v-if="errorMessage" class="text-xs text-red-400">{{ errorMessage }}</p>
+		<div style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px">
+			<p v-if="errorMessage" style="margin:0;font-size:12px;color:#d24b3a">{{ errorMessage }}</p>
 
-			<div class="grid grid-cols-2 gap-3">
-				<label class="text-xs text-white/60 col-span-2">
+			<div style="background:#fff;border:1px solid #dfe2e6;border-radius:14px;padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+				<label style="grid-column:span 2" class="admin-label">
 					Name
-					<input v-model="form.name" type="text" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1.5 text-sm" />
+					<input v-model="form.name" type="text" class="admin-input" />
 				</label>
 
-				<label class="text-xs text-white/60">
+				<label class="admin-label">
 					Region
-					<input v-model="form.region" type="text" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1.5 text-sm" />
+					<input v-model="form.region" type="text" class="admin-input" />
 				</label>
 
-				<label class="text-xs text-white/60">
+				<label class="admin-label">
 					Level required
-					<input v-model.number="form.level_required" type="number" min="1" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1.5 text-sm" />
+					<input v-model.number="form.level_required" type="number" min="1" class="admin-input" />
 				</label>
 
-				<label class="text-xs text-white/60">
+				<label class="admin-label">
 					Unlock cost
-					<input v-model.number="form.unlock_cost" type="number" min="0" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1.5 text-sm" />
+					<input v-model.number="form.unlock_cost" type="number" min="0" class="admin-input" />
 				</label>
 
-				<label class="text-xs text-white/60 flex items-center gap-2 mt-5">
+				<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:#3c424b;margin-top:18px">
 					<input v-model="form.is_default" type="checkbox" />
 					Default area (free, pre-unlocked for everyone)
 				</label>
 			</div>
 
-			<div>
-				<div class="text-xs text-white/60 mb-1">
+			<div style="background:#fff;border:1px solid #dfe2e6;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
+				<div style="font-size:13px;font-weight:700;color:#1b1f24">
 					Map pin — click the map to set this area's position ({{ form.map_x.toFixed(1) }}, {{ form.map_y.toFixed(1) }})
 				</div>
-				<div ref="mapContainer" class="w-full h-64 rounded-md overflow-hidden border border-white/10" />
+				<div ref="mapContainer" style="width:100%;height:260px;border-radius:11px;overflow:hidden;border:1px solid #dfe2e6" />
 			</div>
 
-			<div class="flex flex-wrap items-center gap-2 pt-2">
-				<button
-					type="button"
-					:disabled="saving"
-					class="rounded-md bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium px-4 py-2"
-					@click="save"
-				>
-					{{ saving ? "Saving..." : editingId ? "Save changes" : "Create area" }}
+			<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+				<button type="button" class="accent-btn" style="padding:10px 18px;font-size:13px" :disabled="saving" @click="save">
+					{{ saving ? "Saving…" : editingId ? "Save changes" : "Create area" }}
 				</button>
 
 				<button
 					v-if="editingId"
 					type="button"
+					style="border-radius:10px;background:#fff;border:1px solid #dfe2e6;color:#3c424b;font-family:inherit;font-weight:600;font-size:13px;padding:10px 16px;cursor:pointer"
 					:disabled="togglingActive"
-					class="rounded-md bg-neutral-700 hover:bg-neutral-600 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium px-4 py-2"
+					:style="{ opacity: togglingActive ? 0.5 : 1 }"
 					@click="toggleActive"
 				>
 					{{ selectedIsActive ? "Deactivate" : "Activate" }}

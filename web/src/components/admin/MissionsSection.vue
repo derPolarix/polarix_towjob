@@ -1,176 +1,164 @@
 <template>
-	<div class="h-full flex">
-		<aside class="w-56 shrink-0 border-r border-white/10 overflow-y-auto p-2 space-y-1">
-			<button
-				type="button"
-				class="w-full text-left rounded-md bg-emerald-600 hover:bg-emerald-500 text-xs font-medium px-3 py-2 mb-2"
-				@click="startNew"
-			>
-				+ New Mission
+	<div style="height:100%;display:flex">
+		<aside style="width:230px;flex-shrink:0;border-right:1px solid #dfe2e6;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px;background:#f6f7f8">
+			<button type="button" class="accent-btn" style="width:100%;padding:10px;font-size:12px;justify-content:center;margin-bottom:4px" @click="startNew">
+				<iconify-icon icon="tabler:plus" width="15"></iconify-icon> New mission
 			</button>
 
 			<button
 				v-for="mission in adminStore.missions"
 				:key="mission.id"
 				type="button"
-				class="w-full text-left rounded-md px-3 py-2 text-sm transition-colors"
-				:class="editingId === mission.id ? 'bg-neutral-700' : 'bg-neutral-800/50 hover:bg-neutral-800'"
+				style="width:100%;text-align:left;border-radius:10px;padding:10px 12px;border:1px solid transparent;cursor:pointer;font-family:inherit"
+				:style="editingId === mission.id ? 'background:#22262d;border-color:#22262d' : 'background:#fff;border-color:#dfe2e6'"
 				@click="selectMission(mission)"
 			>
-				<div class="font-medium truncate">{{ mission.name }}</div>
-				<div class="text-xs text-white/40">{{ mission.area_name ?? "no area" }} · {{ mission.is_active ? "active" : "inactive" }}</div>
+				<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" :style="{ color: editingId === mission.id ? '#fff' : '#1b1f24' }">{{ mission.name }}</div>
+				<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;margin-top:3px" :style="{ color: editingId === mission.id ? '#9aa1ab' : '#9aa1ab' }">{{ mission.area_name ?? "no area" }} · {{ mission.is_active ? "active" : "inactive" }}</div>
 			</button>
 		</aside>
 
-		<div class="flex-1 overflow-y-auto p-4 space-y-4">
-			<p v-if="errorMessage" class="text-xs text-red-400">{{ errorMessage }}</p>
+		<div style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px">
+			<p v-if="errorMessage" style="margin:0;font-size:12px;color:#d24b3a">{{ errorMessage }}</p>
 
-			<div class="grid grid-cols-2 gap-3">
-				<label class="text-xs text-white/60 col-span-2">
+			<div style="background:#fff;border:1px solid #dfe2e6;border-radius:14px;padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+				<label style="grid-column:span 2;display:flex;flex-direction:column;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab">
 					Name
-					<input v-model="form.name" type="text" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1.5 text-sm" />
+					<input v-model="form.name" type="text" class="admin-input" />
 				</label>
 
-				<label class="text-xs text-white/60">
+				<label class="admin-label">
 					Area
-					<select v-model="form.area_id" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1.5 text-sm">
+					<select v-model="form.area_id" class="admin-input">
 						<option v-for="area in adminStore.areas" :key="area.id" :value="area.id">{{ area.name }}</option>
 					</select>
 				</label>
 
-				<label class="text-xs text-white/60">
+				<label class="admin-label">
 					Difficulty
-					<select v-model="form.difficulty" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1.5 text-sm">
+					<select v-model="form.difficulty" class="admin-input">
 						<option value="easy">Easy</option>
 						<option value="medium">Medium</option>
 						<option value="hard">Hard</option>
 					</select>
 				</label>
 
-				<label class="text-xs text-white/60">
+				<label class="admin-label">
 					Vehicle model (spawn code)
-					<input v-model="form.vehicle_model" type="text" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1.5 text-sm" />
+					<input v-model="form.vehicle_model" type="text" class="admin-input" />
 				</label>
 
-				<label class="text-xs text-white/60">
+				<label class="admin-label">
 					Vehicle label (display name)
-					<input v-model="form.vehicle_label" type="text" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1.5 text-sm" />
+					<input v-model="form.vehicle_label" type="text" class="admin-input" />
 				</label>
 
-				<label class="text-xs text-white/60">
+				<label class="admin-label">
 					Vehicle color — primary
-					<input v-model.number="form.vehicle_colors.primary" type="number" min="0" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1.5 text-sm" />
+					<input v-model.number="form.vehicle_colors.primary" type="number" min="0" class="admin-input" />
 				</label>
 
-				<label class="text-xs text-white/60">
+				<label class="admin-label">
 					Vehicle color — secondary
-					<input v-model.number="form.vehicle_colors.secondary" type="number" min="0" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1.5 text-sm" />
+					<input v-model.number="form.vehicle_colors.secondary" type="number" min="0" class="admin-input" />
 				</label>
 
-				<label class="text-xs text-white/60">
+				<label class="admin-label">
 					Reward ($)
-					<input v-model.number="form.reward_base" type="number" min="0" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1.5 text-sm" />
+					<input v-model.number="form.reward_base" type="number" min="0" class="admin-input" />
 				</label>
 
-				<label class="text-xs text-white/60">
+				<label class="admin-label">
 					XP
-					<input v-model.number="form.xp_base" type="number" min="0" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1.5 text-sm" />
+					<input v-model.number="form.xp_base" type="number" min="0" class="admin-input" />
 				</label>
 
-				<label class="text-xs text-white/60">
+				<label class="admin-label">
 					Level required
-					<input v-model.number="form.level_required" type="number" min="1" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1.5 text-sm" />
+					<input v-model.number="form.level_required" type="number" min="1" class="admin-input" />
 				</label>
 
-				<label class="text-xs text-white/60 flex items-center gap-2 mt-5">
+				<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:#3c424b;margin-top:18px">
 					<input type="checkbox" :checked="form.time_limit_minutes !== null" @change="toggleTimed" />
 					Timed mission
 				</label>
 
-				<label v-if="form.time_limit_minutes !== null" class="text-xs text-white/60">
+				<label v-if="form.time_limit_minutes !== null" class="admin-label">
 					Time limit (minutes)
-					<input v-model.number="form.time_limit_minutes" type="number" min="1" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1.5 text-sm" />
+					<input v-model.number="form.time_limit_minutes" type="number" min="1" class="admin-input" />
 				</label>
 			</div>
 
-			<div class="rounded-md bg-neutral-800/40 border border-white/10 p-3 space-y-2">
-				<div class="flex items-center justify-between">
-					<span class="text-xs font-medium text-white/70">Search area (where the vehicle spawns)</span>
-					<button type="button" class="text-xs rounded-md bg-neutral-700 hover:bg-neutral-600 px-2 py-1" @click="useCurrentPosition('search')">
+			<div style="background:#fff;border:1px solid #dfe2e6;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
+				<div style="display:flex;align-items:center;justify-content:space-between">
+					<span style="font-size:13px;font-weight:700;color:#1b1f24">Search area (where the vehicle spawns)</span>
+					<button type="button" style="font-size:11px;font-weight:600;border-radius:8px;background:#f1f2f4;border:1px solid #dfe2e6;color:#3c424b;padding:6px 10px;cursor:pointer" @click="useCurrentPosition('search')">
 						Use current position
 					</button>
 				</div>
-				<div class="grid grid-cols-4 gap-2">
-					<label class="text-xs text-white/60">X <input v-model.number="form.search_center_x" type="number" step="any" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1 text-sm" /></label>
-					<label class="text-xs text-white/60">Y <input v-model.number="form.search_center_y" type="number" step="any" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1 text-sm" /></label>
-					<label class="text-xs text-white/60">Z <input v-model.number="form.search_center_z" type="number" step="any" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1 text-sm" /></label>
-					<label class="text-xs text-white/60">Radius <input v-model.number="form.search_radius" type="number" step="any" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1 text-sm" /></label>
+				<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+					<label class="admin-label">X <input v-model.number="form.search_center_x" type="number" step="any" class="admin-input" /></label>
+					<label class="admin-label">Y <input v-model.number="form.search_center_y" type="number" step="any" class="admin-input" /></label>
+					<label class="admin-label">Z <input v-model.number="form.search_center_z" type="number" step="any" class="admin-input" /></label>
+					<label class="admin-label">Radius <input v-model.number="form.search_radius" type="number" step="any" class="admin-input" /></label>
 				</div>
-				<label class="text-xs text-white/50 flex items-center gap-2">
+				<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#6b7280">
 					<input v-model="searchPreviewOn" type="checkbox" @change="pushSearchPreview" />
 					Show live blip preview in-game
 				</label>
 			</div>
 
-			<div class="rounded-md bg-neutral-800/40 border border-white/10 p-3 space-y-2">
-				<div class="flex items-center justify-between">
-					<span class="text-xs font-medium text-white/70">Dropoff zone</span>
-					<button type="button" class="text-xs rounded-md bg-neutral-700 hover:bg-neutral-600 px-2 py-1" @click="useCurrentPosition('dropoff')">
+			<div style="background:#fff;border:1px solid #dfe2e6;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
+				<div style="display:flex;align-items:center;justify-content:space-between">
+					<span style="font-size:13px;font-weight:700;color:#1b1f24">Dropoff zone</span>
+					<button type="button" style="font-size:11px;font-weight:600;border-radius:8px;background:#f1f2f4;border:1px solid #dfe2e6;color:#3c424b;padding:6px 10px;cursor:pointer" @click="useCurrentPosition('dropoff')">
 						Use current position
 					</button>
 				</div>
-				<div class="grid grid-cols-4 gap-2">
-					<label class="text-xs text-white/60">X <input v-model.number="form.dropoff_x" type="number" step="any" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1 text-sm" /></label>
-					<label class="text-xs text-white/60">Y <input v-model.number="form.dropoff_y" type="number" step="any" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1 text-sm" /></label>
-					<label class="text-xs text-white/60">Z <input v-model.number="form.dropoff_z" type="number" step="any" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1 text-sm" /></label>
-					<label class="text-xs text-white/60">Heading <input v-model.number="form.dropoff_heading" type="number" step="any" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1 text-sm" /></label>
-					<label class="text-xs text-white/60">Width <input v-model.number="form.dropoff_width" type="number" step="any" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1 text-sm" /></label>
-					<label class="text-xs text-white/60">Length <input v-model.number="form.dropoff_length" type="number" step="any" class="mt-1 w-full rounded-md bg-neutral-800 border border-white/10 px-2 py-1 text-sm" /></label>
+				<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+					<label class="admin-label">X <input v-model.number="form.dropoff_x" type="number" step="any" class="admin-input" /></label>
+					<label class="admin-label">Y <input v-model.number="form.dropoff_y" type="number" step="any" class="admin-input" /></label>
+					<label class="admin-label">Z <input v-model.number="form.dropoff_z" type="number" step="any" class="admin-input" /></label>
+					<label class="admin-label">Heading <input v-model.number="form.dropoff_heading" type="number" step="any" class="admin-input" /></label>
+					<label class="admin-label">Width <input v-model.number="form.dropoff_width" type="number" step="any" class="admin-input" /></label>
+					<label class="admin-label">Length <input v-model.number="form.dropoff_length" type="number" step="any" class="admin-input" /></label>
 				</div>
-				<label class="text-xs text-white/50 flex items-center gap-2">
+				<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#6b7280">
 					<input v-model="dropoffPreviewOn" type="checkbox" @change="pushDropoffPreview" />
 					Show live red outline preview in-game (same outline the real delivery uses)
 				</label>
 			</div>
 
-			<div class="flex flex-wrap items-center gap-2 pt-2">
-				<button
-					type="button"
-					:disabled="saving"
-					class="rounded-md bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium px-4 py-2"
-					@click="save"
-				>
-					{{ saving ? "Saving..." : editingId ? "Save changes" : "Create mission" }}
+			<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+				<button type="button" class="accent-btn" style="padding:10px 18px;font-size:13px" :disabled="saving" @click="save">
+					{{ saving ? "Saving…" : editingId ? "Save changes" : "Create mission" }}
 				</button>
 
 				<template v-if="editingId">
-					<button
-						type="button"
-						:disabled="togglingActive"
-						class="rounded-md bg-neutral-700 hover:bg-neutral-600 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium px-4 py-2"
-						@click="toggleActive"
-					>
+					<button type="button" style="border-radius:10px;background:#fff;border:1px solid #dfe2e6;color:#3c424b;font-family:inherit;font-weight:600;font-size:13px;padding:10px 16px;cursor:pointer" :disabled="togglingActive" :style="{ opacity: togglingActive ? 0.5 : 1 }" @click="toggleActive">
 						{{ selectedIsActive ? "Deactivate" : "Activate" }}
 					</button>
 
 					<button
 						type="button"
+						style="border-radius:10px;background:#fff;border:1px solid #f3c8c2;color:#dc2626;font-family:inherit;font-weight:600;font-size:13px;padding:10px 16px;cursor:pointer"
 						:disabled="deleting || selectedDeliveryCount > 0"
 						:title="selectedDeliveryCount > 0 ? 'Has delivery history — deactivate instead' : ''"
-						class="rounded-md bg-red-700 hover:bg-red-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-medium px-4 py-2"
+						:style="{ opacity: (deleting || selectedDeliveryCount > 0) ? 0.4 : 1 }"
 						@click="remove"
 					>
-						{{ deleting ? "Deleting..." : "Delete" }}
+						{{ deleting ? "Deleting…" : "Delete" }}
 					</button>
 
 					<button
 						type="button"
+						style="margin-left:auto;border-radius:10px;background:#3b82f6;border:none;color:#fff;font-family:inherit;font-weight:600;font-size:13px;padding:10px 16px;cursor:pointer"
 						:disabled="testing || !selectedIsActive"
 						:title="!selectedIsActive ? 'Activate this mission first to test it' : 'QA only — bypasses your own level/area-lock requirements'"
-						class="ml-auto rounded-md bg-amber-600 hover:bg-amber-500 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium px-4 py-2"
+						:style="{ opacity: (testing || !selectedIsActive) ? 0.4 : 1 }"
 						@click="testRun"
 					>
-						{{ testing ? "Starting..." : "Test mission" }}
+						{{ testing ? "Starting…" : "Test mission" }}
 					</button>
 				</template>
 			</div>
