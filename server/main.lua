@@ -33,6 +33,16 @@ AddEventHandler('onResourceStart', function(resourceName)
     Areas.SeedIfEmpty()
     Missions.SeedIfEmpty()
     Settings.Load()
+
+    -- A mid-session restart wipes PlayerCache but the framework's "player loaded" event
+    -- only fires on initial connect, so already-connected players would be stuck with no
+    -- cached data (dashboard fails to load) until they relog. Repopulate them here.
+    for _, playerId in ipairs(GetPlayers()) do
+        local source = tonumber(playerId)
+        if source then
+            Player.Load(source)
+        end
+    end
 end)
 
 AddEventHandler('onResourceStop', function(resourceName)

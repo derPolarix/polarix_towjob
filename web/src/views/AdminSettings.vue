@@ -1,5 +1,5 @@
 <template>
-	<div style="width:100%;height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(120% 120% at 50% 0%,#1c1f25 0%,#101216 70%);--accent:#22c55e;font-family:'Archivo',system-ui,sans-serif">
+	<div style="width:100%;height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;--accent:#22c55e;font-family:'Archivo',system-ui,sans-serif">
 		<div style="width:1100px;height:760px;max-width:100%;max-height:100%;display:flex;flex-direction:column;background:#e7e9ec;border-radius:22px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,0.55),0 0 0 1px rgba(255,255,255,0.04);font-size:14px;color:#1b1f24">
 			<header style="flex-shrink:0;background:#22262d;padding:18px 22px;display:flex;align-items:center;gap:16px">
 				<div style="width:36px;height:36px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0">
