@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS polarix_towjob_areas (
     id            VARCHAR(36)  PRIMARY KEY,
     name          VARCHAR(100),
     region        VARCHAR(50),
-    points        JSON,           -- polygon vertices in Leaflet coord-space, [{x,y}, ...], min 3
+    points        JSON,           -- polygon vertices in GTA world coords, [{x,y}, ...], min 3 (web/src/lib/gtaMap.ts converts to the Leaflet map)
     unlock_cost   INT      DEFAULT 0,
     level_required INT     DEFAULT 1,
     reward_multiplier DECIMAL(4,2) DEFAULT 1.00,   -- stacks with Settings.GetRewardMultiplier() (missions.lua Complete)
@@ -97,3 +97,11 @@ CREATE TABLE IF NOT EXISTS polarix_towjob_settings (
     updated_by    VARCHAR(60),
     updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+-- Migrations for servers whose tables predate later columns. CREATE TABLE IF NOT EXISTS
+-- never adds columns to an existing table, so these run every boot (each is pcall'd
+-- individually in server/main.lua's loadSchema and is a no-op once the column exists).
+ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS points JSON;
+ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS reward_multiplier DECIMAL(4,2) DEFAULT 1.00;
+ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS xp_multiplier DECIMAL(4,2) DEFAULT 1.00;
+ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS note VARCHAR(140) DEFAULT NULL;
