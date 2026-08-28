@@ -127,12 +127,13 @@ async function decline() {
 .pager-screen {
 	position: absolute;
 	z-index: 1;
-	left: 32%;
-	top: 25%;
-	width: 39%;
-	height: 34%;
+	left: 22.5%;
+	top: 26%;
+	width: 55%;
+	height: 30%;
 	background: #0c0f0c;
 	border-radius: 4px;
+	overflow: hidden;
 	display: flex;
 	align-items: center;
 }
@@ -150,6 +151,9 @@ async function decline() {
 	font-weight: 700;
 	color: #4ade80;
 	line-height: 1.2;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .pager-name {
