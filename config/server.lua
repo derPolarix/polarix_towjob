@@ -160,7 +160,7 @@ return {
     PagerOfferTimeoutSeconds = 30,
     PagerDeclineCooldownMinutes = 5,
 
-    -- Only the first page after an accept uses this short delay; every page after reverts to the interval above.
+    -- The first page after going on-call or finishing a job uses this short delay; every page after reverts to the interval above.
     PagerPostAcceptMinSeconds = 20,
     PagerPostAcceptMaxSeconds = 40,
 

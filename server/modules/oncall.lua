@@ -58,7 +58,7 @@ function OnCall.SetOnCall(source, wantOn)
         return { ok = false, reason = "no_deployed_vehicle" }
     end
 
-    state[source] = { onCall = true, pendingOffer = nil, declineStreak = 0 }
+    state[source] = { onCall = true, pendingOffer = nil, declineStreak = 0, fastNextPage = true }
     scheduleNextPage(source)
 
     return { ok = true, onCall = true }
@@ -68,7 +68,7 @@ end
 -- deployed at that point, so this skips SetOnCall's own gate checks rather than re-running
 -- a second round-trip of the same checks against state we just established ourselves.
 function OnCall.ForceOnAfterRentalSpawn(source)
-    state[source] = { onCall = true, pendingOffer = nil, declineStreak = 0 }
+    state[source] = { onCall = true, pendingOffer = nil, declineStreak = 0, fastNextPage = true }
     scheduleNextPage(source)
 end
 
