@@ -3,7 +3,7 @@ local debug = require("shared.debug")
 
 OnCall = {}
 
--- [source] = { onCall = true, pendingOffer = { missionId, expiresAt } | nil, nextPageAt, declineStreak }
+-- [source] = { onCall = true, pendingOffer = { missionId, expiresAt } | nil, nextPageAt, declineStreak, fastNextPage }
 -- In-memory only, same precedent as Missions' activeDeliveryState — on-call is a live
 -- session concept, not something that needs to survive a resource restart or reconnect.
 local state = {}
@@ -23,9 +23,15 @@ local function scheduleNextPage(source, extraDelaySeconds)
     local s = state[source]
     if not s then return end
 
-    local minSeconds = serverConfig.PagerMinIntervalMinutes * 60
-    local maxSeconds = serverConfig.PagerMaxIntervalMinutes * 60
-    s.nextPageAt = os.time() + math.random(minSeconds, maxSeconds) + (extraDelaySeconds or 0)
+    local delaySeconds
+    if s.fastNextPage then
+        s.fastNextPage = nil
+        delaySeconds = math.random(serverConfig.PagerPostAcceptMinSeconds, serverConfig.PagerPostAcceptMaxSeconds)
+    else
+        delaySeconds = math.random(serverConfig.PagerMinIntervalMinutes * 60, serverConfig.PagerMaxIntervalMinutes * 60)
+    end
+
+    s.nextPageAt = os.time() + delaySeconds + (extraDelaySeconds or 0)
 end
 
 -- Player-initiated toggle (Dashboard Overview tab). Turning on re-checks the same
@@ -136,6 +142,7 @@ function OnCall.AcceptOffer(source)
     if result.ok then
         s.pendingOffer = nil
         s.declineStreak = 0
+        s.fastNextPage = true
         if usedRental then
             Vehicles.SetRentalDeliveryId(source, result.deliveryId)
         end

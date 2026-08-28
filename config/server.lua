@@ -160,6 +160,10 @@ return {
     PagerOfferTimeoutSeconds = 30,
     PagerDeclineCooldownMinutes = 5,
 
+    -- Only the first page after an accept uses this short delay; every page after reverts to the interval above.
+    PagerPostAcceptMinSeconds = 20,
+    PagerPostAcceptMaxSeconds = 40,
+
     -- Scaled by missing health: cost = perHealthPoint * (maxHealth - currentHealth), summed body+engine
     RepairCost = { mode = "scaled", perHealthPoint = 0.6 },
 
