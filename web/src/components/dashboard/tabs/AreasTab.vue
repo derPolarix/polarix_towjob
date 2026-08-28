@@ -49,7 +49,7 @@
 
 				<div
 					v-if="selectedArea"
-					style="position:absolute;top:16px;right:16px;width:280px;border-radius:14px;background:#fff;border:1px solid #dfe2e6;box-shadow:0 14px 34px rgba(0,0,0,0.18);padding:16px"
+					style="position:absolute;top:16px;right:16px;z-index:1100;width:280px;border-radius:14px;background:#fff;border:1px solid #dfe2e6;box-shadow:0 14px 34px rgba(0,0,0,0.18);padding:16px"
 				>
 					<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
 						<span style="font-size:15px;font-weight:700;color:#1b1f24">{{ selectedArea.name }}</span>
@@ -57,22 +57,35 @@
 					</div>
 					<div style="font-size:12px;color:#9aa1ab;margin-top:2px">{{ selectedArea.region }}</div>
 
-					<div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;font-size:13px">
-						<div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">Unlock cost</span><span style="color:var(--accent);font-weight:700">${{ selectedArea.unlock_cost }}</span></div>
-						<div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">Level required</span><span style="color:#1b1f24;font-weight:600">Lvl {{ selectedArea.level_required }}</span></div>
+					<div v-if="selectedArea.reward_multiplier !== 1 || selectedArea.xp_multiplier !== 1" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
+						<span v-if="selectedArea.reward_multiplier !== 1" style="display:inline-flex;align-items:center;gap:3px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:var(--accent);background:rgba(34,197,94,0.12);border-radius:6px;padding:2px 6px"><iconify-icon icon="tabler:coin" width="11"></iconify-icon>{{ selectedArea.reward_multiplier }}x reward</span>
+						<span v-if="selectedArea.xp_multiplier !== 1" style="display:inline-flex;align-items:center;gap:3px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:#6b7280;background:#eef0f2;border-radius:6px;padding:2px 6px"><iconify-icon icon="tabler:bolt" width="11"></iconify-icon>{{ selectedArea.xp_multiplier }}x xp</span>
 					</div>
 
-					<p v-if="unlockError" style="margin:10px 0 0;font-size:12px;color:#d24b3a">{{ unlockError }}</p>
+					<div v-if="selectedArea.note" style="font-size:12px;color:#6b7280;font-style:italic;margin-top:10px">{{ selectedArea.note }}</div>
 
-					<button
-						class="accent-btn"
-						type="button"
-						:disabled="unlocking"
-						style="margin-top:14px;width:100%;padding:11px;font-size:13px;justify-content:center"
-						@click="confirmUnlock"
-					>
-						{{ unlocking ? "Unlocking…" : "Unlock area" }}
-					</button>
+					<div v-if="selectedArea.unlocked" style="margin-top:14px;display:inline-flex;align-items:center;gap:7px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:var(--accent)">
+						<span style="width:9px;height:9px;border-radius:50%;background:var(--accent)"></span>UNLOCKED
+					</div>
+
+					<template v-else>
+						<div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;font-size:13px">
+							<div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">Unlock cost</span><span style="color:var(--accent);font-weight:700">${{ selectedArea.unlock_cost }}</span></div>
+							<div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">Level required</span><span style="color:#1b1f24;font-weight:600">Lvl {{ selectedArea.level_required }}</span></div>
+						</div>
+
+						<p v-if="unlockError" style="margin:10px 0 0;font-size:12px;color:#d24b3a">{{ unlockError }}</p>
+
+						<button
+							class="accent-btn"
+							type="button"
+							:disabled="unlocking"
+							style="margin-top:14px;width:100%;padding:11px;font-size:13px;justify-content:center"
+							@click="confirmUnlock"
+						>
+							{{ unlocking ? "Unlocking…" : "Unlock area" }}
+						</button>
+					</template>
 				</div>
 			</div>
 		</div>
@@ -84,22 +97,17 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import gtaMapUrl from "@/assets/maps/gta_map.jpg";
+import { gtaToLatLng, MAP_IMAGE_BOUNDS } from "@/lib/gtaMap";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { MapArea, UnlockAreaResult } from "@/types/dashboard";
 
 const dashboardStore = useDashboardStore();
 
-// Same gta_map.jpg asset + CRS.Simple setup as ../polarix_truckerjob's OrderRouteMap.vue.
-// Unlike that component, `points` here are already stored in Leaflet coord-space
-// (see polarix_towjob_areas schema comment) — no GTA-world-to-pixel conversion needed,
-// the same polygon vertices are reused verbatim on read as were captured on write (Phase 13).
-const IMG_WIDTH = 4096;
-const IMG_HEIGHT = 6144;
-
 const mapContainer = ref<HTMLDivElement>();
 let map: L.Map | null = null;
 let areaLayer: L.LayerGroup | null = null;
+let resizeObserver: ResizeObserver | null = null;
 
 const areas = ref<MapArea[]>(dashboardStore.payload?.areas ?? []);
 const selectedArea = ref<MapArea | null>(null);
@@ -124,14 +132,28 @@ const sortedAreas = computed(() => {
 });
 
 function areaLatLngs(area: MapArea): L.LatLngExpression[] {
-	return area.points.map((point) => [point.y, point.x]);
+	return area.points.map((point) => gtaToLatLng(point.x, point.y));
 }
 
-// Shared by both the map polygon click and the list row click — an unlocked area has
-// nothing to show (no unlock card), so selecting one just clears any open card.
+// Frame the map on the areas themselves rather than the whole state — polygons are small
+// relative to the full image, so a full-image fit leaves them near-invisible.
+function fitToAreas() {
+	if (!map) return;
+	const latlngs = areas.value
+		.filter((area) => area.points.length >= 3)
+		.flatMap((area) => areaLatLngs(area));
+	if (latlngs.length > 0) {
+		map.fitBounds(L.latLngBounds(latlngs as L.LatLngExpression[]), { padding: [48, 48], maxZoom: 0, animate: false });
+	} else {
+		map.fitBounds(MAP_IMAGE_BOUNDS, { animate: false });
+	}
+}
+
+// Shared by both the map polygon click and the list row click — always opens the info
+// card; locked areas additionally get the unlock action inside it.
 function selectAreaRow(area: MapArea) {
 	unlockError.value = "";
-	selectedArea.value = area.unlocked ? null : area;
+	selectedArea.value = area;
 }
 
 function renderAreas() {
@@ -168,7 +190,7 @@ async function confirmUnlock() {
 			if (area) area.unlocked = true;
 			dashboardStore.addUnlockedArea(unlockedId);
 			renderAreas();
-			selectedArea.value = null;
+			selectedArea.value = area ?? null;
 		} else {
 			unlockError.value = reasonMessages[result?.reason ?? ""] ?? "Unlock failed.";
 		}
@@ -189,18 +211,20 @@ onMounted(async () => {
 			attributionControl: false,
 		});
 
-		L.imageOverlay(gtaMapUrl, [
-			[0, 0],
-			[IMG_HEIGHT, IMG_WIDTH],
-		]).addTo(map);
+		L.imageOverlay(gtaMapUrl, MAP_IMAGE_BOUNDS).addTo(map);
 
 		areaLayer = L.layerGroup().addTo(map);
-		map.fitBounds([
-			[0, 0],
-			[IMG_HEIGHT, IMG_WIDTH],
-		]);
-
 		renderAreas();
+		fitToAreas();
+
+		// The flex container often reports its final height a frame or two after mount;
+		// without this, Leaflet's vector pane desyncs from the image pane and polygon
+		// hitboxes land offset from where they render.
+		resizeObserver = new ResizeObserver(() => {
+			map?.invalidateSize();
+			fitToAreas();
+		});
+		resizeObserver.observe(mapContainer.value);
 	}
 
 	try {
@@ -208,6 +232,7 @@ onMounted(async () => {
 		if (Array.isArray(fresh)) {
 			areas.value = fresh;
 			renderAreas();
+			fitToAreas();
 		}
 	} catch (error) {
 		console.error("getMapAreas failed:", error);
@@ -215,6 +240,8 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+	resizeObserver?.disconnect();
+	resizeObserver = null;
 	if (map) {
 		map.remove();
 		map = null;
