@@ -105,24 +105,20 @@ import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import gtaMapUrl from "@/assets/maps/gta_map.jpg";
+import { gtaToLatLng, latLngToGta, MAP_IMAGE_BOUNDS } from "@/lib/gtaMap";
 import { useAdminStore } from "@/stores/adminStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { AdminActionResult, AdminArea } from "@/types/admin";
 
-// Same CRS.Simple/gta_map.jpg setup as ../components/dashboard/tabs/AreasTab.vue (Phase 6) —
-// duplicated rather than shared, since AreasTab.vue is tightly coupled to the player-facing
-// unlock flow (its own store/panel logic) and this component additionally needs
-// click-to-add-vertex polygon drawing, which AreasTab.vue intentionally doesn't have. Same
-// asset, same IMG_WIDTH/IMG_HEIGHT, same points = Leaflet coord-space convention either way.
-const IMG_WIDTH = 4096;
-const IMG_HEIGHT = 6144;
-
+// Points are stored/sent as GTA world coords and converted to the Leaflet image via
+// @/lib/gtaMap — map clicks here are captured the reverse way (latLngToGta).
 const adminStore = useAdminStore();
 
 const mapContainer = ref<HTMLDivElement>();
 let map: L.Map | null = null;
 let areaPolygon: L.Polygon | L.Polyline | null = null;
 let vertexLayer: L.LayerGroup | null = null;
+let resizeObserver: ResizeObserver | null = null;
 
 const editingId = ref<string | null>(null);
 const selectedIsActive = ref(true);
@@ -153,7 +149,7 @@ function renderShape() {
 
 	if (form.points.length === 0) return;
 
-	const latlngs: L.LatLngExpression[] = form.points.map((point) => [point.y, point.x]);
+	const latlngs: L.LatLngExpression[] = form.points.map((point) => gtaToLatLng(point.x, point.y));
 
 	areaPolygon =
 		form.points.length >= 3
@@ -211,7 +207,7 @@ function selectArea(area: AdminArea) {
 	form.points = area.points.map((point) => ({ x: point.x, y: point.y }));
 	renderShape();
 	if (map && form.points.length > 0) {
-		const bounds: L.LatLngTuple[] = form.points.map((point) => [point.y, point.x]);
+		const bounds = form.points.map((point) => gtaToLatLng(point.x, point.y));
 		map.fitBounds(bounds, { maxZoom: 0, padding: [20, 20] });
 	}
 }
@@ -296,27 +292,28 @@ onMounted(() => {
 			attributionControl: false,
 		});
 
-		L.imageOverlay(gtaMapUrl, [
-			[0, 0],
-			[IMG_HEIGHT, IMG_WIDTH],
-		]).addTo(map);
-
-		map.fitBounds([
-			[0, 0],
-			[IMG_HEIGHT, IMG_WIDTH],
-		]);
+		L.imageOverlay(gtaMapUrl, MAP_IMAGE_BOUNDS).addTo(map);
+		map.fitBounds(MAP_IMAGE_BOUNDS);
 
 		vertexLayer = L.layerGroup().addTo(map);
 
 		map.on("click", (event: L.LeafletMouseEvent) => {
-			addPoint(event.latlng.lng, event.latlng.lat);
+			const gta = latLngToGta(event.latlng.lat, event.latlng.lng);
+			addPoint(gta.x, gta.y);
 		});
+
+		// The panel's flex layout settles its height after mount; without recalculating,
+		// Leaflet's click→latlng mapping and vertex hitboxes land offset.
+		resizeObserver = new ResizeObserver(() => map?.invalidateSize());
+		resizeObserver.observe(mapContainer.value);
 	}
 
 	startNew();
 });
 
 onBeforeUnmount(() => {
+	resizeObserver?.disconnect();
+	resizeObserver = null;
 	if (map) {
 		map.remove();
 		map = null;

@@ -49,9 +49,9 @@ function AdminAreas.ListForAdmin(source)
     return { ok = true, areas = rows }
 end
 
--- points are Leaflet coord-space polygon vertices (captured by the admin clicking the reused
--- Phase 6 map component, see MapTab.vue's own comment) — never GTA world positions, no
--- conversion needed here. unlock_cost falls back to Settings.GetDefaultAreaUnlockCost() when
+-- points are GTA world-coord polygon vertices (the admin map component converts its clicks
+-- from the Leaflet image back to world coords, see web/src/lib/gtaMap.ts) — stored verbatim,
+-- no conversion here. unlock_cost falls back to Settings.GetDefaultAreaUnlockCost() when
 -- the admin leaves it blank, matching Step 13.5's "default area unlock cost" setting.
 function AdminAreas.Create(source, area)
     local ok, reason = requireAdmin(source)

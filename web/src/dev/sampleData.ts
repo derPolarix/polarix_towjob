@@ -22,8 +22,8 @@ export const sampleDashboardPayload: DashboardPayload = {
 	xpThresholds: [0, 150, 400, 800, 1400, 2200],
 	unlockedAreaIds: ["area_default"],
 	areas: [
-		{ id: "area_default", name: "Los Santos Central", region: "Los Santos", points: [{ x: 1700, y: 2700 }, { x: 2300, y: 2700 }, { x: 2300, y: 3300 }, { x: 1700, y: 3300 }], unlock_cost: 0, level_required: 1, reward_multiplier: 1.0, xp_multiplier: 1.0, note: null, is_default: true, unlocked: true },
-		{ id: "area_paleto", name: "Paleto Bay", region: "Blaine County", points: [{ x: 1650, y: 650 }, { x: 2150, y: 650 }, { x: 2150, y: 1150 }, { x: 1650, y: 1150 }], unlock_cost: 750, level_required: 2, reward_multiplier: 1.5, xp_multiplier: 1.2, note: "High traffic", is_default: false, unlocked: false },
+		{ id: "area_default", name: "Los Santos Central", region: "Los Santos", points: [{ x: -600, y: -1200 }, { x: 900, y: -1200 }, { x: 900, y: 400 }, { x: -600, y: 400 }], unlock_cost: 0, level_required: 1, reward_multiplier: 1.0, xp_multiplier: 1.0, note: null, is_default: true, unlocked: true },
+		{ id: "area_paleto", name: "Paleto Bay", region: "Blaine County", points: [{ x: -900, y: 5900 }, { x: 100, y: 5900 }, { x: 100, y: 6700 }, { x: -900, y: 6700 }], unlock_cost: 750, level_required: 2, reward_multiplier: 1.5, xp_multiplier: 1.2, note: "High traffic", is_default: false, unlocked: false },
 	],
 	vehicles: [
 		{ id: 1, tier_id: "standard", label: "Standard Flatbed", model: "towtruck2", plate: "TOW001", body_health: 820, engine_health: 940, state: "stored" },
@@ -82,8 +82,8 @@ export const sampleAdminMissions: AdminMission[] = [
 ];
 
 export const sampleAdminAreas: AdminArea[] = [
-	{ id: "area_default", name: "Los Santos Central", region: "Los Santos", points: [{ x: 1700, y: 2700 }, { x: 2300, y: 2700 }, { x: 2300, y: 3300 }, { x: 1700, y: 3300 }], unlock_cost: 0, level_required: 1, reward_multiplier: 1.0, xp_multiplier: 1.0, note: null, is_default: true, is_active: true },
-	{ id: "area_paleto", name: "Paleto Bay", region: "Blaine County", points: [{ x: 1650, y: 650 }, { x: 2150, y: 650 }, { x: 2150, y: 1150 }, { x: 1650, y: 1150 }], unlock_cost: 750, level_required: 2, reward_multiplier: 1.5, xp_multiplier: 1.2, note: "High traffic", is_default: false, is_active: true },
+	{ id: "area_default", name: "Los Santos Central", region: "Los Santos", points: [{ x: -600, y: -1200 }, { x: 900, y: -1200 }, { x: 900, y: 400 }, { x: -600, y: 400 }], unlock_cost: 0, level_required: 1, reward_multiplier: 1.0, xp_multiplier: 1.0, note: null, is_default: true, is_active: true },
+	{ id: "area_paleto", name: "Paleto Bay", region: "Blaine County", points: [{ x: -900, y: 5900 }, { x: 100, y: 5900 }, { x: 100, y: 6700 }, { x: -900, y: 6700 }], unlock_cost: 750, level_required: 2, reward_multiplier: 1.5, xp_multiplier: 1.2, note: "High traffic", is_default: false, is_active: true },
 ];
 
 export const sampleAdminSettings: AdminSetting[] = [

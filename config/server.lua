@@ -21,8 +21,8 @@ return {
             id = "area_default",
             name = "Los Santos Central",
             region = "Los Santos",
-            -- placeholder Leaflet coord-space polygon (rectangle)
-            points = { { x = 20.0, y = 20.0 }, { x = 80.0, y = 20.0 }, { x = 80.0, y = 80.0 }, { x = 20.0, y = 80.0 } },
+            -- placeholder GTA world-coord polygon (rectangle) around central Los Santos
+            points = { { x = -600.0, y = -1200.0 }, { x = 900.0, y = -1200.0 }, { x = 900.0, y = 400.0 }, { x = -600.0, y = 400.0 } },
             unlock_cost = 0,
             level_required = 1,
             is_default = true,
@@ -31,8 +31,8 @@ return {
             id = "area_paleto",
             name = "Paleto Bay",
             region = "Blaine County",
-            -- placeholder Leaflet coord-space polygon (rectangle)
-            points = { { x = 10.0, y = 100.0 }, { x = 50.0, y = 100.0 }, { x = 50.0, y = 140.0 }, { x = 10.0, y = 140.0 } },
+            -- placeholder GTA world-coord polygon (rectangle) around Paleto Bay
+            points = { { x = -900.0, y = 5900.0 }, { x = 100.0, y = 5900.0 }, { x = 100.0, y = 6700.0 }, { x = -900.0, y = 6700.0 } },
             unlock_cost = 750,
             level_required = 2,
             is_default = false,
