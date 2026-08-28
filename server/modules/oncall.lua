@@ -3,7 +3,7 @@ local debug = require("shared.debug")
 
 OnCall = {}
 
--- [source] = { onCall = true, pendingOffer = { missionId, expiresAt } | nil, nextPageAt, declineStreak, fastNextPage }
+-- [source] = { onCall = true, pendingOffer = { missionId, expiresAt } | nil, nextPageAt, declineStreak }
 -- In-memory only, same precedent as Missions' activeDeliveryState — on-call is a live
 -- session concept, not something that needs to survive a resource restart or reconnect.
 local state = {}
@@ -19,19 +19,21 @@ function OnCall.IsOnCall(source)
     return s ~= nil and s.onCall == true
 end
 
-local function scheduleNextPage(source, extraDelaySeconds)
+-- opts = { fast = bool, extraDelaySeconds = number } — `fast` picks the short post-accept window.
+local function scheduleNextPage(source, opts)
     local s = state[source]
     if not s then return end
 
+    opts = opts or {}
     local delaySeconds
-    if s.fastNextPage then
-        s.fastNextPage = nil
+    if opts.fast then
         delaySeconds = math.random(serverConfig.PagerPostAcceptMinSeconds, serverConfig.PagerPostAcceptMaxSeconds)
     else
         delaySeconds = math.random(serverConfig.PagerMinIntervalMinutes * 60, serverConfig.PagerMaxIntervalMinutes * 60)
     end
 
-    s.nextPageAt = os.time() + delaySeconds + (extraDelaySeconds or 0)
+    s.nextPageAt = os.time() + delaySeconds + (opts.extraDelaySeconds or 0)
+    debug.DebugPrint(("OnCall.scheduleNextPage: %s next page in %ds (fast=%s)"):format(source, s.nextPageAt - os.time(), tostring(opts.fast == true)))
 end
 
 -- Player-initiated toggle (Dashboard Overview tab). Turning on re-checks the same
@@ -58,8 +60,8 @@ function OnCall.SetOnCall(source, wantOn)
         return { ok = false, reason = "no_deployed_vehicle" }
     end
 
-    state[source] = { onCall = true, pendingOffer = nil, declineStreak = 0, fastNextPage = true }
-    scheduleNextPage(source)
+    state[source] = { onCall = true, pendingOffer = nil, declineStreak = 0 }
+    scheduleNextPage(source, { fast = true })
 
     return { ok = true, onCall = true }
 end
@@ -68,8 +70,8 @@ end
 -- deployed at that point, so this skips SetOnCall's own gate checks rather than re-running
 -- a second round-trip of the same checks against state we just established ourselves.
 function OnCall.ForceOnAfterRentalSpawn(source)
-    state[source] = { onCall = true, pendingOffer = nil, declineStreak = 0, fastNextPage = true }
-    scheduleNextPage(source)
+    state[source] = { onCall = true, pendingOffer = nil, declineStreak = 0 }
+    scheduleNextPage(source, { fast = true })
 end
 
 -- Confirmed with user: a zero-owned-vehicle player going on-call gets prompted (client-side
@@ -122,7 +124,7 @@ function OnCall.HandleDeliveryEnded(source)
     if not s or not s.onCall then return end
 
     s.pendingOffer = nil
-    scheduleNextPage(source)
+    scheduleNextPage(source, { fast = true })
 end
 
 function OnCall.AcceptOffer(source)
@@ -142,7 +144,6 @@ function OnCall.AcceptOffer(source)
     if result.ok then
         s.pendingOffer = nil
         s.declineStreak = 0
-        s.fastNextPage = true
         if usedRental then
             Vehicles.SetRentalDeliveryId(source, result.deliveryId)
         end
@@ -159,7 +160,7 @@ function OnCall.DeclineOffer(source)
 
     s.pendingOffer = nil
     s.declineStreak = (s.declineStreak or 0) + 1
-    scheduleNextPage(source, serverConfig.PagerDeclineCooldownMinutes * 60 * s.declineStreak)
+    scheduleNextPage(source, { extraDelaySeconds = serverConfig.PagerDeclineCooldownMinutes * 60 * s.declineStreak })
 
     return { ok = true }
 end
@@ -191,7 +192,7 @@ CreateThread(function()
                         else
                             -- Nothing eligible right now (all done/leveled past/areas locked) —
                             -- retry soon rather than going quiet indefinitely.
-                            scheduleNextPage(source, 60)
+                            scheduleNextPage(source, { fast = true, extraDelaySeconds = 30 })
                         end
                     end
                 end
