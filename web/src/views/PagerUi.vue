@@ -10,12 +10,18 @@
 							<div class="pager-name">{{ offer.name }}</div>
 							<div class="pager-meta">
 								${{ offer.reward_base }} · +{{ offer.xp_base }} XP
-								<span v-if="offer.time_limit_minutes"> · {{ offer.time_limit_minutes }}m limit</span>
+								<span v-if="offer.time_limit_minutes"> · {{ offer.time_limit_minutes }}m</span>
+								· <span class="pager-timer">{{ secondsLeft }}s</span>
 							</div>
 							<div class="pager-actions">
-								<button type="button" class="pager-btn pager-btn-accept" :disabled="busy" @click="accept">Accept</button>
-								<button type="button" class="pager-btn pager-btn-decline" :disabled="busy" @click="decline">Decline</button>
-								<span class="pager-timer">{{ secondsLeft }}s</span>
+								<button type="button" class="pager-hint pager-hint-accept" :disabled="busy" @click="accept">
+									<span class="pager-key"><iconify-icon icon="tabler:corner-down-left" width="8"></iconify-icon>Enter</span>
+									Accept
+								</button>
+								<button type="button" class="pager-hint pager-hint-decline" :disabled="busy" @click="decline">
+									<span class="pager-key"><iconify-icon icon="tabler:backspace" width="8"></iconify-icon>Bksp</span>
+									Decline
+								</button>
 							</div>
 						</div>
 					</div>
@@ -165,38 +171,57 @@ async function decline() {
 	line-height: 1.3;
 }
 
+.pager-timer {
+	font-family: 'IBM Plex Mono', monospace;
+	color: #4ade80;
+	font-weight: 700;
+}
+
 .pager-actions {
 	display: flex;
-	align-items: center;
-	gap: 5px;
+	flex-direction: column;
+	gap: 3px;
 	margin-top: 6px;
 }
 
-.pager-btn {
+.pager-hint {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	width: 100%;
+	padding: 0;
+	background: none;
+	border: none;
 	font-family: 'Archivo', system-ui, sans-serif;
 	font-size: 9px;
 	font-weight: 700;
-	border: none;
-	border-radius: 5px;
-	padding: 3px 8px;
+	color: #fff;
+	text-align: left;
 	cursor: pointer;
 }
-.pager-btn:disabled {
+.pager-hint:disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
 }
-.pager-btn-accept {
-	background: #22c55e;
-	color: #0f2417;
+.pager-hint-decline {
+	color: #c9cdd3;
 }
-.pager-btn-decline {
-	background: #3a3f3a;
-	color: #fff;
-}
-.pager-timer {
-	margin-left: auto;
+
+.pager-key {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	padding: 1px 4px;
+	border-radius: 3px;
+	background: #1c211c;
+	border: 1px solid #2f362f;
 	font-family: 'IBM Plex Mono', monospace;
-	font-size: 9px;
+	font-size: 8px;
+	font-weight: 700;
+	color: #4ade80;
+	line-height: 1;
+}
+.pager-hint-decline .pager-key {
 	color: #9aa1ab;
 }
 

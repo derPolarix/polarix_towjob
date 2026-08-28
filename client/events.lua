@@ -10,10 +10,5 @@ RegisterNetEvent("polarix_towjob:onCallStateUpdate", function(data)
     SendMessage("onCallStateUpdate", data)
 end)
 
-RegisterNetEvent("polarix_towjob:pagerOffer", function(offer)
-    SendMessage("pagerOffer", offer)
-end)
-
-RegisterNetEvent("polarix_towjob:pagerOfferCleared", function()
-    SendMessage("pagerOfferCleared", nil)
-end)
+-- Pager offer/clear events live in client/modules/pager.lua — they also drive the
+-- Enter/Backspace keybinds the focus-less pager NUI needs to be actionable.
