@@ -1,9 +1,7 @@
 local debug = require("shared.debug")
 
--- On-call pager accept/decline. The pager NUI is deliberately focus-less (it must never
--- grab the cursor while the player is driving), so its buttons can't be clicked — this
--- module drives the offer off raw frontend-control checks instead: Enter accepts,
--- Backspace declines. The matching key hints are rendered in web/src/views/PagerUi.vue.
+-- Pager NUI is focus-less (never grabs the cursor mid-drive), so its buttons can't be
+-- clicked — accept/decline run off raw control checks instead.
 local ACCEPT_CONTROL = 191  -- INPUT_FRONTEND_ACCEPT (Enter)
 local DECLINE_CONTROL = 177 -- INPUT_FRONTEND_CANCEL (Backspace)
 
