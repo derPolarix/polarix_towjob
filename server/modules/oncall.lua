@@ -165,6 +165,37 @@ function OnCall.DeclineOffer(source)
     return { ok = true }
 end
 
+-- Debug-only test helper, invoked by /towjobtestpage (server/commands.lua, itself gated on
+-- config.shared.Debug and admin-only). Bypasses the random scheduler: picks one eligible
+-- mission right now and pages it. Puts the player on-call if they weren't, since receiving a
+-- page has no meaning off-call and Accept needs a live state entry to resolve against.
+function OnCall.DebugSendTestPage(source)
+    local player = Player.GetData(source)
+    if not player then return { ok = false, reason = "no_player" } end
+
+    if DB.GetActiveDelivery(player.identifier) then
+        return { ok = false, reason = "active_delivery_exists" }
+    end
+
+    local offer = Missions.PickRandomForPager(source)
+    if not offer then return { ok = false, reason = "no_eligible_mission" } end
+
+    local s = state[source]
+    if not s or not s.onCall then
+        s = { onCall = true, pendingOffer = nil, declineStreak = 0 }
+        state[source] = s
+        TriggerClientEvent("polarix_towjob:onCallStateUpdate", source, { onCall = true })
+    end
+
+    local expiresAt = os.time() + serverConfig.PagerOfferTimeoutSeconds
+    s.pendingOffer = { missionId = offer.id, expiresAt = expiresAt }
+    offer.expiresAt = expiresAt
+    TriggerClientEvent("polarix_towjob:pagerOffer", source, offer)
+
+    debug.DebugPrint(("OnCall.DebugSendTestPage: paged %s mission %s (%s)"):format(source, offer.id, offer.name))
+    return { ok = true, name = offer.name }
+end
+
 -- Ticks every on-call player: sweeps an expired pending offer (treated as a decline) and
 -- offers a fresh page to anyone who's due, clear (no active delivery), and not already
 -- waiting on an offer. A 10s resolution is plenty for minute-scale pager timing.
