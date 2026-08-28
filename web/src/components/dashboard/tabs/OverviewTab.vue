@@ -11,7 +11,7 @@
 					<span style="color:#454c56">·</span>
 					<span style="display:inline-flex;align-items:center;gap:6px">
 						<span :style="{ width: '7px', height: '7px', borderRadius: '50%', background: dashboardStore.onCall ? '#22c55e' : '#6b7280' }"></span>
-						{{ dashboardStore.onCall ? 'On-call — pager active' : 'Off-call' }}
+						{{ dashboardStore.onCall ? 'On-call — receiving pager jobs' : 'Off-call' }}
 					</span>
 					<span style="color:#454c56">·</span>
 					<span style="display:inline-flex;align-items:center;gap:6px">
@@ -33,6 +33,9 @@
 		</div>
 
 		<p v-if="onCallError" style="margin:0;font-size:12px;color:#d24b3a">{{ onCallError }}</p>
+		<p style="margin:0;font-size:12px;color:#9aa1ab">
+			While on-call the pager sends a randomly picked tow job every few minutes — accept it with <b>Enter</b>, decline with <b>Backspace</b>. Go off-call any time to stop.
+		</p>
 
 		<!-- Stat cards -->
 		<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
@@ -65,7 +68,7 @@
 					</div>
 					<div style="font-size:15px;font-weight:600;color:#3c424b;margin-top:16px">No active delivery</div>
 					<div style="font-size:13px;color:#9aa1ab;margin-top:4px">
-						{{ dashboardStore.onCall ? "You're on-call — the pager will ring with a job" : 'Go on-call above to start receiving jobs' }}
+						{{ dashboardStore.onCall ? "You're on-call — the pager will ping a new job every few minutes" : 'Go on-call above to get tow jobs paged to you periodically' }}
 					</div>
 				</div>
 			</div>
