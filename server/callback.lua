@@ -2,28 +2,45 @@ local sharedConfig = require("config.shared")
 local serverConfig = require("config.server")
 
 lib.callback.register("polarix_towjob:openDashboard", function(source)
+    -- Player.Load normally runs on the framework's "player loaded" event, but that doesn't
+    -- fire for players already connected when the resource restarts. Rebuild the cache on
+    -- demand here so a mid-session `ensure` doesn't leave the dashboard unusable until relog.
     local playerData = Player.GetData(source)
     if not playerData then
+        pcall(Player.Load, source)
+        playerData = Player.GetData(source)
+        if not playerData then
+            print(("^1[polarix_towjob] openDashboard: could not load player for source %s (identifier=%s)^7"):format(source, tostring(Framework.GetPlayerIdentifier(source))))
+            return nil
+        end
+    end
+
+    local ok, payload = pcall(function()
+        return {
+            player = playerData,
+            levelTitles = sharedConfig.LevelTitles,
+            xpThresholds = sharedConfig.XPThresholds,
+            unlockedAreaIds = Player.GetUnlockedAreaIds(source),
+            areas = Areas.GetMapAreas(source),
+            vehicles = Vehicles.GetOwnedForPlayer(source),
+            vehicleTiers = Vehicles.GetTiersForPlayer(source),
+            repairCostPerHealthPoint = Vehicles.GetRepairCostPerHealthPoint(source),
+            activeDelivery = Missions.GetActiveDeliverySummary(source),
+            skillBranches = sharedConfig.Skills.branches,
+            onCall = OnCall.IsOnCall(source),
+            rentalActive = Vehicles.IsRentalActive(source),
+            rentalPricePerCharge = Settings.GetRentalPricePerCharge(),
+            rentalIntervalMinutes = Settings.GetRentalIntervalMinutes(),
+            rentalTruckLabel = serverConfig.RentalTruck.label,
+        }
+    end)
+
+    if not ok then
+        print(("^1[polarix_towjob] openDashboard: payload build errored for source %s: %s^7"):format(source, tostring(payload)))
         return nil
     end
 
-    return {
-        player = playerData,
-        levelTitles = sharedConfig.LevelTitles,
-        xpThresholds = sharedConfig.XPThresholds,
-        unlockedAreaIds = Player.GetUnlockedAreaIds(source),
-        areas = Areas.GetMapAreas(source),
-        vehicles = Vehicles.GetOwnedForPlayer(source),
-        vehicleTiers = Vehicles.GetTiersForPlayer(source),
-        repairCostPerHealthPoint = Vehicles.GetRepairCostPerHealthPoint(source),
-        activeDelivery = Missions.GetActiveDeliverySummary(source),
-        skillBranches = sharedConfig.Skills.branches,
-        onCall = OnCall.IsOnCall(source),
-        rentalActive = Vehicles.IsRentalActive(source),
-        rentalPricePerCharge = Settings.GetRentalPricePerCharge(),
-        rentalIntervalMinutes = Settings.GetRentalIntervalMinutes(),
-        rentalTruckLabel = serverConfig.RentalTruck.label,
-    }
+    return payload
 end)
 
 -- Used by the Areas tab to refresh area unlock state without reopening the whole Dashboard.

@@ -4,6 +4,7 @@ local shared = require("shared.debug")
 require("server.modules.areas")
 require("server.modules.missions")
 require("server.modules.settings")
+require("server.modules.player")
 
 local function loadSchema()
     local sql = LoadResourceFile(GetCurrentResourceName(), "sql/init.sql")
@@ -40,7 +41,10 @@ AddEventHandler('onResourceStart', function(resourceName)
     for _, playerId in ipairs(GetPlayers()) do
         local source = tonumber(playerId)
         if source then
-            Player.Load(source)
+            local ok, err = pcall(Player.Load, source)
+            if not ok then
+                debug.DebugPrint("onResourceStart: Player.Load failed for", source, err)
+            end
         end
     end
 end)
