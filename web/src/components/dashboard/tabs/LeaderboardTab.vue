@@ -76,8 +76,10 @@ onMounted(async () => {
 	try {
 		const result = await nuiCallbackAsync<LeaderboardResult>("getLeaderboard");
 		if (result) {
-			entries.value = Array.isArray(result.entries) ? result.entries : [];
-			own.value = result.own ?? null;
+			// Server already filters $0 earners out (DB.GetTopEarners); mirror it here so dev
+			// sample data and any stale cache can't slip a $0 row onto the board.
+			entries.value = (Array.isArray(result.entries) ? result.entries : []).filter((entry) => entry.total_earnings > 0);
+			own.value = result.own && result.own.total_earnings > 0 ? result.own : null;
 		}
 	} catch (error) {
 		console.error("getLeaderboard failed:", error);

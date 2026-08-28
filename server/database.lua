@@ -200,7 +200,7 @@ end
 
 function DB.GetTopEarners(limit)
     return MySQL.query.await(
-        "SELECT identifier, name, level, total_earnings FROM " .. server.Tables.players .. " ORDER BY total_earnings DESC LIMIT ?",
+        "SELECT identifier, name, level, total_earnings FROM " .. server.Tables.players .. " WHERE total_earnings > 0 ORDER BY total_earnings DESC LIMIT ?",
         { limit }
     )
 end

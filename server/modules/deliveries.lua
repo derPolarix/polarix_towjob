@@ -27,7 +27,9 @@ function Deliveries.GetLeaderboard(source)
 
     local player = Player.GetData(source)
     local own = nil
-    if player then
+    -- Mirrors DB.GetTopEarners' `total_earnings > 0` filter: a player who hasn't earned
+    -- anything yet isn't on the board at all, own row included.
+    if player and (player.total_earnings or 0) > 0 then
         local ownRank = nil
         for i, row in ipairs(topEarners) do
             if row.identifier == player.identifier then
