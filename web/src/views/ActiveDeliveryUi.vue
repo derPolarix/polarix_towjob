@@ -9,9 +9,7 @@
 
 			<div v-if="data.state === 'searching'" class="mt-1 text-xs text-white/70">
 				{{ data.vehicleLabel }}
-				<span v-if="data.vehicleColors">
-					· Color: #{{ data.vehicleColors.primary }}/#{{ data.vehicleColors.secondary }}
-				</span>
+				<span v-if="colorLabel"> · {{ colorLabel }}</span>
 			</div>
 
 			<div class="mt-1 text-xs text-white/60">{{ data.distance }}m away</div>
@@ -28,10 +26,19 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useActiveDeliveryStore } from "@/stores/activeDeliveryStore";
+import { vehicleColorName } from "@/utils/vehicleColors";
 
 const activeDeliveryStore = useActiveDeliveryStore();
 
 const data = computed(() => activeDeliveryStore.data);
+
+const colorLabel = computed(() => {
+	const colors = data.value?.vehicleColors;
+	if (!colors) return "";
+	const primary = vehicleColorName(colors.primary);
+	if (colors.primary === colors.secondary) return primary;
+	return `${primary} / ${vehicleColorName(colors.secondary)}`;
+});
 
 const formattedTime = computed(() => {
 	const seconds = data.value?.secondsRemaining;
