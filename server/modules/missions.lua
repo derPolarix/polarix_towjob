@@ -149,8 +149,10 @@ end
 -- the periodic sweep backstop.
 local function isDeliveryVehicleDestroyed(state)
     local target = state.targetNetId and NetworkGetEntityFromNetworkId(state.targetNetId)
+    if not target or target == 0 then return false end
 
-    return target and target ~= 0 and (not DoesEntityExist(target) or IsEntityDead(target)) or false
+    -- IsEntityDead is client-only; server-side a destroyed vehicle reports entity health 0.
+    return not DoesEntityExist(target) or GetEntityHealth(target) <= 0
 end
 
 -- Step 10.1: client-side damage.lua detects destruction fast (for responsiveness) and
