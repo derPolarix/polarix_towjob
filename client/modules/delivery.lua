@@ -2,6 +2,9 @@ local clientConfig = require("config.client")
 
 local HUD_UPDATE_INTERVAL_MS = 500
 local DROPOFF_RENDER_DISTANCE = 30.0
+-- dropoff_z is stored at ped-root height (admin editor's "use current position"); drop the
+-- outline this far to paint it on the ground. Matches polarix_truckerjob's parking outline.
+local GROUND_OFFSET = 0.8
 
 local function buildUpdatePayload(delivery)
     local playerCoords = GetEntityCoords(PlayerPedId())
@@ -25,9 +28,7 @@ local function buildUpdatePayload(delivery)
     }
 end
 
--- Global (not local): a generic heading-aligned-rectangle outline, reusable as-is by the
--- Phase 13 admin mission editor for dropoff preview — same rationale trucker job's own
--- copy of this function documents.
+-- Global: also drawn by the admin mission editor's dropoff preview (client/modules/admin.lua).
 function DrawOutlineRectangle(center, heading, length, width, correct)
     local rad = math.rad(heading or 0.0)
     local lengthDir = vector3(-math.sin(rad), math.cos(rad), 0.0)
@@ -92,45 +93,6 @@ local function attemptComplete()
     end
 end
 
-local dropoffZoneMissionId = nil
-local dropoffZoneId = nil
-
--- Captures/reuses ox_target's own returned zone id for removal rather than a name-based
--- lookup — the box zone's dropoff coords move per mission, so (unlike npc.lua's static
--- entity target or garage.lua's permanent parking sphere) this one must be torn down and
--- recreated for each new delivery instead of registered once at resource start.
-local function removeDropoffZone()
-    if dropoffZoneId and GetResourceState("ox_target") == "started" then
-        exports.ox_target:removeZone(dropoffZoneId)
-    end
-    dropoffZoneId = nil
-    dropoffZoneMissionId = nil
-end
-
-local function ensureDropoffZone(delivery)
-    if dropoffZoneMissionId == delivery.mission.id then return end
-    removeDropoffZone()
-
-    if GetResourceState("ox_target") ~= "started" then return end
-
-    local d = delivery.mission.dropoff
-    dropoffZoneId = exports.ox_target:addBoxZone({
-        coords = vector3(d.x, d.y, d.z),
-        size = vector3(delivery.mission.dropoff_width or 6.0, delivery.mission.dropoff_length or 10.0, 4.0),
-        rotation = d.heading or 0.0,
-        options = {
-            {
-                name = "polarix_towjob:dropoffzone",
-                icon = "fa-solid fa-flag-checkered",
-                label = "Confirm Delivery",
-                canInteract = canComplete,
-                onSelect = attemptComplete,
-            },
-        },
-    })
-    dropoffZoneMissionId = delivery.mission.id
-end
-
 CreateThread(function()
     local wasActive = false
 
@@ -149,9 +111,8 @@ CreateThread(function()
     end
 end)
 
--- Step 10.2: renders the red/green dropoff outline once near it, and drives the confirm
--- interaction (ground rule 5: ox_target box zone + native marker/[E] fallback). Rectangle
--- checks the *towed vehicle's* position/heading, never the player's/tow truck's own.
+-- Renders the red/green ground outline near the dropoff and drives the [E] confirm. The
+-- rectangle checks the *towed vehicle's* position/heading, never the player's/tow truck's.
 CreateThread(function()
     local promptShown = false
 
@@ -166,28 +127,24 @@ CreateThread(function()
         local delivery = Vehicle.GetCurrentDelivery()
 
         if delivery and delivery.state == "found" then
-            ensureDropoffZone(delivery)
-
             local d = delivery.mission.dropoff
-            local dropoffCenter = vector3(d.x, d.y, d.z)
-            local nearDropoff = #(GetEntityCoords(PlayerPedId()) - dropoffCenter) < DROPOFF_RENDER_DISTANCE
+            local outlineCenter = vector3(d.x, d.y, d.z - GROUND_OFFSET)
+            local nearDropoff = #(GetEntityCoords(PlayerPedId()) - outlineCenter) < DROPOFF_RENDER_DISTANCE
 
             if nearDropoff then
                 local aligned = canComplete()
-                DrawOutlineRectangle(dropoffCenter, d.heading or 0.0, delivery.mission.dropoff_length or 10.0, delivery.mission.dropoff_width or 6.0, aligned)
+                DrawOutlineRectangle(outlineCenter, d.heading or 0.0, delivery.mission.dropoff_length or 10.0, delivery.mission.dropoff_width or 6.0, aligned)
 
-                if GetResourceState("ox_target") ~= "started" then
-                    if aligned then
-                        if not promptShown then
-                            promptShown = true
-                            lib.showTextUI("[E] Confirm Delivery")
-                        end
-                        if IsControlJustReleased(0, 38) then
-                            attemptComplete()
-                        end
-                    else
-                        hidePromptIfShown()
+                if aligned then
+                    if not promptShown then
+                        promptShown = true
+                        lib.showTextUI("[E] Confirm Delivery")
                     end
+                    if IsControlJustReleased(0, 38) then
+                        attemptComplete()
+                    end
+                else
+                    hidePromptIfShown()
                 end
 
                 Wait(0)
@@ -196,7 +153,6 @@ CreateThread(function()
                 Wait(clientConfig.DeliveryZoneCheckIntervalMs)
             end
         else
-            removeDropoffZone()
             hidePromptIfShown()
             Wait(clientConfig.DeliveryZoneCheckIntervalMs)
         end

@@ -33,7 +33,8 @@ end
 CreateThread(function()
     while true do
         if dropoffPreview.active then
-            DrawOutlineRectangle(vector3(dropoffPreview.x, dropoffPreview.y, dropoffPreview.z), dropoffPreview.heading, dropoffPreview.length, dropoffPreview.width, false)
+            -- -0.8 so the preview sits on the ground exactly like the live delivery outline.
+            DrawOutlineRectangle(vector3(dropoffPreview.x, dropoffPreview.y, dropoffPreview.z - 0.8), dropoffPreview.heading, dropoffPreview.length, dropoffPreview.width, false)
             Wait(0)
         else
             Wait(300)
