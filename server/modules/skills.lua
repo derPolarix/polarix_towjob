@@ -49,9 +49,8 @@ function Skills.GetRepairDiscount(source)
     return Skills.GetEffectValue(source, "repair_discount")
 end
 
--- Used by the on-call pager's eligibility filter / Missions.Accept / Missions.AcceptViaOnCall
--- — confirmed with user: applies uniformly to every mission's level_required, not only
--- timed/hard ones.
+-- Used by the on-call pager's eligibility filter and Missions.Accept — confirmed with user:
+-- applies uniformly to every mission's level_required, not only timed/hard ones.
 function Skills.GetLevelRequirementReduction(source)
     return Skills.GetEffectValue(source, "level_requirement_reduction")
 end

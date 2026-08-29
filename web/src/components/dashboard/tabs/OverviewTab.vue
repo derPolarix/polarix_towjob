@@ -118,7 +118,6 @@ const onCallError = ref("");
 
 const onCallReasonMessages: Record<string, string> = {
 	active_delivery_exists: "Finish your current delivery before going on-call.",
-	no_deployed_vehicle: "Park out a tow truck from the Vehicles tab first.",
 	no_player: "Player data unavailable, try reopening the Dashboard.",
 };
 

@@ -8,12 +8,6 @@ OnCall = {}
 -- session concept, not something that needs to survive a resource restart or reconnect.
 local state = {}
 
-local function hasDeployedOwnedVehicle(source)
-    local player = Player.GetData(source)
-    if not player then return false end
-    return #DB.GetDeployedVehicles(player.identifier) > 0
-end
-
 function OnCall.IsOnCall(source)
     local s = state[source]
     return s ~= nil and s.onCall == true
@@ -36,9 +30,10 @@ local function scheduleNextPage(source, opts)
     debug.DebugPrint(("OnCall.scheduleNextPage: %s next page in %ds (fast=%s)"):format(source, s.nextPageAt - os.time(), tostring(opts.fast == true)))
 end
 
--- Player-initiated toggle (Dashboard Overview tab). Turning on re-checks the same
--- "deployed vehicle" precondition every time — never trusts that a prior check (e.g. the
--- client's own button state) still holds, per ground rule 4.
+-- Player-initiated toggle (Dashboard Overview tab). On-call is decoupled from having a
+-- truck deployed — the pager accept path (Missions.Accept) parks a stored truck out or
+-- spawns a rental when a job is taken. Only requirement: a way to tow at all, i.e. owning
+-- at least one truck or an active rental; zero of both routes through the rental prompt.
 function OnCall.SetOnCall(source, wantOn)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
@@ -52,12 +47,8 @@ function OnCall.SetOnCall(source, wantOn)
         return { ok = false, reason = "active_delivery_exists" }
     end
 
-    if not Vehicles.IsRentalActive(source) and not hasDeployedOwnedVehicle(source) then
-        local owned = DB.GetOwnedVehicles(player.identifier)
-        if #owned == 0 then
-            return { ok = false, reason = "needs_rental" }
-        end
-        return { ok = false, reason = "no_deployed_vehicle" }
+    if not Vehicles.IsRentalActive(source) and #DB.GetOwnedVehicles(player.identifier) == 0 then
+        return { ok = false, reason = "needs_rental" }
     end
 
     state[source] = { onCall = true, pendingOffer = nil, declineStreak = 0 }
@@ -100,17 +91,6 @@ function OnCall.StartStandaloneRental(source)
     return { ok = true, onCall = true, rental = serverConfig.RentalTruck }
 end
 
--- Confirmed with user: storing your on-call vehicle auto-cancels on-call rather than
--- leaving it "on" with nothing deployed for the scheduler to page.
-function OnCall.HandleVehicleStored(source)
-    local s = state[source]
-    if not s or not s.onCall then return end
-
-    state[source] = nil
-    TriggerClientEvent("polarix_towjob:onCallStateUpdate", source, { onCall = false })
-    TriggerClientEvent("polarix_towjob:notify", source, "You stored your tow truck — you're off-call.", "info")
-end
-
 function OnCall.HandleRentalRepossessed(source)
     if not state[source] then return end
     state[source] = nil
@@ -138,15 +118,14 @@ function OnCall.AcceptOffer(source)
         return { ok = false, reason = "offer_expired" }
     end
 
-    local usedRental = Vehicles.IsRentalActive(source)
-    local result = Missions.AcceptViaOnCall(source, offer.missionId, usedRental)
+    -- Missions.Accept does the full vehicle provisioning: reuse a deployed truck or active
+    -- rental as-is, auto-park-out the one stored truck, spawn a rental for a truckless
+    -- player, or ask a 2+-truck player to pick one (needsParkOut).
+    local result = Missions.Accept(source, offer.missionId)
 
     if result.ok then
         s.pendingOffer = nil
         s.declineStreak = 0
-        if usedRental then
-            Vehicles.SetRentalDeliveryId(source, result.deliveryId)
-        end
     end
 
     return result

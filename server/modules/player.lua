@@ -20,18 +20,18 @@ local function computeLevel(xp)
     return level
 end
 
-local function cleanupStaleDelivery(source, identifier)
+local function reconcileStalePlayerState(source, identifier)
+    -- "deployed" means "spawned in the world" — that entity is gone after a disconnect, so
+    -- every deployed vehicle on load is an orphan. Re-store them all (the rental is not an
+    -- owned vehicle row, so this never touches it).
+    for _, vehicle in ipairs(DB.GetDeployedVehicles(identifier)) do
+        DB.SetVehicleState(vehicle.id, "stored")
+    end
+
     local delivery = DB.GetActiveDelivery(identifier)
     if not delivery then return end
 
     DB.FailDelivery(delivery.id)
-
-    if delivery.used_rental ~= 1 then
-        for _, vehicle in ipairs(DB.GetDeployedVehicles(identifier)) do
-            DB.SetVehicleState(vehicle.id, "stored")
-        end
-    end
-
     debug.DebugPrint("Player.Load: auto-failed stale active delivery", delivery.id, "for", identifier)
     TriggerClientEvent("polarix_towjob:notify", source, "Your previous delivery was interrupted and has been marked as failed.", "error")
 end
@@ -59,7 +59,7 @@ function Player.Load(source)
         aborted_deliveries = row.aborted_deliveries,
     }
 
-    cleanupStaleDelivery(source, identifier)
+    reconcileStalePlayerState(source, identifier)
 
     TriggerClientEvent("polarix_towjob:playerUpdate", source, Player.GetData(source))
 end

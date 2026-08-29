@@ -250,11 +250,6 @@ function Vehicles.Store(source, vehicleId, netId)
 
     debug.DebugPrint(("Vehicles.Store: %s stored vehicle %d"):format(player.identifier, vehicleId))
 
-    -- Storing your only deployed vehicle mid on-call breaks the "on-call always implies a
-    -- deployed vehicle" invariant the pager scheduler relies on — OnCall clears itself rather
-    -- than leaving a player on-call with nothing to dispatch a page to.
-    OnCall.HandleVehicleStored(source)
-
     return { ok = true, vehicles = Vehicles.GetOwnedForPlayer(source) }
 end
 

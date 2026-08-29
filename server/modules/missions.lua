@@ -67,8 +67,7 @@ function Missions.PickRandomForPager(source)
     }
 end
 
--- Shared by Missions.Accept and Missions.AcceptViaOnCall — the client-safe mission payload
--- both hand off to the find/tow/deliver loop is identical either way.
+-- Client-safe mission payload handed to the find/tow/deliver loop on accept.
 local function buildMissionPayload(row)
     return {
         id = row.id,
@@ -224,24 +223,15 @@ Framework.OnPlayerUnload(function(source)
     activeDeliveryState[source] = nil
 end)
 
--- Step 8.1: validates and starts a delivery. No longer reachable from normal play (jobs are
--- paged, not accepted from a list — see Missions.AcceptViaOnCall) — kept solely as the
--- vehicle-provisioning path for the Phase 13 admin "Test mission" button, which needs to work
--- regardless of the admin's own owned/deployed-vehicle state. Vehicle assignment follows the
--- ownership rules from Phase 7's design-decision table:
---   0 owned            -> rental auto-used
---   1 owned (stored)    -> that vehicle auto-parked-out and spawned
---   2+ owned            -> client keeps the Dashboard open; player must Park Out
---                          one themselves (Vehicle.ContinueAfterParkOut on the client
---                          picks the delivery back up once that succeeds)
--- Edge case (not spelled out in the plan): a player's only/all owned vehicles are
--- currently `deployed` (left un-stored from an earlier session/standalone Park Out).
--- There's no "reuse the already-deployed entity" path since the client has no
--- guarantee that entity still exists — reject with `no_stored_vehicle` and let the
--- player store it via the parking zone first, same as any other stuck state.
--- `bypassGates` is never client-controlled — only AdminMissions.TestRun (Phase 13, which
--- re-checks Framework.IsAdmin itself) passes true, to skip the mission-availability gates
--- (level/area-lock) for QA purposes without touching the player-state checks below them.
+-- Validates and starts a delivery — the single accept path, shared by the on-call pager
+-- (OnCall.AcceptOffer) and the Phase 13 admin "Test mission" button. Vehicle assignment:
+--   truck already deployed / rental already active -> reused as-is, no spawn
+--   0 owned, no rental                             -> rental auto-used and spawned
+--   exactly 1 owned, stored                        -> auto-parked-out and spawned
+--   2+ owned, none deployed                        -> needsParkOut: client keeps the
+--        Dashboard open, player Parks Out one (Vehicle.ContinueAfterParkOut resumes it)
+-- `bypassGates` is never client-controlled — only AdminMissions.TestRun (which re-checks
+-- Framework.IsAdmin itself) passes true, to skip the level/area-lock gates for QA.
 function Missions.Accept(source, missionId, bypassGates)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
@@ -274,34 +264,40 @@ function Missions.Accept(source, missionId, bypassGates)
     end
 
     local owned = DB.GetOwnedVehicles(player.identifier)
-    local storedCount = 0
+    local storedCount, deployedCount = 0, 0
+    local firstStored = nil
     for _, vehicle in ipairs(owned) do
-        if vehicle.state == "stored" then storedCount = storedCount + 1 end
+        if vehicle.state == "stored" then
+            storedCount = storedCount + 1
+            firstStored = firstStored or vehicle
+        elseif vehicle.state == "deployed" then
+            deployedCount = deployedCount + 1
+        end
     end
 
-    if #owned > 0 and storedCount == 0 then
-        return { ok = false, reason = "no_stored_vehicle" }
-    end
-
+    local rentalActive = Vehicles.IsRentalActive(source)
     local mission = buildMissionPayload(row)
-
-    local usedRental = #owned == 0
+    local usedRental = rentalActive or #owned == 0
     local deliveryId = DB.CreateDelivery(missionId, player.identifier, usedRental)
 
-    -- Deadline is stamped here, at accept time, per the design-decisions table — the
-    -- server is the sole authority on it regardless of when/whether the client actually
-    -- reports setTargetVehicle afterward (see the merge logic in that handler above).
+    -- Server is the sole authority on the deadline, stamped here at accept time.
     local deadlineAt = mission.time_limit_minutes and (os.time() + mission.time_limit_minutes * 60) or nil
     activeDeliveryState[source] = { deliveryId = deliveryId, deadlineAt = deadlineAt }
 
     local response = { ok = true, deliveryId = deliveryId, mission = mission, deadlineAt = deadlineAt }
 
-    if usedRental then
+    if rentalActive then
+        -- Standalone on-call rental already out — reuse it, no spawn.
+        Vehicles.SetRentalDeliveryId(source, deliveryId)
+        response.usedRental = true
+    elseif deployedCount > 0 then
+        -- An owned truck is already out — reuse it, no spawn.
+    elseif #owned == 0 then
         response.usedRental = true
         response.rental = serverConfig.RentalTruck
         Vehicles.StartRental(source, deliveryId)
-    elseif #owned == 1 then
-        local parkResult = Vehicles.ParkOut(source, owned[1].id)
+    elseif storedCount == 1 then
+        local parkResult = Vehicles.ParkOut(source, firstStored.id)
         if not parkResult.ok then
             DB.FailDelivery(deliveryId)
             activeDeliveryState[source] = nil
@@ -315,53 +311,6 @@ function Missions.Accept(source, missionId, bypassGates)
     debug.DebugPrint(("Missions.Accept: %s accepted mission %s (delivery %d)"):format(player.identifier, missionId, deliveryId))
 
     return response
-end
-
--- On-call pager's accept path (server/modules/oncall.lua's OnCall.AcceptOffer is the only
--- caller). Deliberately doesn't share Missions.Accept's body: on-call's own precondition is
--- that a vehicle (owned or rental) is *already* deployed, so unlike Accept there's no
--- rental-spawn / auto-park-out / needsParkOut branching here — the client just starts the
--- find loop against the truck the player is already driving around.
-function Missions.AcceptViaOnCall(source, missionId, usedRental)
-    local player = Player.GetData(source)
-    if not player then return { ok = false, reason = "no_player" } end
-
-    if DB.GetActiveDelivery(player.identifier) then
-        return { ok = false, reason = "active_delivery_exists" }
-    end
-
-    local row = DB.GetMission(missionId)
-    if not row then
-        return { ok = false, reason = "mission_not_found" }
-    end
-
-    local effectiveLevelRequired = math.max(1, row.level_required - Skills.GetLevelRequirementReduction(source))
-    if effectiveLevelRequired > player.level then
-        return { ok = false, reason = "level_too_low" }
-    end
-
-    local area = DB.GetArea(row.area_id)
-    if not area then
-        return { ok = false, reason = "mission_not_found" }
-    end
-
-    local unlockedAreaIds = {}
-    for _, id in ipairs(Player.GetUnlockedAreaIds(source)) do
-        unlockedAreaIds[id] = true
-    end
-    if not unlockedAreaIds[row.area_id] then
-        return { ok = false, reason = "area_locked" }
-    end
-
-    local mission = buildMissionPayload(row)
-    local deliveryId = DB.CreateDelivery(missionId, player.identifier, usedRental)
-
-    local deadlineAt = mission.time_limit_minutes and (os.time() + mission.time_limit_minutes * 60) or nil
-    activeDeliveryState[source] = { deliveryId = deliveryId, deadlineAt = deadlineAt }
-
-    debug.DebugPrint(("Missions.AcceptViaOnCall: %s accepted paged mission %s (delivery %d)"):format(player.identifier, missionId, deliveryId))
-
-    return { ok = true, deliveryId = deliveryId, mission = mission, deadlineAt = deadlineAt }
 end
 
 -- Used by polarix_towjob:openDashboard so the Dashboard can show an "active delivery"

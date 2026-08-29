@@ -145,10 +145,10 @@ local function beginDelivery(deliveryId, mission, deadlineAt)
     Framework.Notify(("New tow job: %s"):format(mission.name), "info")
 end
 
--- Vehicle-provisioning spawn orchestration for the Phase 13 admin "test mission" button —
--- the only remaining caller now that a normal accept goes through the pager (see
--- Vehicle.AcceptPagerOffer below, which never needs rental/park-out spawning since on-call's
--- own precondition is that a vehicle is already deployed).
+-- Turns a Missions.Accept response into the right client action: spawn a rental / owned
+-- truck when the server provisioned one, stash the mission for Vehicle.ContinueAfterParkOut
+-- when the player has 2+ trucks to pick from, otherwise just start the find loop (a truck
+-- is already out). `result.usedRental` without `result.rental` = rental already spawned.
 local function handleAcceptResult(result)
     if not result then
         return { ok = false, reason = "no_response" }
@@ -163,7 +163,7 @@ local function handleAcceptResult(result)
         return result
     end
 
-    if result.usedRental then
+    if result.usedRental and result.rental then
         Garage.SpawnRental(result.rental)
     elseif result.vehicle then
         Garage.SpawnVehicle(result.vehicle)
@@ -174,26 +174,20 @@ local function handleAcceptResult(result)
     return result
 end
 
--- On-call pager's accept path — unlike a normal accept, the vehicle is always already
--- deployed (on-call's own precondition), so the server response never carries
--- usedRental/vehicle/needsParkOut and handleAcceptResult's spawn branches are skipped
--- entirely; just start the find loop against the truck already out.
+-- On-call pager accept.
 function Vehicle.AcceptPagerOffer()
-    local result = lib.callback.await("polarix_towjob:acceptPage", false)
-    if not result then return { ok = false, reason = "no_response" } end
-    if not result.ok then return result end
+    local result = handleAcceptResult(lib.callback.await("polarix_towjob:acceptPage", false))
 
-    beginDelivery(result.deliveryId, result.mission, result.deadlineAt)
+    if result.ok and result.needsParkOut then
+        Framework.Notify("Open the Dashboard and Park Out a tow truck to start the job.", "info")
+    end
 
     return result
 end
 
--- Phase 13.3: QA test-run button — server-side gate bypass lives entirely in
--- AdminMissions.TestRun/Missions.Accept; the client orchestration is identical to a normal
--- accept once the server has responded ok, so it's reused verbatim via handleAcceptResult.
+-- QA test-run button — same client orchestration as a pager accept.
 function Vehicle.AdminTestRunMission(missionId)
-    local result = lib.callback.await("polarix_towjob:adminTestRunMission", false, missionId)
-    return handleAcceptResult(result)
+    return handleAcceptResult(lib.callback.await("polarix_towjob:adminTestRunMission", false, missionId))
 end
 
 -- Called after a successful `parkOutVehicle` NUI callback (client/nui/nui_callbacks.lua)
