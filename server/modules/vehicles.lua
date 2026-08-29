@@ -139,6 +139,12 @@ function Vehicles.Purchase(source, tierId)
         return { ok = false, reason = "level_too_low" }
     end
 
+    for _, row in ipairs(DB.GetOwnedVehicles(player.identifier)) do
+        if row.tier_id == tierId then
+            return { ok = false, reason = "already_owned" }
+        end
+    end
+
     local price = math.floor(tier.price * (1 - Skills.GetPurchaseDiscount(source)) + 0.5)
 
     if Framework.GetMoney(source) < price then

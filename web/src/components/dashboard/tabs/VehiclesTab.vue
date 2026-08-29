@@ -119,6 +119,7 @@
 						<div v-if="isTierLocked(tier)" style="position:absolute;inset:0;background:rgba(34,38,45,0.55);display:flex;align-items:center;justify-content:center">
 							<iconify-icon icon="tabler:lock" width="26" style="color:#fff"></iconify-icon>
 						</div>
+						<span v-else-if="isTierOwned(tier)" style="position:absolute;top:12px;right:12px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.06em;padding:3px 8px;border-radius:6px;text-transform:uppercase;background:rgba(34,197,94,0.16);color:#15803d">Owned</span>
 					</div>
 					<div style="padding:14px;display:flex;flex-direction:column;flex:1">
 						<div style="font-size:14px;font-weight:700;color:#1b1f24;line-height:1.2">{{ tier.label }}</div>
@@ -129,6 +130,7 @@
 						<div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:8px">
 							<span style="font-size:15px;font-weight:800;color:#1b1f24">${{ tier.price }}</span>
 							<span v-if="isTierLocked(tier)" style="font-family:'IBM Plex Mono',monospace;font-size:10px;padding:7px 11px;border-radius:9px;background:#f1f2f4;color:#9aa1ab">Lvl {{ tier.level_required }}</span>
+							<span v-else-if="isTierOwned(tier)" style="font-family:'IBM Plex Mono',monospace;font-size:10px;padding:7px 11px;border-radius:9px;background:#eef0f2;color:#6b7280">Owned</span>
 							<button v-else class="accent-btn" type="button" style="padding:8px 15px;font-size:12px" :disabled="purchasingTierId === tier.id" @click="purchase(tier)">
 								{{ purchasingTierId === tier.id ? 'Buying…' : 'Buy' }}
 							</button>
@@ -193,6 +195,7 @@ const reasonMessages: Record<string, string> = {
 	invalid_tier: "That tier no longer exists.",
 	level_too_low: "You do not meet the level requirement for this tier.",
 	insufficient_funds: "You cannot afford this right now.",
+	already_owned: "You already own this tow truck.",
 	not_owned: "You don't own this vehicle.",
 	not_stored: "This vehicle isn't stored.",
 	not_deployed: "This vehicle isn't deployed.",
@@ -203,6 +206,10 @@ const reasonMessages: Record<string, string> = {
 
 function isTierLocked(tier: VehicleTier): boolean {
 	return (dashboardStore.player?.level ?? 1) < tier.level_required;
+}
+
+function isTierOwned(tier: VehicleTier): boolean {
+	return vehicles.value.some((v) => v.tier_id === tier.id);
 }
 
 function estimateRepairCost(vehicle: OwnedVehicle): number {
