@@ -144,14 +144,30 @@ function Missions.GetActiveDeliveryState(source)
     return activeDeliveryState[source]
 end
 
--- Re-confirms destruction server-side (ground rule 4) for both the client-reported event and
--- the periodic sweep backstop.
-local function isDeliveryVehicleDestroyed(state)
-    local target = state.targetNetId and NetworkGetEntityFromNetworkId(state.targetNetId)
-    if not target or target == 0 then return false end
+-- Re-confirms a tracked delivery entity is gone server-side (ground rule 4) for both the
+-- client-reported events and the periodic sweep backstop. `seenKey` flips true the first
+-- time the netId resolves to a live entity, so an unresolvable netId only counts as
+-- destroyed/deleted once we've actually seen it alive — never in the tick-or-two before
+-- the client's CreateVehicle propagates to the server.
+local function isTrackedEntityGone(state, netId, seenKey)
+    if not netId then return false end
 
-    -- IsEntityDead is client-only; server-side a destroyed vehicle reports entity health 0.
-    return not DoesEntityExist(target) or GetEntityHealth(target) <= 0
+    local entity = NetworkGetEntityFromNetworkId(netId)
+    if entity and entity ~= 0 and DoesEntityExist(entity) then
+        state[seenKey] = true
+        -- IsEntityDead is client-only; server-side a destroyed vehicle reports entity health 0.
+        return GetEntityHealth(entity) <= 0
+    end
+
+    return state[seenKey] == true
+end
+
+local function isDeliveryVehicleDestroyed(state)
+    return isTrackedEntityGone(state, state.targetNetId, "targetSeen")
+end
+
+local function isTowTruckDestroyed(state)
+    return isTrackedEntityGone(state, state.truckNetId, "truckSeen")
 end
 
 -- Step 10.1: client-side damage.lua detects destruction fast (for responsiveness) and
@@ -176,6 +192,41 @@ RegisterNetEvent("polarix_towjob:reportVehicleDestroyed", function(deliveryId)
     Missions.Fail(source, deliveryId, "vehicle_destroyed")
 end)
 
+-- Client reports the tow truck the delivery is being run with (rental or owned) — netId is
+-- tracked so the destruction re-check below and the sweep can verify server-side.
+RegisterNetEvent("polarix_towjob:setTowTruck", function(deliveryId, netId)
+    local source = source
+    local player = Player.GetData(source)
+    if not player then return end
+
+    local delivery = DB.GetActiveDelivery(player.identifier)
+    if not delivery or delivery.id ~= deliveryId then return end
+
+    local state = activeDeliveryState[source]
+    if not state or state.deliveryId ~= deliveryId then return end
+
+    state.truckNetId = netId
+end)
+
+RegisterNetEvent("polarix_towjob:reportTowTruckDestroyed", function(deliveryId)
+    local source = source
+    local player = Player.GetData(source)
+    if not player then return end
+
+    local delivery = DB.GetActiveDelivery(player.identifier)
+    if not delivery or delivery.id ~= deliveryId then return end
+
+    local state = activeDeliveryState[source]
+    if not state or state.deliveryId ~= deliveryId then return end
+
+    if not isTowTruckDestroyed(state) then
+        debug.DebugPrint("Missions.reportTowTruckDestroyed: rejected unverified destruction claim for source", source)
+        return
+    end
+
+    Missions.Fail(source, deliveryId, "truck_destroyed")
+end)
+
 -- Shared fail path — called for timed-mission expiry (Step 9.3), vehicle destruction
 -- (Step 10.1) and missed rental payments (server/modules/vehicles.lua), so the
 -- delivery-row/notify/cleanup/counter sequence only lives in one place.
@@ -184,7 +235,17 @@ function Missions.Fail(source, deliveryId, reason)
     if not state or state.deliveryId ~= deliveryId then return end
 
     DB.FailDelivery(deliveryId)
-    Vehicles.OnDeliveryEnded(source)
+
+    -- A destroyed tow truck can't keep being rented — tear the rental down (and pull the
+    -- wreck) rather than leaving the player billed for a truck that no longer exists. For a
+    -- delivery run on the rental, that truck IS the rental (see Missions.Accept's reuse rule).
+    if reason == "truck_destroyed" and Vehicles.IsRentalActive(source) then
+        Vehicles.StopRental(source)
+        TriggerClientEvent("polarix_towjob:repossessRental", source)
+    else
+        Vehicles.OnDeliveryEnded(source)
+    end
+
     activeDeliveryState[source] = nil
     OnCall.HandleDeliveryEnded(source)
 
@@ -193,6 +254,7 @@ function Missions.Fail(source, deliveryId, reason)
     local messages = {
         time_limit_exceeded = "Time limit exceeded — delivery failed.",
         vehicle_destroyed = "The vehicle was destroyed — delivery failed.",
+        truck_destroyed = "Your tow truck was destroyed — delivery failed.",
         rental_repossessed = "Rental payment missed — the tow truck has been repossessed.",
     }
     TriggerClientEvent("polarix_towjob:notify", source, messages[reason] or "Delivery failed.", "error")
@@ -212,8 +274,10 @@ CreateThread(function()
         for source, state in pairs(activeDeliveryState) do
             if state.deadlineAt and now >= state.deadlineAt then
                 Missions.Fail(source, state.deliveryId, "time_limit_exceeded")
-            elseif state.found and isDeliveryVehicleDestroyed(state) then
+            elseif isDeliveryVehicleDestroyed(state) then
                 Missions.Fail(source, state.deliveryId, "vehicle_destroyed")
+            elseif isTowTruckDestroyed(state) then
+                Missions.Fail(source, state.deliveryId, "truck_destroyed")
             end
         end
     end
