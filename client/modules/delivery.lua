@@ -20,7 +20,7 @@ local function buildUpdatePayload(delivery)
         vehicleLabel = delivery.mission.vehicle_label,
         vehicleColors = delivery.mission.vehicle_colors,
         distance = distance,
-        damagePercent = delivery.state == "attached" and delivery.damagePercent or nil,
+        damagePercent = delivery.state == "found" and delivery.damagePercent or nil,
         secondsRemaining = secondsRemaining,
     }
 end
@@ -74,7 +74,7 @@ end
 
 local function canComplete()
     local delivery = Vehicle.GetCurrentDelivery()
-    if not delivery or delivery.state ~= "attached" then return false end
+    if not delivery or delivery.state ~= "found" then return false end
     if not DoesEntityExist(delivery.targetVehicle) then return false end
 
     return isAligned(delivery.mission, GetEntityCoords(delivery.targetVehicle), GetEntityHeading(delivery.targetVehicle))
@@ -165,7 +165,7 @@ CreateThread(function()
     while true do
         local delivery = Vehicle.GetCurrentDelivery()
 
-        if delivery and delivery.state == "attached" then
+        if delivery and delivery.state == "found" then
             ensureDropoffZone(delivery)
 
             local d = delivery.mission.dropoff

@@ -167,9 +167,14 @@ return {
     -- Scaled by missing health: cost = perHealthPoint * (maxHealth - currentHealth), summed body+engine
     RepairCost = { mode = "scaled", perHealthPoint = 0.6 },
 
-    -- Converts accrued towed-vehicle body+engine health loss (0-1000 each, from attach to
-    -- placement) into a dollar penalty, before the DamagePenaltyCapPercent cap is applied.
+    -- Converts accrued towed-vehicle body+engine health loss (0-1000 each, from the moment the
+    -- player reaches the vehicle to placement) into a dollar penalty, before the
+    -- DamagePenaltyCapPercent cap is applied.
     DamagePenaltyPerHealthPoint = 0.5,
+
+    -- Server re-check of a "vehicle found" claim — client's VehicleFoundRadius plus slack for
+    -- movement/latency.
+    VehicleFoundMaxDistance = 25.0,
 
     DamagePenaltyCapPercent = 0.30,
 

@@ -14,8 +14,8 @@ local function resetTracking()
     reportedDestroyed = false
 end
 
--- From attach to placement (design-decisions table): polls the towed vehicle's body/engine
--- health, computes a local display-only damage percent (Vehicle.GetCurrentDelivery() is a
+-- From reaching the vehicle to placement (design-decisions table): polls the towed vehicle's
+-- body/engine health, computes a local display-only damage percent (Vehicle.GetCurrentDelivery() is a
 -- shared table reference, so writing `.damagePercent` here is read directly by
 -- client/modules/delivery.lua's periodic Active Delivery UI push) and reports vehicle
 -- destruction to the server. This preview is not authoritative — Missions.Complete
@@ -24,7 +24,7 @@ CreateThread(function()
     while true do
         local delivery = Vehicle.GetCurrentDelivery()
 
-        if delivery and delivery.state == "attached" then
+        if delivery and delivery.state == "found" then
             if trackedDeliveryId ~= delivery.deliveryId then
                 trackedDeliveryId = delivery.deliveryId
                 reportedDestroyed = false
@@ -35,9 +35,8 @@ CreateThread(function()
             end
 
             local target = delivery.targetVehicle
-            local towTruck = delivery.towTruck
 
-            if not reportedDestroyed and (not DoesEntityExist(target) or isDestroyed(target) or isDestroyed(towTruck)) then
+            if not reportedDestroyed and (not DoesEntityExist(target) or isDestroyed(target)) then
                 reportedDestroyed = true
                 TriggerServerEvent("polarix_towjob:reportVehicleDestroyed", delivery.deliveryId)
             elseif baseline and DoesEntityExist(target) then

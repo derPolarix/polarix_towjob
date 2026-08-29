@@ -56,6 +56,22 @@ function Vehicles.GetDamageResistanceForModel(modelHash)
     return 0.0
 end
 
+-- Damage-resistance of the truck the player is running the delivery with, for
+-- Missions.Complete. On-call guarantees a truck is deployed (or rented); best of the
+-- deployed set wins if there are several.
+function Vehicles.GetActiveTruckDamageResistance(source, identifier)
+    if Vehicles.IsRentalActive(source) then
+        return Vehicles.GetDamageResistanceForModel(GetHashKey(serverConfig.RentalTruck.model))
+    end
+
+    local best = 0.0
+    for _, vehicle in ipairs(DB.GetDeployedVehicles(identifier) or {}) do
+        local tier = findTier(vehicle.tier_id)
+        if tier then best = math.max(best, tier.damage_resistance or 0.0) end
+    end
+    return best
+end
+
 -- Tier catalog with the player's own Economy-branch purchase discount already applied to
 -- `price`, so the Vehicles tab's displayed price always matches what Purchase actually
 -- charges — the client never has to know the discount rate itself to show a correct number.

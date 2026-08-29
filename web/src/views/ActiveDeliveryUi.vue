@@ -4,7 +4,7 @@
 			<div class="text-xs uppercase tracking-wide text-white/50">{{ data.missionName }}</div>
 
 			<div class="mt-1 text-sm font-medium">
-				{{ data.state === "searching" ? "Find the vehicle" : "Deliver to drop-off" }}
+				{{ data.state === "searching" ? "Find the vehicle" : "Attach & tow to drop-off" }}
 			</div>
 
 			<div v-if="data.state === 'searching'" class="mt-1 text-xs text-white/70">

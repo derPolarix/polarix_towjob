@@ -68,7 +68,7 @@ function Missions.PickRandomForPager(source)
 end
 
 -- Shared by Missions.Accept and Missions.AcceptViaOnCall — the client-safe mission payload
--- both hand off to the find/attach/tow/deliver loop is identical either way.
+-- both hand off to the find/tow/deliver loop is identical either way.
 local function buildMissionPayload(row)
     return {
         id = row.id,
@@ -92,14 +92,9 @@ local function buildMissionPayload(row)
     }
 end
 
--- Tracks, per source, everything about the delivery that's currently active for them:
--- the target vehicle's net-id (reported by the client once it spawns it, Step 8.2.3),
--- the tow truck's net-id once attached (Step 9.2), and the server-stamped timed-mission
--- deadline (Step 9.3, set at accept time — never derived from a client-reported value).
--- In-memory only (net-ids are session-scoped handles, not something that belongs in the
--- `deliveries` table). Phase 10 (damage tracking) is the next intended reader via
--- Missions.GetActiveDeliveryState.
-local activeDeliveryState = {} -- [source] = { deliveryId, targetNetId, towTruckNetId, attached, deadlineAt }
+-- In-memory per-source delivery state. `deadlineAt` is server-stamped at accept time, never
+-- derived from anything client-reported.
+local activeDeliveryState = {} -- [source] = { deliveryId, targetNetId, found, deadlineAt, bodyHealthBaseline, engineHealthBaseline }
 
 RegisterNetEvent("polarix_towjob:setTargetVehicle", function(deliveryId, netId)
     local source = source
@@ -117,12 +112,10 @@ RegisterNetEvent("polarix_towjob:setTargetVehicle", function(deliveryId, netId)
     state.targetNetId = netId
 end)
 
--- Step 9.2: the client reports both net-ids once it calls AttachVehicleToTowTruck
--- locally; the server re-validates before trusting the attach happened at all —
--- never assumes a client-reported "I attached it" claim (ground rule 4). Rejects a
--- mismatched/forged target net-id and confirms the entity's model actually matches
--- the mission's expected vehicle before flagging the delivery as attached.
-RegisterNetEvent("polarix_towjob:attachVehicle", function(deliveryId, towNetId, targetNetId)
+-- Client reports reaching the target; server re-checks the distance against the tracked
+-- entity before trusting it (ground rule 4). An unresolvable entity still sets `found` —
+-- Missions.Complete then falls back to a full-health damage baseline rather than stalling.
+RegisterNetEvent("polarix_towjob:vehicleFound", function(deliveryId)
     local source = source
     local player = Player.GetData(source)
     if not player then return end
@@ -131,45 +124,33 @@ RegisterNetEvent("polarix_towjob:attachVehicle", function(deliveryId, towNetId, 
     if not delivery or delivery.id ~= deliveryId then return end
 
     local state = activeDeliveryState[source]
-    if not state or state.deliveryId ~= deliveryId or state.targetNetId ~= targetNetId then
-        debug.DebugPrint("Missions.attachVehicle: rejected mismatched target net-id for source", source)
-        return
+    if not state or state.deliveryId ~= deliveryId or state.found then return end
+
+    local entity = state.targetNetId and NetworkGetEntityFromNetworkId(state.targetNetId)
+    if entity and entity ~= 0 and DoesEntityExist(entity) then
+        if #(GetEntityCoords(GetPlayerPed(source)) - GetEntityCoords(entity)) > serverConfig.VehicleFoundMaxDistance then
+            debug.DebugPrint("Missions.vehicleFound: rejected out-of-range claim for source", source)
+            return
+        end
+        state.bodyHealthBaseline = GetVehicleBodyHealth(entity)
+        state.engineHealthBaseline = GetVehicleEngineHealth(entity)
     end
 
-    local mission = DB.GetMission(delivery.mission_id)
-    local entity = NetworkGetEntityFromNetworkId(targetNetId)
-    if not mission or not entity or entity == 0 or GetEntityModel(entity) ~= GetHashKey(mission.vehicle_model) then
-        debug.DebugPrint("Missions.attachVehicle: rejected model mismatch for source", source)
-        return
-    end
+    state.found = true
 
-    state.attached = true
-    state.towTruckNetId = towNetId
-
-    -- Damage window is "attach to placement" (design-decisions table) — baseline is read
-    -- directly off the live entity here, server-side, so Missions.Complete (Phase 10.3)
-    -- never has to trust a client-reported health number, only re-read the same entity.
-    state.bodyHealthBaseline = GetVehicleBodyHealth(entity)
-    state.engineHealthBaseline = GetVehicleEngineHealth(entity)
-
-    debug.DebugPrint(("Missions.attachVehicle: delivery %d attached for %s"):format(deliveryId, player.identifier))
+    debug.DebugPrint(("Missions.vehicleFound: delivery %d found for %s"):format(deliveryId, player.identifier))
 end)
 
 function Missions.GetActiveDeliveryState(source)
     return activeDeliveryState[source]
 end
 
--- Shared by the immediate client-reported destruction event and the periodic sweep
--- backstop below — resolves both tracked net-ids server-side and independently confirms
--- destruction itself (ground rule 4: never trust a client's "it's destroyed" claim alone).
+-- Re-confirms destruction server-side (ground rule 4) for both the client-reported event and
+-- the periodic sweep backstop.
 local function isDeliveryVehicleDestroyed(state)
     local target = state.targetNetId and NetworkGetEntityFromNetworkId(state.targetNetId)
-    local towTruck = state.towTruckNetId and NetworkGetEntityFromNetworkId(state.towTruckNetId)
 
-    local targetDestroyed = target and target ~= 0 and (not DoesEntityExist(target) or IsEntityDead(target))
-    local towTruckDestroyed = towTruck and towTruck ~= 0 and (not DoesEntityExist(towTruck) or IsEntityDead(towTruck))
-
-    return targetDestroyed or towTruckDestroyed
+    return target and target ~= 0 and (not DoesEntityExist(target) or IsEntityDead(target)) or false
 end
 
 -- Step 10.1: client-side damage.lua detects destruction fast (for responsiveness) and
@@ -230,7 +211,7 @@ CreateThread(function()
         for source, state in pairs(activeDeliveryState) do
             if state.deadlineAt and now >= state.deadlineAt then
                 Missions.Fail(source, state.deliveryId, "time_limit_exceeded")
-            elseif state.attached and isDeliveryVehicleDestroyed(state) then
+            elseif state.found and isDeliveryVehicleDestroyed(state) then
                 Missions.Fail(source, state.deliveryId, "vehicle_destroyed")
             end
         end
@@ -338,7 +319,7 @@ end
 -- caller). Deliberately doesn't share Missions.Accept's body: on-call's own precondition is
 -- that a vehicle (owned or rental) is *already* deployed, so unlike Accept there's no
 -- rental-spawn / auto-park-out / needsParkOut branching here — the client just starts the
--- find/attach loop against the truck the player is already driving around.
+-- find loop against the truck the player is already driving around.
 function Missions.AcceptViaOnCall(source, missionId, usedRental)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
@@ -417,10 +398,9 @@ local function isWithinDropoffZone(mission, coords, heading)
     return headingDiff <= Settings.GetDeliveryHeadingTolerance()
 end
 
--- Step 10.3: server computes the final damage penalty itself from health values it reads
--- directly off the tracked entities (baseline captured at attach time, Step 9.2's handler
--- above) — never from a client-reported number. Also re-validates the towed vehicle's
--- actual position/heading against the dropoff rectangle before paying out.
+-- Server computes the damage penalty from health it reads off the tracked entity (baseline
+-- from the vehicleFound handler), and re-validates the towed vehicle's position/heading
+-- against the dropoff rectangle — never trusts a client-reported number for either.
 function Missions.Complete(source, deliveryId)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
@@ -431,8 +411,8 @@ function Missions.Complete(source, deliveryId)
     end
 
     local state = activeDeliveryState[source]
-    if not state or state.deliveryId ~= deliveryId or not state.attached then
-        return { ok = false, reason = "not_attached" }
+    if not state or state.deliveryId ~= deliveryId or not state.found then
+        return { ok = false, reason = "vehicle_not_found_yet" }
     end
 
     local mission = DB.GetMission(delivery.mission_id)
@@ -452,8 +432,7 @@ function Missions.Complete(source, deliveryId)
     local bodyLoss = math.max(0, (state.bodyHealthBaseline or 1000.0) - GetVehicleBodyHealth(target))
     local engineLoss = math.max(0, (state.engineHealthBaseline or 1000.0) - GetVehicleEngineHealth(target))
 
-    local towTruck = state.towTruckNetId and NetworkGetEntityFromNetworkId(state.towTruckNetId)
-    local resistance = (towTruck and towTruck ~= 0) and Vehicles.GetDamageResistanceForModel(GetEntityModel(towTruck)) or 0.0
+    local resistance = Vehicles.GetActiveTruckDamageResistance(source, player.identifier)
     local skillReduction = Skills.GetDamageReduction(source)
 
     local reductionFactor = math.max(0, 1 - resistance - skillReduction)

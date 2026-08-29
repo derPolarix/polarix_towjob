@@ -1,9 +1,9 @@
 local debug = require("shared.debug")
+local clientConfig = require("config.client")
 
 Vehicle = {}
 
-local ATTACH_MAX_DISTANCE = 8.0
-local TOW_TRUCK_MODELS = { [GetHashKey("towtruck")] = true, [GetHashKey("towtruck2")] = true }
+local VEHICLE_FOUND_RADIUS = clientConfig.VehicleFoundRadius or 12.0
 
 -- Set once Accept returns `needsParkOut` (2+ owned tow trucks) — the delivery row
 -- already exists server-side at this point, we're just waiting for the player to
@@ -41,125 +41,59 @@ local function createSearchBlip(center, radius)
     return id
 end
 
--- Delivery state machine, read by client/modules/delivery.lua (Active Delivery UI push)
--- and mutated here as the player finds/attaches the target vehicle. `state` is one of
--- "searching" (not yet attached) or "attached" (towing to dropoff).
+local function createDropoffBlip(dropoff)
+    local id = AddBlipForCoord(dropoff.x, dropoff.y, dropoff.z)
+    SetBlipSprite(id, 477)
+    SetBlipColour(id, 5)
+    SetBlipRoute(id, true)
+    SetBlipRouteColour(id, 5)
+    return id
+end
+
+-- `state` is "searching" or "found". The player rigs and tows the vehicle with GTA's native
+-- tow mechanics — reaching it is all the job tracks, there is no attach step.
 local currentDelivery = nil
 
-local function getDrivenTowTruck()
-    local ped = PlayerPedId()
-    local vehicle = GetVehiclePedIsIn(ped, false)
-    if vehicle == 0 or GetPedInVehicleSeat(vehicle, -1) ~= ped then return nil end
-    if not TOW_TRUCK_MODELS[GetEntityModel(vehicle)] then return nil end
-    return vehicle
-end
-
-local function canAttach()
-    return currentDelivery ~= nil
-        and currentDelivery.state == "searching"
-        and getDrivenTowTruck() ~= nil
-end
-
-local function attemptAttach()
-    if not currentDelivery or currentDelivery.state ~= "searching" then return end
-
-    local towTruck = getDrivenTowTruck()
-    if not towTruck then
-        Framework.Notify("You need to be driving a tow truck.", "error")
-        return
-    end
-
-    local target = currentDelivery.targetVehicle
-    if not DoesEntityExist(target) then
-        Framework.Notify("The vehicle is no longer here.", "error")
-        return
-    end
-
-    if GetEntityModel(target) ~= GetHashKey(currentDelivery.mission.vehicle_model) then
-        Framework.Notify("This isn't the vehicle for this job.", "error")
-        return
-    end
-
-    if #(GetEntityCoords(towTruck) - GetEntityCoords(target)) > ATTACH_MAX_DISTANCE then
-        Framework.Notify("Get closer to the vehicle.", "error")
-        return
-    end
-
-    AttachVehicleToTowTruck(towTruck, target, false, 0.0, 0.0, 0.0)
-
-    currentDelivery.state = "attached"
-    currentDelivery.towTruck = towTruck
-
-    TriggerServerEvent("polarix_towjob:attachVehicle", currentDelivery.deliveryId, NetworkGetNetworkIdFromEntity(towTruck), currentDelivery.targetNetId)
-
-    Framework.Notify("Vehicle attached.", "success")
-end
-
-local function setupAttachInteraction(entity)
-    if GetResourceState("ox_target") == "started" then
-        exports.ox_target:addLocalEntity(entity, {
-            {
-                name = "polarix_towjob:attachvehicle",
-                icon = "fa-solid fa-truck-pickup",
-                label = "Attach Tow Truck",
-                distance = ATTACH_MAX_DISTANCE,
-                canInteract = canAttach,
-                onSelect = attemptAttach,
-            },
-        })
-        return
-    end
-
+local function setupFoundDetection(entity)
     CreateThread(function()
-        local promptShown = false
+        while currentDelivery and currentDelivery.targetVehicle == entity and DoesEntityExist(entity)
+            and currentDelivery.state == "searching" do
+            if #(GetEntityCoords(PlayerPedId()) - GetEntityCoords(entity)) <= VEHICLE_FOUND_RADIUS then
+                currentDelivery.state = "found"
 
-        while currentDelivery and currentDelivery.targetVehicle == entity and DoesEntityExist(entity) do
-            local sleep = 1000
-            local towTruck = currentDelivery.state == "searching" and getDrivenTowTruck() or nil
-            local entityCoords = GetEntityCoords(entity)
-
-            if towTruck and #(GetEntityCoords(towTruck) - entityCoords) <= ATTACH_MAX_DISTANCE then
-                sleep = 0
-                DrawMarker(1, entityCoords.x, entityCoords.y, entityCoords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.5, 1.5, 1.0, 40, 200, 120, 100, false, true, 2, false, nil, nil, false)
-
-                if not promptShown then
-                    promptShown = true
-                    lib.showTextUI("[E] Attach Tow Truck")
+                if currentDelivery.blip then
+                    RemoveBlip(currentDelivery.blip)
+                    currentDelivery.blip = nil
                 end
+                currentDelivery.dropoffBlip = createDropoffBlip(currentDelivery.mission.dropoff)
 
-                if IsControlJustReleased(0, 38) then
-                    attemptAttach()
-                end
-            elseif promptShown then
-                promptShown = false
-                lib.hideTextUI()
+                TriggerServerEvent("polarix_towjob:vehicleFound", currentDelivery.deliveryId)
+                Framework.Notify("Vehicle located — hook it up and tow it to the drop-off.", "success")
+                return
             end
 
-            Wait(sleep)
+            Wait(500)
         end
-
-        if promptShown then lib.hideTextUI() end
     end)
 end
 
 -- Detaches/despawns the target vehicle and clears delivery state. Called directly for
--- the Phase 10.2 in-world completion confirm, and via the `polarix_towjob:deliveryEnded`
--- net event below for every server-driven end (complete/fail/abort).
+-- the in-world completion confirm, and via the `polarix_towjob:deliveryEnded` net event
+-- below for every server-driven end (complete/fail/abort).
 function Vehicle.EndDelivery(reason)
     if not currentDelivery then return end
 
     local target = currentDelivery.targetVehicle
     if DoesEntityExist(target) then
-        if currentDelivery.towTruck and DoesEntityExist(currentDelivery.towTruck) then
-            DetachVehicleFromTowTruck(currentDelivery.towTruck, target)
-        else
-            DetachVehicleFromAnyTowTruck(target)
-        end
+        DetachVehicleFromAnyTowTruck(target)
         DeleteEntity(target)
     end
 
     if currentDelivery.blip then
         RemoveBlip(currentDelivery.blip)
+    end
+    if currentDelivery.dropoffBlip then
+        RemoveBlip(currentDelivery.dropoffBlip)
     end
 
     currentDelivery = nil
@@ -191,7 +125,7 @@ local function beginDelivery(deliveryId, mission, deadlineAt)
         deadlineAt = deadlineAt,
     }
 
-    setupAttachInteraction(targetVehicle)
+    setupFoundDetection(targetVehicle)
 
     Framework.Notify(("New tow job: %s"):format(mission.name), "info")
 end
@@ -228,7 +162,7 @@ end
 -- On-call pager's accept path — unlike a normal accept, the vehicle is always already
 -- deployed (on-call's own precondition), so the server response never carries
 -- usedRental/vehicle/needsParkOut and handleAcceptResult's spawn branches are skipped
--- entirely; just start the find/attach loop against the truck already out.
+-- entirely; just start the find loop against the truck already out.
 function Vehicle.AcceptPagerOffer()
     local result = lib.callback.await("polarix_towjob:acceptPage", false)
     if not result then return { ok = false, reason = "no_response" } end

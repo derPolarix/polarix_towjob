@@ -13,6 +13,8 @@ return {
 
     ParkingZone = { coords = vector3(402.1923, -1630.8745, 28.8140), radius = 8.0 }, -- store/retrieve zone near NPC
 
+    VehicleFoundRadius = 12.0, -- reaching this range of the target vehicle flips the job to "found"
+
     DeliveryZoneCheckIntervalMs = 500,
     DamageCheckIntervalMs = 2000,
 }

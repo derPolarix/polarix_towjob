@@ -1,6 +1,6 @@
 import type { VehicleColors } from "@/types/dashboard";
 
-export type DeliveryPhase = "searching" | "attached";
+export type DeliveryPhase = "searching" | "found";
 
 export interface ActiveDeliveryUpdate {
   deliveryId: number;
