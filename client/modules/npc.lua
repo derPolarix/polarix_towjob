@@ -1,4 +1,5 @@
 local clientConfig = require("config.client")
+local Locale = require("shared.locale")
 
 local npc = nil
 
@@ -23,7 +24,7 @@ local function setupInteraction()
             {
                 name = "polarix_towjob:npc",
                 icon = "fa-solid fa-clipboard-list",
-                label = "Open Tow Job Dashboard",
+                label = Locale("ui.open_tow_dashboard"),
                 onSelect = onInteract,
             },
         })
@@ -46,7 +47,7 @@ local function setupInteraction()
                 if dist < 1.5 then
                     if not textUIShown then
                         textUIShown = true
-                        lib.showTextUI("[E] Open Tow Job Dashboard")
+                        lib.showTextUI(Locale("ui.e_open_tow_dashboard"))
                     end
 
                     if IsControlJustReleased(0, 38) then

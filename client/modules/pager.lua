@@ -1,4 +1,5 @@
 local debug = require("shared.debug")
+local Locale = require("shared.locale")
 
 -- Pager NUI is focus-less (never grabs the cursor mid-drive), so its buttons can't be
 -- clicked — accept/decline run off raw control checks instead.
@@ -17,7 +18,7 @@ local function resolveOffer(accepted)
     if accepted then
         local result = Vehicle.AcceptPagerOffer()
         if result and not result.ok then
-            Framework.Notify("That job is no longer available.", "error")
+            Framework.Notify(Locale("notify.job_no_longer_available"), "error")
         end
     else
         lib.callback.await("polarix_towjob:declinePage", false)

@@ -13,6 +13,7 @@ shared_scripts {
     '@ox_lib/init.lua',
     'shared/debug.lua',
     "config/shared.lua",
+    'shared/locale.lua',
     "framework/qbox/shared.lua",
     "framework/qb-core/shared.lua",
     "framework/esx/shared.lua",

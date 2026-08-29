@@ -6,7 +6,7 @@
 					<div class="pager-image" :style="{ backgroundImage: `url(${pagerImageUrl})` }" />
 					<div class="pager-screen">
 						<div class="pager-text">
-							<div class="pager-title">INCOMING JOB · {{ offer.area_name }}</div>
+							<div class="pager-title">{{ t("pager.incoming_job") }} · {{ offer.area_name }}</div>
 							<div class="pager-name">{{ offer.name }}</div>
 							<div class="pager-meta">
 								${{ offer.reward_base }} · +{{ offer.xp_base }} XP
@@ -16,11 +16,11 @@
 							<div class="pager-actions">
 								<button type="button" class="pager-hint pager-hint-accept" :disabled="busy" @click="accept">
 									<span class="pager-key"><iconify-icon icon="tabler:corner-down-left" width="8"></iconify-icon>Enter</span>
-									Accept
+									{{ t("app.accept") }}
 								</button>
 								<button type="button" class="pager-hint pager-hint-decline" :disabled="busy" @click="decline">
 									<span class="pager-key"><iconify-icon icon="tabler:backspace" width="8"></iconify-icon>Bksp</span>
-									Decline
+									{{ t("app.decline") }}
 								</button>
 							</div>
 						</div>
@@ -33,11 +33,13 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { AcceptPageResult, DeclinePageResult } from "@/types/dashboard";
 import pagerImageUrl from "@/assets/pager.png";
 
+const { t } = useI18n();
 const dashboardStore = useDashboardStore();
 const offer = computed(() => dashboardStore.pagerOffer);
 const busy = ref(false);

@@ -2,12 +2,12 @@
 	<div style="display:flex;flex-direction:column;gap:14px;height:100%">
 		<div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
 			<div>
-				<div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:#1b1f24">Area map</div>
-				<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:4px">Select an area to unlock a new operating region</div>
+				<div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:#1b1f24">{{ t("areas.title") }}</div>
+				<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:4px">{{ t("areas.subtitle") }}</div>
 			</div>
 			<div style="display:flex;align-items:center;gap:16px">
-				<div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#6b7280"><span style="width:11px;height:11px;border-radius:50%;background:var(--accent)"></span>Unlocked</div>
-				<div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#6b7280"><span style="width:11px;height:11px;border-radius:50%;background:#9aa1ab"></span>Locked</div>
+				<div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#6b7280"><span style="width:11px;height:11px;border-radius:50%;background:var(--accent)"></span>{{ t("areas.unlocked") }}</div>
+				<div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#6b7280"><span style="width:11px;height:11px;border-radius:50%;background:#9aa1ab"></span>{{ t("areas.locked") }}</div>
 			</div>
 		</div>
 
@@ -26,20 +26,20 @@
 							<span style="width:9px;height:9px;border-radius:50%;flex-shrink:0" :style="{ background: area.unlocked ? 'var(--accent)' : '#9aa1ab' }"></span>
 							{{ area.name }}
 						</span>
-						<span v-if="area.unlocked" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);font-weight:700">UNLOCKED</span>
+						<span v-if="area.unlocked" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);font-weight:700">{{ t("areas.unlocked_badge") }}</span>
 					</div>
 					<div style="font-size:11px;color:#9aa1ab;margin-top:2px;margin-left:17px">{{ area.region }}</div>
 
 					<div v-if="area.reward_multiplier !== 1 || area.xp_multiplier !== 1" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;margin-left:17px">
-						<span v-if="area.reward_multiplier !== 1" style="display:inline-flex;align-items:center;gap:3px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:var(--accent);background:rgba(34,197,94,0.12);border-radius:6px;padding:2px 6px"><iconify-icon icon="tabler:coin" width="11"></iconify-icon>{{ area.reward_multiplier }}x reward</span>
-						<span v-if="area.xp_multiplier !== 1" style="display:inline-flex;align-items:center;gap:3px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:#6b7280;background:#eef0f2;border-radius:6px;padding:2px 6px"><iconify-icon icon="tabler:bolt" width="11"></iconify-icon>{{ area.xp_multiplier }}x xp</span>
+						<span v-if="area.reward_multiplier !== 1" style="display:inline-flex;align-items:center;gap:3px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:var(--accent);background:rgba(34,197,94,0.12);border-radius:6px;padding:2px 6px"><iconify-icon icon="tabler:coin" width="11"></iconify-icon>{{ t("areas.reward_mult", { mult: area.reward_multiplier }) }}</span>
+						<span v-if="area.xp_multiplier !== 1" style="display:inline-flex;align-items:center;gap:3px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:#6b7280;background:#eef0f2;border-radius:6px;padding:2px 6px"><iconify-icon icon="tabler:bolt" width="11"></iconify-icon>{{ t("areas.xp_mult", { mult: area.xp_multiplier }) }}</span>
 					</div>
 
 					<div v-if="area.note" style="font-size:11px;color:#6b7280;font-style:italic;margin-top:6px;margin-left:17px">{{ area.note }}</div>
 
 					<div v-if="!area.unlocked" style="display:flex;gap:14px;margin-top:8px;margin-left:17px;font-size:11px">
-						<span style="color:#9aa1ab">Cost <strong style="color:#1b1f24">${{ area.unlock_cost }}</strong></span>
-						<span style="color:#9aa1ab">Level <strong style="color:#1b1f24">{{ area.level_required }}</strong></span>
+						<span style="color:#9aa1ab">{{ t("areas.cost") }} <strong style="color:#1b1f24">${{ area.unlock_cost }}</strong></span>
+						<span style="color:#9aa1ab">{{ t("areas.level") }} <strong style="color:#1b1f24">{{ area.level_required }}</strong></span>
 					</div>
 				</button>
 			</aside>
@@ -58,20 +58,20 @@
 					<div style="font-size:12px;color:#9aa1ab;margin-top:2px">{{ selectedArea.region }}</div>
 
 					<div v-if="selectedArea.reward_multiplier !== 1 || selectedArea.xp_multiplier !== 1" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
-						<span v-if="selectedArea.reward_multiplier !== 1" style="display:inline-flex;align-items:center;gap:3px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:var(--accent);background:rgba(34,197,94,0.12);border-radius:6px;padding:2px 6px"><iconify-icon icon="tabler:coin" width="11"></iconify-icon>{{ selectedArea.reward_multiplier }}x reward</span>
-						<span v-if="selectedArea.xp_multiplier !== 1" style="display:inline-flex;align-items:center;gap:3px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:#6b7280;background:#eef0f2;border-radius:6px;padding:2px 6px"><iconify-icon icon="tabler:bolt" width="11"></iconify-icon>{{ selectedArea.xp_multiplier }}x xp</span>
+						<span v-if="selectedArea.reward_multiplier !== 1" style="display:inline-flex;align-items:center;gap:3px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:var(--accent);background:rgba(34,197,94,0.12);border-radius:6px;padding:2px 6px"><iconify-icon icon="tabler:coin" width="11"></iconify-icon>{{ t("areas.reward_mult", { mult: selectedArea.reward_multiplier }) }}</span>
+						<span v-if="selectedArea.xp_multiplier !== 1" style="display:inline-flex;align-items:center;gap:3px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:#6b7280;background:#eef0f2;border-radius:6px;padding:2px 6px"><iconify-icon icon="tabler:bolt" width="11"></iconify-icon>{{ t("areas.xp_mult", { mult: selectedArea.xp_multiplier }) }}</span>
 					</div>
 
 					<div v-if="selectedArea.note" style="font-size:12px;color:#6b7280;font-style:italic;margin-top:10px">{{ selectedArea.note }}</div>
 
 					<div v-if="selectedArea.unlocked" style="margin-top:14px;display:inline-flex;align-items:center;gap:7px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:var(--accent)">
-						<span style="width:9px;height:9px;border-radius:50%;background:var(--accent)"></span>UNLOCKED
+						<span style="width:9px;height:9px;border-radius:50%;background:var(--accent)"></span>{{ t("areas.unlocked_badge") }}
 					</div>
 
 					<template v-else>
 						<div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;font-size:13px">
-							<div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">Unlock cost</span><span style="color:var(--accent);font-weight:700">${{ selectedArea.unlock_cost }}</span></div>
-							<div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">Level required</span><span style="color:#1b1f24;font-weight:600">Lvl {{ selectedArea.level_required }}</span></div>
+							<div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">{{ t("areas.unlock_cost") }}</span><span style="color:var(--accent);font-weight:700">${{ selectedArea.unlock_cost }}</span></div>
+							<div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">{{ t("areas.level_required") }}</span><span style="color:#1b1f24;font-weight:600">{{ t("common.level_short", { level: selectedArea.level_required }) }}</span></div>
 						</div>
 
 						<p v-if="unlockError" style="margin:10px 0 0;font-size:12px;color:#d24b3a">{{ unlockError }}</p>
@@ -83,7 +83,7 @@
 							style="margin-top:14px;width:100%;padding:11px;font-size:13px;justify-content:center"
 							@click="confirmUnlock"
 						>
-							{{ unlocking ? "Unlocking…" : "Unlock area" }}
+							{{ unlocking ? t("areas.unlocking") : t("areas.unlock_area") }}
 						</button>
 					</template>
 				</div>
@@ -94,6 +94,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import gtaMapUrl from "@/assets/maps/gta_map.jpg";
@@ -102,6 +103,7 @@ import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { MapArea, UnlockAreaResult } from "@/types/dashboard";
 
+const { t } = useI18n();
 const dashboardStore = useDashboardStore();
 
 const mapContainer = ref<HTMLDivElement>();
@@ -115,11 +117,11 @@ const unlocking = ref(false);
 const unlockError = ref("");
 
 const reasonMessages: Record<string, string> = {
-	already_unlocked: "This area is already unlocked.",
-	level_too_low: "You do not meet the level requirement for this area.",
-	insufficient_funds: "You cannot afford this area's unlock cost.",
-	area_not_found: "This area no longer exists.",
-	no_player: "Player data unavailable, try reopening the Dashboard.",
+	already_unlocked: "error.area_already_unlocked",
+	level_too_low: "error.area_level_too_low",
+	insufficient_funds: "error.area_insufficient_funds",
+	area_not_found: "error.area_gone",
+	no_player: "error.no_player",
 };
 
 // Unlocked areas surface first (most relevant for active play), locked areas below
@@ -192,11 +194,11 @@ async function confirmUnlock() {
 			renderAreas();
 			selectedArea.value = area ?? null;
 		} else {
-			unlockError.value = reasonMessages[result?.reason ?? ""] ?? "Unlock failed.";
+			unlockError.value = t(reasonMessages[result?.reason ?? ""] ?? "error.unlock_failed");
 		}
 	} catch (error) {
 		console.error("unlockArea failed:", error);
-		unlockError.value = "Unlock failed.";
+		unlockError.value = t("error.unlock_failed");
 	} finally {
 		unlocking.value = false;
 	}

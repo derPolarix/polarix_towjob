@@ -1,5 +1,6 @@
 local debug = require("shared.debug")
 local sharedConfig = require("config.shared")
+local Locale = require("shared.locale")
 
 -- Phase 13.2: the one deliberate, permanent admin tool. Framework.IsAdmin is
 -- re-checked here at open time AND again inside every individual admin*
@@ -10,7 +11,7 @@ RegisterCommand('towjobadmin', function(source)
 
     if not Framework.IsAdmin(source) then
         debug.DebugPrint(("towjobadmin: non-admin %s attempted /towjobadmin"):format(source))
-        TriggerClientEvent("polarix_towjob:notify", source, "You do not have permission to do that.", "error")
+        TriggerClientEvent("polarix_towjob:notify", source, Locale("notify.no_permission"), "error")
         return
     end
 
@@ -27,16 +28,16 @@ if sharedConfig.Debug then
 
         if not Framework.IsAdmin(source) then
             debug.DebugPrint(("towjobtestpage: non-admin %s attempted /towjobtestpage"):format(source))
-            TriggerClientEvent("polarix_towjob:notify", source, "You do not have permission to do that.", "error")
+            TriggerClientEvent("polarix_towjob:notify", source, Locale("notify.no_permission"), "error")
             return
         end
 
         local result = OnCall.DebugSendTestPage(source)
         if not result.ok then
-            TriggerClientEvent("polarix_towjob:notify", source, ("Test page failed: %s"):format(result.reason), "error")
+            TriggerClientEvent("polarix_towjob:notify", source, Locale("notify.test_page_failed"):format(result.reason), "error")
             return
         end
 
-        TriggerClientEvent("polarix_towjob:notify", source, ("Paged you a test mission: %s"):format(result.name), "success")
+        TriggerClientEvent("polarix_towjob:notify", source, Locale("notify.test_page_sent"):format(result.name), "success")
     end, false)
 end

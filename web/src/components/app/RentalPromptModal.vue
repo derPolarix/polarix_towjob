@@ -8,11 +8,12 @@
 			<div style="width:52px;height:52px;border-radius:14px;background:rgba(34,197,94,0.14);display:flex;align-items:center;justify-content:center;margin-bottom:16px">
 				<iconify-icon icon="tabler:truck" width="26" style="color:#22c55e"></iconify-icon>
 			</div>
-			<div style="font-size:17px;font-weight:800;color:#1b1f24">Get a rental tow truck</div>
+			<div style="font-size:17px;font-weight:800;color:#1b1f24">{{ t("rental.prompt_title") }}</div>
 			<div style="font-size:13px;color:#6b7280;margin-top:8px;line-height:1.6">
-				You don't own a tow truck yet. Renting one spawns it right away and bills
-				<strong>${{ dashboardStore.payload?.rentalPricePerCharge ?? 0 }}</strong>
-				every <strong>{{ dashboardStore.payload?.rentalIntervalMinutes ?? 0 }} min</strong> while it's out — you'll go on-call as soon as it's parked.
+				<i18n-t keypath="rental.prompt_body" tag="span">
+					<template #price><strong>${{ dashboardStore.payload?.rentalPricePerCharge ?? 0 }}</strong></template>
+					<template #minutes><strong>{{ dashboardStore.payload?.rentalIntervalMinutes ?? 0 }}</strong></template>
+				</i18n-t>
 			</div>
 			<div style="display:flex;gap:10px;margin-top:20px">
 				<button
@@ -22,7 +23,7 @@
 					:disabled="isRenting"
 					@click="confirmRent"
 				>
-					{{ isRenting ? 'Renting…' : 'Rent now' }}
+					{{ isRenting ? t("rental.renting") : t("rental.rent_now") }}
 				</button>
 				<button
 					type="button"
@@ -30,7 +31,7 @@
 					:disabled="isRenting"
 					@click="closeModal"
 				>
-					Cancel
+					{{ t("app.cancel") }}
 				</button>
 			</div>
 		</div>
@@ -39,10 +40,12 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { StartStandaloneRentalResult } from "@/types/dashboard";
 
+const { t } = useI18n();
 const dashboardStore = useDashboardStore();
 const isRenting = ref(false);
 

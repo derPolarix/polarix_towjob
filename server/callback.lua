@@ -1,5 +1,12 @@
 local sharedConfig = require("config.shared")
 local serverConfig = require("config.server")
+local Locale = require("shared.locale")
+
+local function localizeList(keys)
+    local out = {}
+    for i, key in ipairs(keys or {}) do out[i] = Locale(key) end
+    return out
+end
 
 lib.callback.register("polarix_towjob:openDashboard", function(source)
     -- Player.Load normally runs on the framework's "player loaded" event, but that doesn't
@@ -18,7 +25,8 @@ lib.callback.register("polarix_towjob:openDashboard", function(source)
     local ok, payload = pcall(function()
         return {
             player = playerData,
-            levelTitles = sharedConfig.LevelTitles,
+            language = sharedConfig.Language,
+            levelTitles = localizeList(sharedConfig.LevelTitles),
             xpThresholds = sharedConfig.XPThresholds,
             unlockedAreaIds = Player.GetUnlockedAreaIds(source),
             areas = Areas.GetMapAreas(source),
@@ -26,7 +34,7 @@ lib.callback.register("polarix_towjob:openDashboard", function(source)
             vehicleTiers = Vehicles.GetTiersForPlayer(source),
             repairCostPerHealthPoint = Vehicles.GetRepairCostPerHealthPoint(source),
             activeDelivery = Missions.GetActiveDeliverySummary(source),
-            skillBranches = sharedConfig.Skills.branches,
+            skillBranches = Skills.ResolveBranches(),
             onCall = OnCall.IsOnCall(source),
             rentalActive = Vehicles.IsRentalActive(source),
             rentalPricePerCharge = Settings.GetRentalPricePerCharge(),

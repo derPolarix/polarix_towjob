@@ -1,3 +1,5 @@
+local Locale = require("shared.locale")
+
 Deliveries = {}
 
 local LEADERBOARD_LIMIT = 10
@@ -51,7 +53,7 @@ end
 local function mapHistoryRow(row)
     return {
         id = row.id,
-        missionName = row.mission_name or "Unknown Job",
+        missionName = row.mission_name or Locale("misc.unknown_job"),
         status = row.status,
         rewardPaid = row.reward_paid,
         xpPaid = row.xp_paid,

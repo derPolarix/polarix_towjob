@@ -2,7 +2,7 @@
 	<div style="height:100%;display:flex">
 		<aside style="width:230px;flex-shrink:0;border-right:1px solid #dfe2e6;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px;background:#f6f7f8">
 			<button type="button" class="accent-btn" style="width:100%;padding:10px;font-size:12px;justify-content:center;margin-bottom:4px" @click="startNew">
-				<iconify-icon icon="tabler:plus" width="15"></iconify-icon> New mission
+				<iconify-icon icon="tabler:plus" width="15"></iconify-icon> {{ t("admin.new_mission") }}
 			</button>
 
 			<button
@@ -14,7 +14,7 @@
 				@click="selectMission(mission)"
 			>
 				<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" :style="{ color: editingId === mission.id ? '#fff' : '#1b1f24' }">{{ mission.name }}</div>
-				<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;margin-top:3px" :style="{ color: editingId === mission.id ? '#9aa1ab' : '#9aa1ab' }">{{ mission.area_name ?? "no area" }} · {{ mission.is_active ? "active" : "inactive" }}</div>
+				<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;margin-top:3px" :style="{ color: editingId === mission.id ? '#9aa1ab' : '#9aa1ab' }">{{ mission.area_name ?? t("admin.no_area") }} · {{ mission.is_active ? t("admin.active") : t("admin.inactive") }}</div>
 			</button>
 		</aside>
 
@@ -23,142 +23,142 @@
 
 			<div style="background:#fff;border:1px solid #dfe2e6;border-radius:14px;padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
 				<label style="grid-column:span 2;display:flex;flex-direction:column;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab">
-					Name
+					{{ t("admin.field_name") }}
 					<input v-model="form.name" type="text" class="admin-input" />
 				</label>
 
 				<label class="admin-label">
-					Area
+					{{ t("admin.field_area") }}
 					<select v-model="form.area_id" class="admin-input">
 						<option v-for="area in adminStore.areas" :key="area.id" :value="area.id">{{ area.name }}</option>
 					</select>
 				</label>
 
 				<label class="admin-label">
-					Difficulty
+					{{ t("admin.field_difficulty") }}
 					<select v-model="form.difficulty" class="admin-input">
-						<option value="easy">Easy</option>
-						<option value="medium">Medium</option>
-						<option value="hard">Hard</option>
+						<option value="easy">{{ t("admin.difficulty_easy") }}</option>
+						<option value="medium">{{ t("admin.difficulty_medium") }}</option>
+						<option value="hard">{{ t("admin.difficulty_hard") }}</option>
 					</select>
 				</label>
 
 				<label class="admin-label">
-					Vehicle model (spawn code)
+					{{ t("admin.field_vehicle_model") }}
 					<input v-model="form.vehicle_model" type="text" class="admin-input" />
 				</label>
 
 				<label class="admin-label">
-					Vehicle label (display name)
+					{{ t("admin.field_vehicle_label") }}
 					<input v-model="form.vehicle_label" type="text" class="admin-input" />
 				</label>
 
 				<label class="admin-label">
-					Vehicle color — primary
+					{{ t("admin.field_vehicle_color_primary") }}
 					<input v-model.number="form.vehicle_colors.primary" type="number" min="0" class="admin-input" />
 				</label>
 
 				<label class="admin-label">
-					Vehicle color — secondary
+					{{ t("admin.field_vehicle_color_secondary") }}
 					<input v-model.number="form.vehicle_colors.secondary" type="number" min="0" class="admin-input" />
 				</label>
 
 				<label class="admin-label">
-					Reward ($)
+					{{ t("admin.field_reward") }}
 					<input v-model.number="form.reward_base" type="number" min="0" class="admin-input" />
 				</label>
 
 				<label class="admin-label">
-					XP
+					{{ t("admin.field_xp") }}
 					<input v-model.number="form.xp_base" type="number" min="0" class="admin-input" />
 				</label>
 
 				<label class="admin-label">
-					Level required
+					{{ t("admin.field_level_required") }}
 					<input v-model.number="form.level_required" type="number" min="1" class="admin-input" />
 				</label>
 
 				<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:#3c424b;margin-top:18px">
 					<input type="checkbox" :checked="form.time_limit_minutes !== null" @change="toggleTimed" />
-					Timed mission
+					{{ t("admin.field_timed_mission") }}
 				</label>
 
 				<label v-if="form.time_limit_minutes !== null" class="admin-label">
-					Time limit (minutes)
+					{{ t("admin.field_time_limit") }}
 					<input v-model.number="form.time_limit_minutes" type="number" min="1" class="admin-input" />
 				</label>
 			</div>
 
 			<div style="background:#fff;border:1px solid #dfe2e6;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
 				<div style="display:flex;align-items:center;justify-content:space-between">
-					<span style="font-size:13px;font-weight:700;color:#1b1f24">Search area (where the vehicle spawns)</span>
+					<span style="font-size:13px;font-weight:700;color:#1b1f24">{{ t("admin.search_area_heading") }}</span>
 					<button type="button" style="font-size:11px;font-weight:600;border-radius:8px;background:#f1f2f4;border:1px solid #dfe2e6;color:#3c424b;padding:6px 10px;cursor:pointer" @click="useCurrentPosition('search')">
-						Use current position
+						{{ t("admin.use_current_position") }}
 					</button>
 				</div>
 				<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
-					<label class="admin-label">X <input v-model.number="form.search_center_x" type="number" step="any" class="admin-input" /></label>
-					<label class="admin-label">Y <input v-model.number="form.search_center_y" type="number" step="any" class="admin-input" /></label>
-					<label class="admin-label">Z <input v-model.number="form.search_center_z" type="number" step="any" class="admin-input" /></label>
-					<label class="admin-label">Radius <input v-model.number="form.search_radius" type="number" step="any" class="admin-input" /></label>
+					<label class="admin-label">{{ t("admin.axis_x") }} <input v-model.number="form.search_center_x" type="number" step="any" class="admin-input" /></label>
+					<label class="admin-label">{{ t("admin.axis_y") }} <input v-model.number="form.search_center_y" type="number" step="any" class="admin-input" /></label>
+					<label class="admin-label">{{ t("admin.axis_z") }} <input v-model.number="form.search_center_z" type="number" step="any" class="admin-input" /></label>
+					<label class="admin-label">{{ t("admin.axis_radius") }} <input v-model.number="form.search_radius" type="number" step="any" class="admin-input" /></label>
 				</div>
 				<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#6b7280">
 					<input v-model="searchPreviewOn" type="checkbox" @change="pushSearchPreview" />
-					Show live blip preview in-game
+					{{ t("admin.search_preview_toggle") }}
 				</label>
 			</div>
 
 			<div style="background:#fff;border:1px solid #dfe2e6;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
 				<div style="display:flex;align-items:center;justify-content:space-between">
-					<span style="font-size:13px;font-weight:700;color:#1b1f24">Dropoff zone</span>
+					<span style="font-size:13px;font-weight:700;color:#1b1f24">{{ t("admin.dropoff_zone_heading") }}</span>
 					<button type="button" style="font-size:11px;font-weight:600;border-radius:8px;background:#f1f2f4;border:1px solid #dfe2e6;color:#3c424b;padding:6px 10px;cursor:pointer" @click="useCurrentPosition('dropoff')">
-						Use current position
+						{{ t("admin.use_current_position") }}
 					</button>
 				</div>
 				<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-					<label class="admin-label">X <input v-model.number="form.dropoff_x" type="number" step="any" class="admin-input" /></label>
-					<label class="admin-label">Y <input v-model.number="form.dropoff_y" type="number" step="any" class="admin-input" /></label>
-					<label class="admin-label">Z <input v-model.number="form.dropoff_z" type="number" step="any" class="admin-input" /></label>
-					<label class="admin-label">Heading <input v-model.number="form.dropoff_heading" type="number" step="any" class="admin-input" /></label>
-					<label class="admin-label">Width <input v-model.number="form.dropoff_width" type="number" step="any" class="admin-input" /></label>
-					<label class="admin-label">Length <input v-model.number="form.dropoff_length" type="number" step="any" class="admin-input" /></label>
+					<label class="admin-label">{{ t("admin.axis_x") }} <input v-model.number="form.dropoff_x" type="number" step="any" class="admin-input" /></label>
+					<label class="admin-label">{{ t("admin.axis_y") }} <input v-model.number="form.dropoff_y" type="number" step="any" class="admin-input" /></label>
+					<label class="admin-label">{{ t("admin.axis_z") }} <input v-model.number="form.dropoff_z" type="number" step="any" class="admin-input" /></label>
+					<label class="admin-label">{{ t("admin.axis_heading") }} <input v-model.number="form.dropoff_heading" type="number" step="any" class="admin-input" /></label>
+					<label class="admin-label">{{ t("admin.axis_width") }} <input v-model.number="form.dropoff_width" type="number" step="any" class="admin-input" /></label>
+					<label class="admin-label">{{ t("admin.axis_length") }} <input v-model.number="form.dropoff_length" type="number" step="any" class="admin-input" /></label>
 				</div>
 				<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#6b7280">
 					<input v-model="dropoffPreviewOn" type="checkbox" @change="pushDropoffPreview" />
-					Show live red outline preview in-game (same outline the real delivery uses)
+					{{ t("admin.dropoff_preview_toggle") }}
 				</label>
 			</div>
 
 			<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
 				<button type="button" class="accent-btn" style="padding:10px 18px;font-size:13px" :disabled="saving" @click="save">
-					{{ saving ? "Saving…" : editingId ? "Save changes" : "Create mission" }}
+					{{ saving ? t("common.saving") : editingId ? t("admin.save_changes") : t("admin.create_mission") }}
 				</button>
 
 				<template v-if="editingId">
 					<button type="button" style="border-radius:10px;background:#fff;border:1px solid #dfe2e6;color:#3c424b;font-family:inherit;font-weight:600;font-size:13px;padding:10px 16px;cursor:pointer" :disabled="togglingActive" :style="{ opacity: togglingActive ? 0.5 : 1 }" @click="toggleActive">
-						{{ selectedIsActive ? "Deactivate" : "Activate" }}
+						{{ selectedIsActive ? t("admin.deactivate") : t("admin.activate") }}
 					</button>
 
 					<button
 						type="button"
 						style="border-radius:10px;background:#fff;border:1px solid #f3c8c2;color:#dc2626;font-family:inherit;font-weight:600;font-size:13px;padding:10px 16px;cursor:pointer"
 						:disabled="deleting || selectedDeliveryCount > 0"
-						:title="selectedDeliveryCount > 0 ? 'Has delivery history — deactivate instead' : ''"
+						:title="selectedDeliveryCount > 0 ? t('admin.delete_blocked_history') : ''"
 						:style="{ opacity: (deleting || selectedDeliveryCount > 0) ? 0.4 : 1 }"
 						@click="remove"
 					>
-						{{ deleting ? "Deleting…" : "Delete" }}
+						{{ deleting ? t("admin.deleting") : t("admin.delete") }}
 					</button>
 
 					<button
 						type="button"
 						style="margin-left:auto;border-radius:10px;background:#3b82f6;border:none;color:#fff;font-family:inherit;font-weight:600;font-size:13px;padding:10px 16px;cursor:pointer"
 						:disabled="testing || !selectedIsActive"
-						:title="!selectedIsActive ? 'Activate this mission first to test it' : 'QA only — bypasses your own level/area-lock requirements'"
+						:title="!selectedIsActive ? t('admin.test_needs_active') : t('admin.test_qa_hint')"
 						:style="{ opacity: (testing || !selectedIsActive) ? 0.4 : 1 }"
 						@click="testRun"
 					>
-						{{ testing ? "Starting…" : "Test mission" }}
+						{{ testing ? t("admin.starting") : t("admin.test_mission") }}
 					</button>
 				</template>
 			</div>
@@ -168,10 +168,12 @@
 
 <script setup lang="ts">
 import { getCurrentInstance, reactive, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useAdminStore } from "@/stores/adminStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { AdminActionResult, AdminCurrentPosition, AdminMission } from "@/types/admin";
 
+const { t } = useI18n();
 const proxy = getCurrentInstance()!.proxy!;
 const persistantStore = proxy.$persistantStore;
 const adminStore = useAdminStore();
@@ -329,14 +331,14 @@ function clearPreviews() {
 }
 
 const reasonMessages: Record<string, string> = {
-	not_admin: "You are not an admin.",
-	invalid_name: "Name is required.",
-	invalid_area: "Select a valid area.",
-	invalid_vehicle_model: "Vehicle model is required.",
-	invalid_reward: "Reward and XP must be numbers.",
-	invalid_position: "Search center and dropoff position are required.",
-	not_found: "This mission no longer exists.",
-	has_delivery_history: "This mission has delivery history — deactivate it instead of deleting.",
+	not_admin: "admin.err_not_admin",
+	invalid_name: "admin.err_name_required",
+	invalid_area: "admin.err_invalid_area",
+	invalid_vehicle_model: "admin.err_invalid_vehicle_model",
+	invalid_reward: "admin.err_invalid_reward",
+	invalid_position: "admin.err_invalid_position_mission",
+	not_found: "admin.err_mission_gone",
+	has_delivery_history: "admin.err_has_delivery_history",
 };
 
 async function save() {
@@ -355,11 +357,11 @@ async function save() {
 				if (created) selectMission(created);
 			}
 		} else {
-			errorMessage.value = reasonMessages[result?.reason ?? ""] ?? "Failed to save mission.";
+			errorMessage.value = t(reasonMessages[result?.reason ?? ""] ?? "admin.err_save_mission");
 		}
 	} catch (error) {
 		console.error("adminCreateMission/adminUpdateMission failed:", error);
-		errorMessage.value = "Failed to save mission.";
+		errorMessage.value = t("admin.err_save_mission");
 	} finally {
 		saving.value = false;
 	}
@@ -378,11 +380,11 @@ async function toggleActive() {
 			selectedIsActive.value = !selectedIsActive.value;
 			await adminStore.fetchMissions();
 		} else {
-			errorMessage.value = reasonMessages[result?.reason ?? ""] ?? "Failed to update mission.";
+			errorMessage.value = t(reasonMessages[result?.reason ?? ""] ?? "admin.err_update_mission");
 		}
 	} catch (error) {
 		console.error("adminSetMissionActive failed:", error);
-		errorMessage.value = "Failed to update mission.";
+		errorMessage.value = t("admin.err_update_mission");
 	} finally {
 		togglingActive.value = false;
 	}
@@ -398,11 +400,11 @@ async function remove() {
 			await adminStore.fetchMissions();
 			startNew();
 		} else {
-			errorMessage.value = reasonMessages[result?.reason ?? ""] ?? "Failed to delete mission.";
+			errorMessage.value = t(reasonMessages[result?.reason ?? ""] ?? "admin.err_delete_mission");
 		}
 	} catch (error) {
 		console.error("adminDeleteMission failed:", error);
-		errorMessage.value = "Failed to delete mission.";
+		errorMessage.value = t("admin.err_delete_mission");
 	} finally {
 		deleting.value = false;
 	}
@@ -422,11 +424,11 @@ async function testRun() {
 			clearPreviews();
 			await persistantStore.closeNui();
 		} else {
-			errorMessage.value = reasonMessages[result?.reason ?? ""] ?? "Failed to start test run.";
+			errorMessage.value = t(reasonMessages[result?.reason ?? ""] ?? "admin.err_test_run");
 		}
 	} catch (error) {
 		console.error("adminTestRunMission failed:", error);
-		errorMessage.value = "Failed to start test run.";
+		errorMessage.value = t("admin.err_test_run");
 	} finally {
 		testing.value = false;
 	}

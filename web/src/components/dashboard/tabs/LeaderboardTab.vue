@@ -1,21 +1,21 @@
 <template>
 	<div style="display:flex;flex-direction:column;gap:16px">
 		<div>
-			<div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:#1b1f24">Leaderboard</div>
-			<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:4px">Ranked by total earnings</div>
+			<div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:#1b1f24">{{ t("dashboard.nav_leaderboard") }}</div>
+			<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:4px">{{ t("leaderboard.subtitle") }}</div>
 		</div>
 
 		<div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;overflow:hidden">
 			<div style="padding:16px 20px 12px;display:flex;align-items:center;gap:9px">
 				<iconify-icon icon="tabler:trophy" width="18" style="color:var(--accent)"></iconify-icon>
-				<div style="font-size:15px;font-weight:700;color:#1b1f24">Top earners</div>
+				<div style="font-size:15px;font-weight:700;color:#1b1f24">{{ t("leaderboard.top_earners") }}</div>
 			</div>
 			<div style="display:grid;grid-template-columns:0.5fr 2fr 0.8fr 1fr;gap:12px;padding:11px 20px;background:#f6f7f8;border-bottom:1px solid #eef0f2;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab">
-				<span>Rank</span><span>Driver</span><span>Lvl</span><span>Earned</span>
+				<span>{{ t("leaderboard.col_rank") }}</span><span>{{ t("leaderboard.col_driver") }}</span><span>{{ t("leaderboard.col_lvl") }}</span><span>{{ t("leaderboard.col_earned") }}</span>
 			</div>
 
-			<div v-if="loading" style="padding:32px 20px;text-align:center;font-size:13px;color:#9aa1ab">Loading leaderboard…</div>
-			<div v-else-if="entries.length === 0" style="padding:32px 20px;text-align:center;font-size:13px;color:#9aa1ab">No deliveries completed yet.</div>
+			<div v-if="loading" style="padding:32px 20px;text-align:center;font-size:13px;color:#9aa1ab">{{ t("leaderboard.loading") }}</div>
+			<div v-else-if="entries.length === 0" style="padding:32px 20px;text-align:center;font-size:13px;color:#9aa1ab">{{ t("leaderboard.empty") }}</div>
 
 			<template v-else>
 				<div
@@ -52,9 +52,11 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { LeaderboardEntry, LeaderboardResult } from "@/types/dashboard";
 
+const { t } = useI18n();
 const entries = ref<LeaderboardEntry[]>([]);
 const own = ref<LeaderboardEntry | null>(null);
 const loading = ref(true);

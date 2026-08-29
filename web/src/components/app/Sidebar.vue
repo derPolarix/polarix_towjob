@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, getCurrentInstance, ref } from "vue";
 import { Icon } from "@iconify/vue";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 const proxy = getCurrentInstance()!.proxy!;
 const router = proxy.$router;
 
@@ -71,7 +73,7 @@ const navBarClick = (url: string) => {
 				class="w-full text-left px-3 py-2 rounded-md bg-neutral-800/30 hover:bg-neutral-800/60 active:bg-neutral-800/70 transition-colors text-sm font-medium tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
 				@click="$persistantStore.closeNui()"
 			>
-				Schließen
+				{{ t("app.close") }}
 			</button>
 		</nav>
 	</aside>

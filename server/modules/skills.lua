@@ -1,7 +1,29 @@
 local sharedConfig = require("config.shared")
 local debug = require("shared.debug")
+local Locale = require("shared.locale")
 
 Skills = {}
+
+-- config/shared.lua stores skill/branch name+desc as locale keys — resolve them to the
+-- active language's display text before the tree reaches the NUI (server/callback.lua).
+function Skills.ResolveBranches()
+    local out = {}
+    for _, branch in ipairs(sharedConfig.Skills.branches) do
+        local resolvedBranch = { name = Locale(branch.name), icon = branch.icon, skills = {} }
+        for _, skill in ipairs(branch.skills) do
+            resolvedBranch.skills[#resolvedBranch.skills + 1] = {
+                id = skill.id,
+                name = Locale(skill.name),
+                desc = Locale(skill.desc),
+                cost = skill.cost,
+                requires = skill.requires,
+                effects = skill.effects,
+            }
+        end
+        out[#out + 1] = resolvedBranch
+    end
+    return out
+end
 
 local function findSkillDef(skillId)
     for _, branch in ipairs(sharedConfig.Skills.branches) do

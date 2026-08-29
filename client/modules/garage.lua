@@ -1,4 +1,5 @@
 local clientConfig = require("config.client")
+local Locale = require("shared.locale")
 
 Garage = {}
 
@@ -93,17 +94,17 @@ end
 local function attemptStore()
     local tracked, vehicle = findDeployedVehicleNearPlayer()
     if not tracked then
-        Framework.Notify("You're not in one of your tow trucks.", "error")
+        Framework.Notify(Locale("notify.not_in_your_tow_truck"), "error")
         return
     end
 
     if GetPedInVehicleSeat(vehicle, -1) ~= PlayerPedId() then
-        Framework.Notify("You must be in the driver seat.", "error")
+        Framework.Notify(Locale("notify.must_be_driver_seat"), "error")
         return
     end
 
     if GetEntitySpeed(vehicle) > 0.5 then
-        Framework.Notify("Come to a complete stop first.", "error")
+        Framework.Notify(Locale("notify.come_to_stop_first"), "error")
         return
     end
 
@@ -111,14 +112,14 @@ local function attemptStore()
     local result = lib.callback.await("polarix_towjob:storeVehicle", false, tracked.id, netId)
 
     if not result or not result.ok then
-        Framework.Notify("Could not store the vehicle.", "error")
+        Framework.Notify(Locale("notify.store_vehicle_failed"), "error")
         return
     end
 
     local plate = stripPlate(GetVehicleNumberPlateText(vehicle))
     deployedVehicles[plate] = nil
     DeleteEntity(vehicle)
-    Framework.Notify("Vehicle stored.", "success")
+    Framework.Notify(Locale("notify.vehicle_stored"), "success")
 end
 
 local function setupParkingInteraction()
@@ -132,7 +133,7 @@ local function setupParkingInteraction()
                 {
                     name = "polarix_towjob:storevehicle",
                     icon = "fa-solid fa-warehouse",
-                    label = "Store Tow Truck",
+                    label = Locale("ui.store_tow_truck"),
                     canInteract = function()
                         return findDeployedVehicleNearPlayer() ~= nil
                     end,
@@ -157,7 +158,7 @@ local function setupParkingInteraction()
 
                 if not promptShown then
                     promptShown = true
-                    lib.showTextUI("[E] Store Tow Truck")
+                    lib.showTextUI(Locale("ui.e_store_tow_truck"))
                 end
 
                 if IsControlJustReleased(0, 38) then

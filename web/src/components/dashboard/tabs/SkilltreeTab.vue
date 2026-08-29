@@ -2,22 +2,22 @@
 	<div style="display:flex;flex-direction:column;gap:18px">
 		<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
 			<div>
-				<div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:#1b1f24">Skill tree</div>
-				<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:4px">Hover a node for details · earn points by leveling up</div>
+				<div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:#1b1f24">{{ t("skills.title") }}</div>
+				<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:4px">{{ t("skills.subtitle") }}</div>
 			</div>
 			<div style="display:flex;align-items:center;gap:18px">
 				<div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#6b7280">
-					<span style="width:13px;height:13px;border-radius:50%;background:var(--accent)"></span>Unlocked
+					<span style="width:13px;height:13px;border-radius:50%;background:var(--accent)"></span>{{ t("skills.legend_unlocked") }}
 				</div>
 				<div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#6b7280">
-					<span style="width:13px;height:13px;border-radius:50%;background:#fff;border:2px solid var(--accent)"></span>Unlockable
+					<span style="width:13px;height:13px;border-radius:50%;background:#fff;border:2px solid var(--accent)"></span>{{ t("skills.legend_unlockable") }}
 				</div>
 				<div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#6b7280">
-					<span style="width:13px;height:13px;border-radius:50%;background:#e9ebee;border:1px solid #d2d6db"></span>Locked
+					<span style="width:13px;height:13px;border-radius:50%;background:#e9ebee;border:1px solid #d2d6db"></span>{{ t("skills.legend_locked") }}
 				</div>
 				<div style="display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:20px;background:#22262d;color:#fff;font-size:12px;font-weight:600">
 					<iconify-icon icon="tabler:bolt" width="15" style="color:var(--accent)"></iconify-icon>
-					{{ skillPoints }} point{{ skillPoints === 1 ? '' : 's' }}
+					{{ t("skills.points", { count: skillPoints }) }}
 				</div>
 			</div>
 		</div>
@@ -58,7 +58,7 @@
 							</div>
 							<div style="font-size:12px;color:#aeb4bd;margin-top:7px;line-height:1.45">{{ skill.desc }}</div>
 							<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#7ee2a8;margin-top:8px">{{ formatEffects(skill.effects) }}</div>
-							<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;margin-top:4px">Cost: {{ skill.cost }} pt{{ skill.cost === 1 ? '' : 's' }}</div>
+							<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;margin-top:4px">{{ t("skills.cost", { count: skill.cost }) }}</div>
 							<div style="position:absolute;top:100%;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid #22262d"></div>
 						</div>
 					</div>
@@ -76,10 +76,12 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { SkillBranch, SkillEffects, SkillNode, UnlockSkillResult } from "@/types/dashboard";
 
+const { t } = useI18n();
 const dashboardStore = useDashboardStore();
 
 const branches = ref<SkillBranch[]>(dashboardStore.payload?.skillBranches ?? []);
@@ -89,11 +91,11 @@ const unlockingId = ref<string | null>(null);
 const actionError = ref("");
 
 const reasonMessages: Record<string, string> = {
-	invalid_skill: "That skill no longer exists.",
-	already_unlocked: "You already unlocked this skill.",
-	prerequisite_missing: "Unlock the prerequisite skill first.",
-	insufficient_points: "You don't have enough skill points.",
-	no_player: "Player data unavailable, try reopening the Dashboard.",
+	invalid_skill: "error.skill_gone",
+	already_unlocked: "error.skill_already_unlocked",
+	prerequisite_missing: "error.skill_prerequisite_missing",
+	insufficient_points: "error.skill_insufficient_points",
+	no_player: "error.no_player",
 };
 
 const unlockedSkills = computed(() => new Set(dashboardStore.player?.skills ?? []));
@@ -127,9 +129,9 @@ function nodeIconColor(state: SkillState) {
 }
 
 function stateLabel(state: SkillState): string {
-	if (state === "unlocked") return "UNLOCKED";
-	if (state === "unlockable") return "AVAILABLE";
-	return "LOCKED";
+	if (state === "unlocked") return t("skills.state_unlocked");
+	if (state === "unlockable") return t("skills.state_available");
+	return t("skills.state_locked");
 }
 
 function tagStyle(state: SkillState): Record<string, string> {
@@ -142,13 +144,13 @@ function lineColor(skills: SkillNode[], i: number): string {
 	return skills[i + 1] && skillState(skills[i + 1]) === "unlocked" ? "#22c55e" : "#cdd2d8";
 }
 
-const effectLabels: Record<keyof SkillEffects, string> = {
-	damage_penalty_reduction: "damage penalty reduction",
-	payout_bonus: "payout bonus",
-	purchase_discount: "vehicle purchase discount",
-	repair_discount: "repair cost discount",
-	level_requirement_reduction: "lower mission level requirement",
-	area_unlock_discount: "area unlock cost discount",
+const effectLabelKeys: Record<keyof SkillEffects, string> = {
+	damage_penalty_reduction: "skills.effect_damage_penalty_reduction",
+	payout_bonus: "skills.effect_payout_bonus",
+	purchase_discount: "skills.effect_purchase_discount",
+	repair_discount: "skills.effect_repair_discount",
+	level_requirement_reduction: "skills.effect_level_requirement_reduction",
+	area_unlock_discount: "skills.effect_area_unlock_discount",
 };
 
 function formatEffects(effects: SkillEffects): string {
@@ -156,7 +158,7 @@ function formatEffects(effects: SkillEffects): string {
 	for (const key of Object.keys(effects) as (keyof SkillEffects)[]) {
 		const value = effects[key];
 		if (value === undefined) continue;
-		const label = effectLabels[key] ?? key;
+		const label = effectLabelKeys[key] ? t(effectLabelKeys[key]) : key;
 		if (key === "level_requirement_reduction") {
 			parts.push(`-${value} ${label}`);
 		} else {
@@ -177,11 +179,11 @@ async function unlock(skill: SkillNode) {
 		if (result?.ok && result.player) {
 			dashboardStore.setPlayer(result.player);
 		} else {
-			actionError.value = reasonMessages[result?.reason ?? ""] ?? "Unlock failed.";
+			actionError.value = t(reasonMessages[result?.reason ?? ""] ?? "error.unlock_failed");
 		}
 	} catch (error) {
 		console.error("unlockSkill failed:", error);
-		actionError.value = "Unlock failed.";
+		actionError.value = t("error.unlock_failed");
 	} finally {
 		unlockingId.value = null;
 	}

@@ -1,5 +1,6 @@
 local sharedConfig = require("config.shared")
 local debug = require("shared.debug")
+local Locale = require("shared.locale")
 
 Player = {}
 
@@ -33,7 +34,7 @@ local function reconcileStalePlayerState(source, identifier)
 
     DB.FailDelivery(delivery.id)
     debug.DebugPrint("Player.Load: auto-failed stale active delivery", delivery.id, "for", identifier)
-    TriggerClientEvent("polarix_towjob:notify", source, "Your previous delivery was interrupted and has been marked as failed.", "error")
+    TriggerClientEvent("polarix_towjob:notify", source, Locale("notify.previous_delivery_interrupted"), "error")
 end
 
 function Player.Load(source)
@@ -113,7 +114,7 @@ function Player.AddXP(source, amount)
     TriggerClientEvent("polarix_towjob:playerUpdate", source, Player.GetData(source))
 
     if newLevel > oldLevel then
-        TriggerClientEvent("polarix_towjob:levelUp", source, { level = newLevel, title = sharedConfig.LevelTitles[newLevel] })
+        TriggerClientEvent("polarix_towjob:levelUp", source, { level = newLevel, title = Locale(sharedConfig.LevelTitles[newLevel] or "") })
     end
 end
 

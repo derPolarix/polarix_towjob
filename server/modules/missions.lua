@@ -1,5 +1,6 @@
 local serverConfig = require("config.server")
 local debug = require("shared.debug")
+local Locale = require("shared.locale")
 
 Missions = {}
 
@@ -251,13 +252,13 @@ function Missions.Fail(source, deliveryId, reason)
 
     Player.RecordDeliveryOutcome(source, "failed")
 
-    local messages = {
-        time_limit_exceeded = "Time limit exceeded — delivery failed.",
-        vehicle_destroyed = "The vehicle was destroyed — delivery failed.",
-        truck_destroyed = "Your tow truck was destroyed — delivery failed.",
-        rental_repossessed = "Rental payment missed — the tow truck has been repossessed.",
+    local messageKeys = {
+        time_limit_exceeded = "notify.fail_time_limit",
+        vehicle_destroyed = "notify.fail_vehicle_destroyed",
+        truck_destroyed = "notify.fail_truck_destroyed",
+        rental_repossessed = "notify.fail_rental_repossessed",
     }
-    TriggerClientEvent("polarix_towjob:notify", source, messages[reason] or "Delivery failed.", "error")
+    TriggerClientEvent("polarix_towjob:notify", source, Locale(messageKeys[reason] or "notify.delivery_failed"), "error")
     TriggerClientEvent("polarix_towjob:deliveryEnded", source, "failed")
 
     debug.DebugPrint(("Missions.Fail: delivery %d failed for source %s (%s)"):format(deliveryId, source, reason))
@@ -387,7 +388,7 @@ function Missions.GetActiveDeliverySummary(source)
     if not delivery then return nil end
 
     local mission = DB.GetMission(delivery.mission_id)
-    return { deliveryId = delivery.id, missionName = mission and mission.name or "Unknown Job" }
+    return { deliveryId = delivery.id, missionName = mission and mission.name or Locale("misc.unknown_job") }
 end
 
 -- Rotates `coords` into the dropoff rectangle's local frame (heading-aligned) and checks
@@ -494,8 +495,8 @@ function Missions.Complete(source, deliveryId)
     Player.AddXP(source, xpPaid)
 
     local message = damagePenalty > 0
-        and ("Delivery complete! $%d earned (-$%d damage), +%d XP."):format(rewardPaid, damagePenalty, xpPaid)
-        or ("Delivery complete! $%d earned, +%d XP."):format(rewardPaid, xpPaid)
+        and Locale("notify.delivery_complete_with_damage"):format(rewardPaid, damagePenalty, xpPaid)
+        or Locale("notify.delivery_complete"):format(rewardPaid, xpPaid)
     TriggerClientEvent("polarix_towjob:notify", source, message, "success")
     TriggerClientEvent("polarix_towjob:deliveryEnded", source, "completed")
 
@@ -523,7 +524,7 @@ function Missions.Abort(source, deliveryId)
 
     Player.RecordDeliveryOutcome(source, "aborted")
 
-    TriggerClientEvent("polarix_towjob:notify", source, "Delivery aborted.", "info")
+    TriggerClientEvent("polarix_towjob:notify", source, Locale("notify.delivery_aborted"), "info")
     TriggerClientEvent("polarix_towjob:deliveryEnded", source, "aborted")
 
     debug.DebugPrint(("Missions.Abort: delivery %d aborted for %s"):format(deliveryId, player.identifier))

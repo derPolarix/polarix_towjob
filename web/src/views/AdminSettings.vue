@@ -6,8 +6,8 @@
 					<iconify-icon icon="tabler:truck" width="19" style="color:#22262d"></iconify-icon>
 				</div>
 				<div style="flex:1;min-width:0">
-					<div style="font-weight:700;font-size:15px;color:#fff">Polarix — Tow Job Admin</div>
-					<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#7a818c;margin-top:2px">Runtime content &amp; settings</div>
+					<div style="font-weight:700;font-size:15px;color:#fff">{{ t("admin.header_title") }}</div>
+					<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#7a818c;margin-top:2px">{{ t("admin.header_subtitle") }}</div>
 				</div>
 				<nav style="display:flex;gap:4px">
 					<button
@@ -37,6 +37,7 @@
 
 <script setup lang="ts">
 import { computed, getCurrentInstance, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
 import { useAdminStore } from "@/stores/adminStore";
 import type { AdminSection } from "@/types/admin";
 import { isDev } from "@/main";
@@ -44,14 +45,15 @@ import MissionsSection from "@/components/admin/MissionsSection.vue";
 import AreasSection from "@/components/admin/AreasSection.vue";
 import SettingsSection from "@/components/admin/SettingsSection.vue";
 
+const { t } = useI18n();
 const proxy = getCurrentInstance()!.proxy!;
 const persistantStore = proxy.$persistantStore;
 const adminStore = useAdminStore();
 
 const sections: { key: AdminSection; label: string; icon: string }[] = [
-	{ key: "missions", label: "Missions", icon: "tabler:package" },
-	{ key: "areas", label: "Areas", icon: "tabler:map" },
-	{ key: "settings", label: "Settings", icon: "tabler:settings" },
+	{ key: "missions", label: t("admin.section_missions"), icon: "tabler:package" },
+	{ key: "areas", label: t("admin.section_areas"), icon: "tabler:map" },
+	{ key: "settings", label: t("admin.section_settings"), icon: "tabler:settings" },
 ];
 
 const sectionComponents: Record<AdminSection, unknown> = {

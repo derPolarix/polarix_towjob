@@ -1,4 +1,5 @@
 local clientConfig = require("config.client")
+local Locale = require("shared.locale")
 
 local HUD_UPDATE_INTERVAL_MS = 500
 local DROPOFF_RENDER_DISTANCE = 30.0
@@ -89,7 +90,7 @@ local function attemptComplete()
     if result and result.ok then
         Vehicle.EndDelivery("completed")
     else
-        Framework.Notify("Could not complete the delivery yet — check the vehicle is fully inside the outline.", "error")
+        Framework.Notify(Locale("notify.delivery_not_confirmable"), "error")
     end
 end
 
@@ -138,7 +139,7 @@ CreateThread(function()
                 if aligned then
                     if not promptShown then
                         promptShown = true
-                        lib.showTextUI("[E] Confirm Delivery")
+                        lib.showTextUI(Locale("ui.confirm_delivery"))
                     end
                     if IsControlJustReleased(0, 38) then
                         attemptComplete()

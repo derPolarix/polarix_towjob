@@ -1,6 +1,7 @@
 local serverConfig = require("config.server")
 local clientConfig = require("config.client")
 local debug = require("shared.debug")
+local Locale = require("shared.locale")
 
 Vehicles = {}
 
@@ -414,7 +415,7 @@ CreateThread(function()
                     state.lastCharge = now
                     state.warned5 = false
                     state.warned1 = false
-                    TriggerClientEvent("polarix_towjob:notify", source, "Rental payment charged.", "info")
+                    TriggerClientEvent("polarix_towjob:notify", source, Locale("notify.rental_payment_charged"), "info")
                 else
                     -- Same auto-fail path as vehicle destruction/timed expiry (design-decisions
                     -- table: "Missed rental payment → same auto-fail path") when a delivery is
@@ -434,10 +435,10 @@ CreateThread(function()
                 end
             elseif remaining <= warnAt1 and not state.warned1 then
                 state.warned1 = true
-                TriggerClientEvent("polarix_towjob:notify", source, "Rental payment due in 1 minute.", "warning")
+                TriggerClientEvent("polarix_towjob:notify", source, Locale("notify.rental_payment_due_1m"), "warning")
             elseif remaining <= warnAt5 and not state.warned5 then
                 state.warned5 = true
-                TriggerClientEvent("polarix_towjob:notify", source, "Rental payment due in 5 minutes.", "warning")
+                TriggerClientEvent("polarix_towjob:notify", source, Locale("notify.rental_payment_due_5m"), "warning")
             end
         end
     end

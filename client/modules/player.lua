@@ -1,3 +1,5 @@
+local Locale = require("shared.locale")
+
 LocalPlayerData = nil
 
 RegisterNetEvent("polarix_towjob:playerUpdate", function(data)
@@ -5,5 +7,5 @@ RegisterNetEvent("polarix_towjob:playerUpdate", function(data)
 end)
 
 RegisterNetEvent("polarix_towjob:levelUp", function(data)
-    Framework.Notify(("You reached level %d: %s"):format(data.level, data.title or ""), "success")
+    Framework.Notify(Locale("notify.level_up"):format(data.level, data.title or ""), "success")
 end)

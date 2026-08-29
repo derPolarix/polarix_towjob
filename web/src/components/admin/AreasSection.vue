@@ -2,7 +2,7 @@
 	<div style="height:100%;display:flex">
 		<aside style="width:230px;flex-shrink:0;border-right:1px solid #dfe2e6;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px;background:#f6f7f8">
 			<button type="button" class="accent-btn" style="width:100%;padding:10px;font-size:12px;justify-content:center;margin-bottom:4px" @click="startNew">
-				<iconify-icon icon="tabler:plus" width="15"></iconify-icon> New area
+				<iconify-icon icon="tabler:plus" width="15"></iconify-icon> {{ t("admin.new_area") }}
 			</button>
 
 			<button
@@ -14,7 +14,7 @@
 				@click="selectArea(area)"
 			>
 				<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" :style="{ color: editingId === area.id ? '#fff' : '#1b1f24' }">{{ area.name }}</div>
-				<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;margin-top:3px;color:#9aa1ab">{{ area.is_active ? "active" : "inactive" }}{{ area.is_default ? " · default" : "" }}</div>
+				<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;margin-top:3px;color:#9aa1ab">{{ area.is_active ? t("admin.active") : t("admin.inactive") }}{{ area.is_default ? " · " + t("admin.default") : "" }}</div>
 			</button>
 		</aside>
 
@@ -23,57 +23,57 @@
 
 			<div style="background:#fff;border:1px solid #dfe2e6;border-radius:14px;padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
 				<label style="grid-column:span 2" class="admin-label">
-					Name
+					{{ t("admin.field_name") }}
 					<input v-model="form.name" type="text" class="admin-input" />
 				</label>
 
 				<label class="admin-label">
-					Region
+					{{ t("admin.field_region") }}
 					<input v-model="form.region" type="text" class="admin-input" />
 				</label>
 
 				<label class="admin-label">
-					Level required
+					{{ t("admin.field_level_required") }}
 					<input v-model.number="form.level_required" type="number" min="1" class="admin-input" />
 				</label>
 
 				<label class="admin-label">
-					Unlock cost
+					{{ t("admin.field_unlock_cost") }}
 					<input v-model.number="form.unlock_cost" type="number" min="0" class="admin-input" />
 				</label>
 
 				<label class="admin-label">
-					Reward multiplier
+					{{ t("admin.field_reward_multiplier") }}
 					<input v-model.number="form.reward_multiplier" type="number" min="0" max="10" step="0.1" class="admin-input" />
 				</label>
 
 				<label class="admin-label">
-					XP multiplier
+					{{ t("admin.field_xp_multiplier") }}
 					<input v-model.number="form.xp_multiplier" type="number" min="0" max="10" step="0.1" class="admin-input" />
 				</label>
 
 				<label style="grid-column:span 2" class="admin-label">
-					Note (shown to players, optional)
+					{{ t("admin.field_note") }}
 					<input v-model="form.note" type="text" maxlength="140" class="admin-input" />
 				</label>
 
 				<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:#3c424b;margin-top:18px">
 					<input v-model="form.is_default" type="checkbox" />
-					Default area (free, pre-unlocked for everyone)
+					{{ t("admin.field_default_area") }}
 				</label>
 			</div>
 
 			<div style="background:#fff;border:1px solid #dfe2e6;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
 				<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
 					<div style="font-size:13px;font-weight:700;color:#1b1f24">
-						Area shape — click the map to add vertices ({{ form.points.length }} point{{ form.points.length === 1 ? "" : "s" }}, min 3)
+						{{ t("admin.area_shape_hint", { count: form.points.length }) }}
 					</div>
 					<div style="display:flex;gap:6px">
 						<button type="button" style="border-radius:8px;background:#fff;border:1px solid #dfe2e6;color:#3c424b;font-family:inherit;font-weight:600;font-size:12px;padding:6px 10px;cursor:pointer" :disabled="form.points.length === 0" @click="undoPoint">
-							Undo point
+							{{ t("admin.undo_point") }}
 						</button>
 						<button type="button" style="border-radius:8px;background:#fff;border:1px solid #dfe2e6;color:#3c424b;font-family:inherit;font-weight:600;font-size:12px;padding:6px 10px;cursor:pointer" :disabled="form.points.length === 0" @click="clearPoints">
-							Clear
+							{{ t("admin.clear") }}
 						</button>
 					</div>
 				</div>
@@ -82,7 +82,7 @@
 
 			<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
 				<button type="button" class="accent-btn" style="padding:10px 18px;font-size:13px" :disabled="saving" @click="save">
-					{{ saving ? "Saving…" : editingId ? "Save changes" : "Create area" }}
+					{{ saving ? t("common.saving") : editingId ? t("admin.save_changes") : t("admin.create_area") }}
 				</button>
 
 				<button
@@ -93,7 +93,7 @@
 					:style="{ opacity: togglingActive ? 0.5 : 1 }"
 					@click="toggleActive"
 				>
-					{{ selectedIsActive ? "Deactivate" : "Activate" }}
+					{{ selectedIsActive ? t("admin.deactivate") : t("admin.activate") }}
 				</button>
 			</div>
 		</div>
@@ -102,6 +102,7 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import gtaMapUrl from "@/assets/maps/gta_map.jpg";
@@ -112,6 +113,7 @@ import type { AdminActionResult, AdminArea } from "@/types/admin";
 
 // Points are stored/sent as GTA world coords and converted to the Leaflet image via
 // @/lib/gtaMap — map clicks here are captured the reverse way (latLngToGta).
+const { t } = useI18n();
 const adminStore = useAdminStore();
 
 const mapContainer = ref<HTMLDivElement>();
@@ -119,6 +121,16 @@ let map: L.Map | null = null;
 let areaPolygon: L.Polygon | L.Polyline | null = null;
 let vertexLayer: L.LayerGroup | null = null;
 let resizeObserver: ResizeObserver | null = null;
+
+const areaReasonKeys: Record<string, string> = {
+	invalid_name: "admin.err_name_required",
+	invalid_position: "admin.err_invalid_position",
+	invalid_multiplier: "admin.err_invalid_multiplier",
+	not_found: "admin.err_area_gone",
+};
+function areaReasonKey(reason: string | undefined): string | undefined {
+	return reason ? areaReasonKeys[reason] : undefined;
+}
 
 const editingId = ref<string | null>(null);
 const selectedIsActive = ref(true);
@@ -214,12 +226,12 @@ function selectArea(area: AdminArea) {
 
 async function save() {
 	if (!form.name.trim()) {
-		errorMessage.value = "Name is required.";
+		errorMessage.value = t("admin.err_name_required");
 		return;
 	}
 
 	if (form.points.length < 3) {
-		errorMessage.value = "Area needs at least 3 points.";
+		errorMessage.value = t("admin.err_area_min_points");
 		return;
 	}
 
@@ -250,11 +262,11 @@ async function save() {
 				if (created) selectArea(created);
 			}
 		} else {
-			errorMessage.value = result?.reason ?? "Failed to save area.";
+			errorMessage.value = t(areaReasonKey(result?.reason) ?? "admin.err_save_area");
 		}
 	} catch (error) {
 		console.error("adminCreateArea/adminUpdateArea failed:", error);
-		errorMessage.value = "Failed to save area.";
+		errorMessage.value = t("admin.err_save_area");
 	} finally {
 		saving.value = false;
 	}
@@ -273,11 +285,11 @@ async function toggleActive() {
 			selectedIsActive.value = !selectedIsActive.value;
 			await adminStore.fetchAreas();
 		} else {
-			errorMessage.value = result?.reason ?? "Failed to update area.";
+			errorMessage.value = t(areaReasonKey(result?.reason) ?? "admin.err_update_area");
 		}
 	} catch (error) {
 		console.error("adminSetAreaActive failed:", error);
-		errorMessage.value = "Failed to update area.";
+		errorMessage.value = t("admin.err_update_area");
 	} finally {
 		togglingActive.value = false;
 	}

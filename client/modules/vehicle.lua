@@ -1,5 +1,6 @@
 local debug = require("shared.debug")
 local clientConfig = require("config.client")
+local Locale = require("shared.locale")
 
 Vehicle = {}
 
@@ -79,7 +80,7 @@ local function setupFoundDetection(entity)
                 currentDelivery.dropoffBlip = createDropoffBlip(currentDelivery.mission.dropoff)
 
                 TriggerServerEvent("polarix_towjob:vehicleFound", currentDelivery.deliveryId)
-                Framework.Notify("Vehicle located — hook it up and tow it to the drop-off.", "success")
+                Framework.Notify(Locale("notify.vehicle_located"), "success")
                 return
             end
 
@@ -142,7 +143,7 @@ local function beginDelivery(deliveryId, mission, deadlineAt)
 
     setupFoundDetection(targetVehicle)
 
-    Framework.Notify(("New tow job: %s"):format(mission.name), "info")
+    Framework.Notify(Locale("notify.new_tow_job"):format(mission.name), "info")
 end
 
 -- Turns a Missions.Accept response into the right client action: spawn a rental / owned
@@ -179,7 +180,7 @@ function Vehicle.AcceptPagerOffer()
     local result = handleAcceptResult(lib.callback.await("polarix_towjob:acceptPage", false))
 
     if result.ok and result.needsParkOut then
-        Framework.Notify("Open the Dashboard and Park Out a tow truck to start the job.", "info")
+        Framework.Notify(Locale("notify.park_out_to_start"), "info")
     end
 
     return result

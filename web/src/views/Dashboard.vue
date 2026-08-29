@@ -10,13 +10,13 @@
 					</div>
 					<div style="flex:1;min-width:0">
 						<div style="font-weight:700;font-size:16px;color:#fff;line-height:1.05">Polarix</div>
-						<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#7a818c;margin-top:2px">Tow Ops</div>
+						<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#7a818c;margin-top:2px">{{ t("dashboard.tow_ops") }}</div>
 					</div>
 				</div>
 				<div style="height:3px;margin:2px 18px 0;border-radius:2px;background:repeating-linear-gradient(45deg,var(--accent) 0 8px,#2e333b 8px 16px);opacity:0.55"></div>
 
 				<nav style="flex:1;overflow-y:auto;padding:16px 12px;display:flex;flex-direction:column;gap:3px">
-					<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#5b626c;padding:0 10px 8px">Menu</div>
+					<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#5b626c;padding:0 10px 8px">{{ t("dashboard.menu") }}</div>
 					<button
 						v-for="item in navItems"
 						:key="item.key"
@@ -38,7 +38,7 @@
 							<div style="width:38px;height:38px;border-radius:11px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#22262d;flex-shrink:0">{{ initial }}</div>
 							<div style="flex:1;min-width:0">
 								<div style="font-weight:600;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ player?.name ?? '—' }}</div>
-								<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#7a818c;margin-top:1px">{{ dashboardStore.levelTitle }} · Lvl {{ player?.level ?? 1 }}</div>
+								<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#7a818c;margin-top:1px">{{ dashboardStore.levelTitle }} · {{ t("common.level_short", { level: player?.level ?? 1 }) }}</div>
 							</div>
 						</div>
 						<div style="margin-top:11px;display:flex;align-items:center;gap:8px">
@@ -50,7 +50,7 @@
 					</div>
 				</div>
 				<button style="margin:6px 12px 14px;display:flex;align-items:center;gap:10px;padding:10px 13px;border:none;background:transparent;color:#7a818c;font-family:inherit;font-size:13px;cursor:pointer;border-radius:10px" @click="closeNui">
-					<iconify-icon icon="tabler:logout" width="18"></iconify-icon> Exit
+					<iconify-icon icon="tabler:logout" width="18"></iconify-icon> {{ t("dashboard.exit") }}
 				</button>
 			</aside>
 
@@ -59,12 +59,12 @@
 				<header style="height:62px;flex-shrink:0;display:flex;align-items:center;gap:14px;padding:0 22px;background:#fff;border-bottom:1px solid #dfe2e6">
 					<div style="display:flex;align-items:center;gap:10px;height:38px;width:380px;max-width:42%;padding:9px 14px;border-radius:11px;background:#f1f2f4;border:1px solid #e4e6e9">
 						<iconify-icon icon="tabler:search" width="17" style="color:#9aa1ab"></iconify-icon>
-						<input placeholder="Search missions or vehicles…" style="flex:1;border:none;background:transparent;outline:none;font-size:13px;color:#1b1f24;font-family:inherit" />
+						<input :placeholder="t('dashboard.search_placeholder')" style="flex:1;border:none;background:transparent;outline:none;font-size:13px;color:#1b1f24;font-family:inherit" />
 					</div>
 					<div style="flex:1"></div>
 					<div style="display:flex;align-items:center;gap:7px;padding:6px 8px 6px 12px;border-radius:20px;background:#f1f2f4;border:1px solid #e4e6e9">
 						<iconify-icon icon="tabler:bolt" width="15" style="color:var(--accent)"></iconify-icon>
-						<span style="font-size:12px;color:#6b7280;font-weight:500">Skill points</span>
+						<span style="font-size:12px;color:#6b7280;font-weight:500">{{ t("dashboard.skill_points") }}</span>
 						<span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:#1b1f24;background:#fff;border:1px solid #e4e6e9;border-radius:10px;padding:1px 8px">{{ player?.skill_points ?? 0 }}</span>
 					</div>
 					<div style="text-align:right;line-height:1.15;padding:0 4px">
@@ -84,7 +84,7 @@
 								<iconify-icon icon="tabler:truck" width="18" style="color:#dc2626"></iconify-icon>
 							</div>
 							<div>
-								<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#dc2626">Active delivery</div>
+								<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#dc2626">{{ t("dashboard.active_delivery") }}</div>
 								<div style="font-size:14px;font-weight:700;color:#1b1f24;margin-top:2px">{{ dashboardStore.activeDelivery.missionName }}</div>
 							</div>
 						</div>
@@ -95,7 +95,7 @@
 							:style="{ opacity: abortingDelivery ? 0.5 : 1, cursor: abortingDelivery ? 'not-allowed' : 'pointer' }"
 							@click="abortDelivery"
 						>
-							Abort delivery
+							{{ t("dashboard.abort_delivery") }}
 						</button>
 					</div>
 
@@ -108,6 +108,7 @@
 
 <script setup lang="ts">
 import { computed, getCurrentInstance, onMounted, onUnmounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { AbortDeliveryResult, TabKey } from "@/types/dashboard";
@@ -119,6 +120,7 @@ import LeaderboardTab from "@/components/dashboard/tabs/LeaderboardTab.vue";
 import SkilltreeTab from "@/components/dashboard/tabs/SkilltreeTab.vue";
 import HistoryTab from "@/components/dashboard/tabs/HistoryTab.vue";
 
+const { t } = useI18n();
 const proxy = getCurrentInstance()!.proxy!;
 const persistantStore = proxy.$persistantStore;
 const dashboardStore = useDashboardStore();
@@ -135,12 +137,12 @@ const time = computed(() => now.value.toLocaleTimeString([], { hour: "2-digit", 
 const date = computed(() => now.value.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }));
 
 const navItems = computed(() => [
-	{ key: "overview" as TabKey, label: "Dashboard", icon: "tabler:layout-dashboard", badge: "" },
-	{ key: "areas" as TabKey, label: "Areas", icon: "tabler:map", badge: "" },
-	{ key: "vehicles" as TabKey, label: "Vehicles", icon: "tabler:truck", badge: String(dashboardStore.payload?.vehicles.length ?? 0) },
-	{ key: "leaderboard" as TabKey, label: "Leaderboard", icon: "tabler:trophy", badge: "" },
-	{ key: "skilltree" as TabKey, label: "Skilltree", icon: "tabler:bolt", badge: "" },
-	{ key: "history" as TabKey, label: "History", icon: "tabler:history", badge: "" },
+	{ key: "overview" as TabKey, label: t("dashboard.nav_dashboard"), icon: "tabler:layout-dashboard", badge: "" },
+	{ key: "areas" as TabKey, label: t("dashboard.nav_areas"), icon: "tabler:map", badge: "" },
+	{ key: "vehicles" as TabKey, label: t("dashboard.nav_vehicles"), icon: "tabler:truck", badge: String(dashboardStore.payload?.vehicles.length ?? 0) },
+	{ key: "leaderboard" as TabKey, label: t("dashboard.nav_leaderboard"), icon: "tabler:trophy", badge: "" },
+	{ key: "skilltree" as TabKey, label: t("dashboard.nav_skilltree"), icon: "tabler:bolt", badge: "" },
+	{ key: "history" as TabKey, label: t("dashboard.nav_history"), icon: "tabler:history", badge: "" },
 ]);
 
 const tabComponents: Record<TabKey, unknown> = {
