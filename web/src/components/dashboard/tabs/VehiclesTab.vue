@@ -39,7 +39,12 @@
 			<div v-else style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
 				<div v-for="vehicle in vehicles" :key="vehicle.id" style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;overflow:hidden;display:flex;flex-direction:column">
 					<div style="width:100%;height:150px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;position:relative">
-						<iconify-icon icon="tabler:truck" width="48" style="color:#aab0b8"></iconify-icon>
+						<div
+							v-if="vehicleImage(vehicle.model)"
+							style="position:absolute;inset:0;background-size:cover;background-position:center"
+							:style="{ backgroundImage: `url(${vehicleImage(vehicle.model)})` }"
+						/>
+						<iconify-icon v-else icon="tabler:truck" width="48" style="color:#aab0b8"></iconify-icon>
 						<span style="position:absolute;top:12px;right:12px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.06em;padding:3px 8px;border-radius:6px;text-transform:uppercase" :style="vehicle.state === 'deployed' ? 'background:rgba(34,197,94,0.16);color:#15803d' : 'background:#eef0f2;color:#6b7280'">{{ vehicle.state }}</span>
 					</div>
 					<div style="padding:15px 16px">
@@ -108,8 +113,8 @@
 			<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
 				<div v-for="tier in vehicleTiers" :key="tier.id" style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;overflow:hidden;display:flex;flex-direction:column">
 					<div style="position:relative">
-						<div style="width:100%;height:128px;background:#f3f4f6;display:flex;align-items:center;justify-content:center">
-							<iconify-icon icon="tabler:truck" width="40" style="color:#aab0b8"></iconify-icon>
+						<div style="width:100%;height:128px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center" :style="vehicleImage(tier.model) ? { backgroundImage: `url(${vehicleImage(tier.model)})` } : {}">
+							<iconify-icon v-if="!vehicleImage(tier.model)" icon="tabler:truck" width="40" style="color:#aab0b8"></iconify-icon>
 						</div>
 						<div v-if="isTierLocked(tier)" style="position:absolute;inset:0;background:rgba(34,38,45,0.55);display:flex;align-items:center;justify-content:center">
 							<iconify-icon icon="tabler:lock" width="26" style="color:#fff"></iconify-icon>
@@ -144,6 +149,14 @@ import type { OwnedVehicle, ReturnRentalResult, VehicleActionResult, VehicleTier
 
 const dashboardStore = useDashboardStore();
 const persistantStore = usePersistantStore();
+
+// model name (config VehicleTiers[].model) -> bundled image url; falls back to a truck icon
+const vehicleImages = import.meta.glob("@/assets/vehicles/*.png", { eager: true, import: "default" }) as Record<string, string>;
+
+function vehicleImage(model: string): string | undefined {
+	const hit = Object.entries(vehicleImages).find(([path]) => path.endsWith(`/${model}.png`));
+	return hit?.[1];
+}
 
 const returningRental = ref(false);
 
