@@ -35,10 +35,17 @@ local function spawnTargetVehicle(mission)
 end
 
 local function createSearchBlip(center, radius)
-    local id = AddBlipForRadius(center.x, center.y, center.z, radius)
-    SetBlipColour(id, 5)
-    SetBlipAlpha(id, 128)
-    return id
+    local area = AddBlipForRadius(center.x, center.y, center.z, radius)
+    SetBlipColour(area, 5)
+    SetBlipAlpha(area, 128)
+
+    local route = AddBlipForCoord(center.x, center.y, center.z)
+    SetBlipSprite(route, 1)
+    SetBlipColour(route, 5)
+    SetBlipRoute(route, true)
+    SetBlipRouteColour(route, 5)
+
+    return area, route
 end
 
 local function createDropoffBlip(dropoff)
@@ -64,6 +71,10 @@ local function setupFoundDetection(entity)
                 if currentDelivery.blip then
                     RemoveBlip(currentDelivery.blip)
                     currentDelivery.blip = nil
+                end
+                if currentDelivery.searchRouteBlip then
+                    RemoveBlip(currentDelivery.searchRouteBlip)
+                    currentDelivery.searchRouteBlip = nil
                 end
                 currentDelivery.dropoffBlip = createDropoffBlip(currentDelivery.mission.dropoff)
 
@@ -92,6 +103,9 @@ function Vehicle.EndDelivery(reason)
     if currentDelivery.blip then
         RemoveBlip(currentDelivery.blip)
     end
+    if currentDelivery.searchRouteBlip then
+        RemoveBlip(currentDelivery.searchRouteBlip)
+    end
     if currentDelivery.dropoffBlip then
         RemoveBlip(currentDelivery.dropoffBlip)
     end
@@ -113,7 +127,7 @@ local function beginDelivery(deliveryId, mission, deadlineAt)
     local netId = NetworkGetNetworkIdFromEntity(targetVehicle)
     TriggerServerEvent("polarix_towjob:setTargetVehicle", deliveryId, netId)
 
-    local blip = createSearchBlip(mission.search_center, mission.search_radius)
+    local blip, searchRouteBlip = createSearchBlip(mission.search_center, mission.search_radius)
 
     currentDelivery = {
         deliveryId = deliveryId,
@@ -121,6 +135,7 @@ local function beginDelivery(deliveryId, mission, deadlineAt)
         targetVehicle = targetVehicle,
         targetNetId = netId,
         blip = blip,
+        searchRouteBlip = searchRouteBlip,
         state = "searching",
         deadlineAt = deadlineAt,
     }
