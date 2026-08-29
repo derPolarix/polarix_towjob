@@ -244,6 +244,9 @@ function Missions.Fail(source, deliveryId, reason)
         Vehicles.StopRental(source)
         TriggerClientEvent("polarix_towjob:repossessRental", source)
     else
+        if reason == "truck_destroyed" then
+            Vehicles.HandleOwnedTruckDestroyed(source, state.truckNetId)
+        end
         Vehicles.OnDeliveryEnded(source)
     end
 

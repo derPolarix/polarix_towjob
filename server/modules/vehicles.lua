@@ -291,6 +291,47 @@ function Vehicles.ParkIn(source, vehicleId)
     return { ok = true, vehicles = Vehicles.GetOwnedForPlayer(source) }
 end
 
+-- A tow truck destroyed mid-delivery (Missions.Fail, "truck_destroyed") leaves its owned DB
+-- row stranded in `deployed` with no live entity — the player then can't Park Out again (state
+-- must be `stored`). Force it back to `stored` at zero health (it was wrecked, so a repair is
+-- owed) and clear the client's deploy cache / any wreck still in the world.
+function Vehicles.HandleOwnedTruckDestroyed(source, truckNetId)
+    local player = Player.GetData(source)
+    if not player then return end
+
+    local targetVehicleId = nil
+    local byId = deployedTruckNetIds[source]
+    if byId and truckNetId then
+        for vehicleId, netId in pairs(byId) do
+            if netId == truckNetId then
+                targetVehicleId = vehicleId
+                break
+            end
+        end
+    end
+
+    -- No netId match (client never reported the truck, or a stale id): only fall back when the
+    -- player has exactly one deployed owned truck, so the wrong one can't be reset.
+    if not targetVehicleId then
+        local deployed = DB.GetDeployedVehicles(player.identifier)
+        if #deployed == 1 then targetVehicleId = deployed[1].id else return end
+    end
+
+    DB.SaveVehicleHealth(targetVehicleId, 0.0, 0.0)
+    DB.SetVehicleState(targetVehicleId, "stored")
+
+    if deployedTruckNetIds[source] then
+        deployedTruckNetIds[source][targetVehicleId] = nil
+    end
+
+    local row = DB.GetVehicle(targetVehicleId)
+    if row then
+        TriggerClientEvent("polarix_towjob:truckParkedIn", source, { plate = row.plate, needsClientDelete = true })
+    end
+
+    debug.DebugPrint(("Vehicles.HandleOwnedTruckDestroyed: %s truck %d reset to stored"):format(player.identifier, targetVehicleId))
+end
+
 -- Reads the towed... er, tow truck's live health straight off the networked entity
 -- instead of trusting a client-supplied number (ground rule 4) — a lying client could
 -- otherwise "store" a wrecked vehicle as if it were undamaged and get a free repair.
