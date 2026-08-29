@@ -140,7 +140,7 @@ return {
     -- GTA's native tow-arm rig. Do not add further models without first verifying
     -- in-game that AttachVehicleToTowTruck behaves correctly on them.
     VehicleTiers = {
-        { id = "standard", model = "towtruck2", label = "Standard Flatbed", price = 45000, damage_resistance = 0.0, level_required = 1 },
+        { id = "standard", model = "towtruck2", label = "Tow Truck", price = 45000, damage_resistance = 0.0, level_required = 1 },
         { id = "heavy",    model = "towtruck",  label = "Heavy Duty Tow",   price = 95000, damage_resistance = 0.20, level_required = 5 },
     },
 
