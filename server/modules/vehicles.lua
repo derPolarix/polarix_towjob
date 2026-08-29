@@ -7,6 +7,12 @@ Vehicles = {}
 local MAX_HEALTH = 1000.0
 local PLATE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
+-- netId of every deployed truck's live entity, reported by the client on spawn/resync
+-- (client/modules/garage.lua). Lets Vehicles.ParkIn despawn a truck from the Dashboard and
+-- read its authoritative health regardless of where the truck sits in the world. Keyed by
+-- source (session-scoped) — cleared on unload and on park-in.
+local deployedTruckNetIds = {} -- [source] = { [vehicleId] = netId }
+
 local function findTier(tierId)
     for _, tier in ipairs(serverConfig.VehicleTiers) do
         if tier.id == tierId then return tier end
@@ -213,6 +219,71 @@ function Vehicles.ParkOut(source, vehicleId)
     }
 end
 
+RegisterNetEvent("polarix_towjob:registerDeployedTruck", function(vehicleId, netId)
+    local source = source
+    local player = Player.GetData(source)
+    if not player then return end
+
+    local vehicle = DB.GetVehicle(vehicleId)
+    if not vehicle or vehicle.identifier ~= player.identifier or vehicle.state ~= "deployed" then return end
+
+    deployedTruckNetIds[source] = deployedTruckNetIds[source] or {}
+    deployedTruckNetIds[source][vehicleId] = netId
+end)
+
+local function resolveDeployedTruckEntity(source, vehicleId)
+    local byId = deployedTruckNetIds[source]
+    local netId = byId and byId[vehicleId]
+    if not netId then return nil end
+
+    local entity = NetworkGetEntityFromNetworkId(netId)
+    if not entity or entity == 0 or not DoesEntityExist(entity) or GetEntityType(entity) ~= 2 then
+        return nil
+    end
+    return entity
+end
+
+-- Dashboard "Park in" — stores a deployed truck from anywhere (design decision: no depot
+-- requirement, unlike the in-world Vehicles.Store prompt). Health is read off the live entity
+-- server-side when the netId still resolves (ground rule 4), otherwise the last stored health
+-- is kept and the client is asked to best-effort despawn it. Blocked while a delivery is
+-- active so the player can't strand their tow job (Missions would then fail on truck loss).
+function Vehicles.ParkIn(source, vehicleId)
+    local player = Player.GetData(source)
+    if not player then return { ok = false, reason = "no_player" } end
+
+    local vehicle = DB.GetVehicle(vehicleId)
+    if not vehicle or vehicle.identifier ~= player.identifier then
+        return { ok = false, reason = "not_owned" }
+    end
+
+    if vehicle.state ~= "deployed" then
+        return { ok = false, reason = "not_deployed" }
+    end
+
+    if DB.GetActiveDelivery(player.identifier) then
+        return { ok = false, reason = "delivery_in_progress" }
+    end
+
+    local entity = resolveDeployedTruckEntity(source, vehicleId)
+    if entity then
+        DB.SaveVehicleHealth(vehicleId, GetVehicleBodyHealth(entity), GetVehicleEngineHealth(entity))
+        DeleteEntity(entity)
+    end
+
+    DB.SetVehicleState(vehicleId, "stored")
+
+    if deployedTruckNetIds[source] then
+        deployedTruckNetIds[source][vehicleId] = nil
+    end
+
+    TriggerClientEvent("polarix_towjob:truckParkedIn", source, { plate = vehicle.plate, needsClientDelete = entity == nil })
+
+    debug.DebugPrint(("Vehicles.ParkIn: %s parked in vehicle %d"):format(player.identifier, vehicleId))
+
+    return { ok = true, vehicles = Vehicles.GetOwnedForPlayer(source) }
+end
+
 -- Reads the towed... er, tow truck's live health straight off the networked entity
 -- instead of trusting a client-supplied number (ground rule 4) — a lying client could
 -- otherwise "store" a wrecked vehicle as if it were undamaged and get a free repair.
@@ -230,7 +301,7 @@ function Vehicles.Store(source, vehicleId, netId)
     end
 
     local entity = NetworkGetEntityFromNetworkId(netId)
-    if not entity or entity == 0 or not DoesEntityExist(entity) or not IsEntityAVehicle(entity) then
+    if not entity or entity == 0 or not DoesEntityExist(entity) or GetEntityType(entity) ~= 2 then
         return { ok = false, reason = "invalid_vehicle" }
     end
 
@@ -247,6 +318,10 @@ function Vehicles.Store(source, vehicleId, netId)
 
     DB.SaveVehicleHealth(vehicleId, GetVehicleBodyHealth(entity), GetVehicleEngineHealth(entity))
     DB.SetVehicleState(vehicleId, "stored")
+
+    if deployedTruckNetIds[source] then
+        deployedTruckNetIds[source][vehicleId] = nil
+    end
 
     debug.DebugPrint(("Vehicles.Store: %s stored vehicle %d"):format(player.identifier, vehicleId))
 
@@ -370,4 +445,7 @@ Framework.OnPlayerLoaded(function(source)
     TriggerClientEvent("polarix_towjob:syncDeployedVehicles", source, Vehicles.GetDeployedForPlayer(source))
 end)
 
-Framework.OnPlayerUnload(Vehicles.StopRental)
+Framework.OnPlayerUnload(function(source)
+    Vehicles.StopRental(source)
+    deployedTruckNetIds[source] = nil
+end)

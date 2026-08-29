@@ -44,6 +44,11 @@ RegisterNUICallback('parkOutVehicle', function(data, cb)
     cb(result)
 end)
 
+RegisterNUICallback('parkInVehicle', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:parkInVehicle", false, data and data.vehicleId)
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
 RegisterNUICallback('unlockSkill', function(data, cb)
     local result = lib.callback.await("polarix_towjob:unlockSkill", false, data and data.skillId)
     cb(result or { ok = false, reason = "no_response" })

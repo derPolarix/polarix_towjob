@@ -80,6 +80,17 @@
 							>
 								Park out
 							</button>
+							<button
+								v-else-if="vehicle.state === 'deployed'"
+								class="accent-btn"
+								type="button"
+								style="flex-shrink:0;padding:10px 16px;font-size:12px"
+								:disabled="busyVehicleId === vehicle.id || !!dashboardStore.activeDelivery"
+								:title="dashboardStore.activeDelivery ? 'Finish your current delivery first' : ''"
+								@click="parkIn(vehicle)"
+							>
+								Park in
+							</button>
 						</div>
 					</div>
 				</div>
@@ -172,6 +183,7 @@ const reasonMessages: Record<string, string> = {
 	not_owned: "You don't own this vehicle.",
 	not_stored: "This vehicle isn't stored.",
 	not_deployed: "This vehicle isn't deployed.",
+	delivery_in_progress: "Finish your current delivery before parking this truck in.",
 	already_full_health: "This vehicle is already at full health.",
 	no_player: "Player data unavailable, try reopening the Dashboard.",
 };
@@ -227,6 +239,25 @@ async function parkOut(vehicle: OwnedVehicle) {
 	} catch (error) {
 		console.error("parkOutVehicle failed:", error);
 		actionError.value = "Could not park out this vehicle.";
+	} finally {
+		busyVehicleId.value = null;
+	}
+}
+
+async function parkIn(vehicle: OwnedVehicle) {
+	busyVehicleId.value = vehicle.id;
+	actionError.value = "";
+
+	try {
+		const result = await nuiCallbackAsync<VehicleActionResult>("parkInVehicle", { vehicleId: vehicle.id });
+		if (result?.ok) {
+			applyVehicles(result.vehicles);
+		} else {
+			actionError.value = reasonMessages[result?.reason ?? ""] ?? "Could not park in this vehicle.";
+		}
+	} catch (error) {
+		console.error("parkInVehicle failed:", error);
+		actionError.value = "Could not park in this vehicle.";
 	} finally {
 		busyVehicleId.value = null;
 	}

@@ -2,8 +2,12 @@ local clientConfig = require("config.client")
 
 Garage = {}
 
-local deployedVehicles = {} -- [plate] = { id = vehicleId }
+local deployedVehicles = {} -- [plate] = { id = vehicleId, entity = vehicleId? }
 local rentalVehicle = nil
+
+local function stripPlate(plate)
+    return plate:gsub("%s+$", "")
+end
 
 local function applyHealth(entity, bodyHealth, engineHealth)
     SetVehicleBodyHealth(entity, bodyHealth)
@@ -29,7 +33,8 @@ function Garage.SpawnVehicle(vehicleData)
     Framework.GiveVehicleKeys(entity, vehicleData.plate)
     warpOrLeaveForPlayer(entity)
 
-    deployedVehicles[vehicleData.plate] = { id = vehicleData.id }
+    deployedVehicles[vehicleData.plate] = { id = vehicleData.id, entity = entity }
+    TriggerServerEvent("polarix_towjob:registerDeployedTruck", vehicleData.id, NetworkGetNetworkIdFromEntity(entity))
 
     return entity
 end
@@ -53,11 +58,36 @@ local function findDeployedVehicleNearPlayer()
     local vehicle = GetVehiclePedIsIn(ped, false)
     if vehicle == 0 then return nil end
 
-    local plate = GetVehicleNumberPlateText(vehicle):gsub("%s+$", "")
+    local plate = stripPlate(GetVehicleNumberPlateText(vehicle))
     local tracked = deployedVehicles[plate]
     if not tracked then return nil end
 
     return tracked, vehicle, plate
+end
+
+-- Resolves the tow truck the active delivery is being run with, for client/modules/damage.lua's
+-- truck-destroyed watch: the on-call rental first, then the deployed owned truck the player is
+-- sitting in, else the nearest deployed owned truck.
+function Garage.ResolveActiveTruck()
+    if rentalVehicle and DoesEntityExist(rentalVehicle) then
+        return rentalVehicle
+    end
+
+    local ped = PlayerPedId()
+    local current = GetVehiclePedIsIn(ped, false)
+    if current ~= 0 and deployedVehicles[stripPlate(GetVehicleNumberPlateText(current))] then
+        return current
+    end
+
+    local pedCoords = GetEntityCoords(ped)
+    local best, bestDist = nil, math.huge
+    for _, veh in ipairs(GetGamePool("CVehicle")) do
+        if DoesEntityExist(veh) and deployedVehicles[stripPlate(GetVehicleNumberPlateText(veh))] then
+            local dist = #(pedCoords - GetEntityCoords(veh))
+            if dist < bestDist then best, bestDist = veh, dist end
+        end
+    end
+    return best
 end
 
 local function attemptStore()
@@ -85,7 +115,7 @@ local function attemptStore()
         return
     end
 
-    local plate = GetVehicleNumberPlateText(vehicle):gsub("%s+$", "")
+    local plate = stripPlate(GetVehicleNumberPlateText(vehicle))
     deployedVehicles[plate] = nil
     DeleteEntity(vehicle)
     Framework.Notify("Vehicle stored.", "success")
@@ -147,6 +177,39 @@ RegisterNetEvent("polarix_towjob:syncDeployedVehicles", function(vehicles)
     for _, vehicle in ipairs(vehicles) do
         deployedVehicles[vehicle.plate] = { id = vehicle.id }
     end
+
+    -- Re-attach any live entities (deployed in an earlier session) and report their netIds so
+    -- Vehicles.ParkIn can despawn them straight from the Dashboard.
+    for _, veh in ipairs(GetGamePool("CVehicle")) do
+        local tracked = deployedVehicles[stripPlate(GetVehicleNumberPlateText(veh))]
+        if tracked then
+            tracked.entity = veh
+            TriggerServerEvent("polarix_towjob:registerDeployedTruck", tracked.id, NetworkGetNetworkIdFromEntity(veh))
+        end
+    end
+end)
+
+-- Server has stored the truck (Vehicles.ParkIn). Drop it from the local cache and, when the
+-- server couldn't resolve the entity itself (truck not streamed to any player), best-effort
+-- delete it here.
+RegisterNetEvent("polarix_towjob:truckParkedIn", function(data)
+    local tracked = deployedVehicles[data.plate]
+    local entity = tracked and tracked.entity
+
+    if (not entity or not DoesEntityExist(entity)) then
+        for _, veh in ipairs(GetGamePool("CVehicle")) do
+            if stripPlate(GetVehicleNumberPlateText(veh)) == data.plate then
+                entity = veh
+                break
+            end
+        end
+    end
+
+    if data.needsClientDelete and entity and DoesEntityExist(entity) then
+        DeleteEntity(entity)
+    end
+
+    deployedVehicles[data.plate] = nil
 end)
 
 RegisterNetEvent("polarix_towjob:vehicleHealthRestored", function(plate)

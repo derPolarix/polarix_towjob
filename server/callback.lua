@@ -77,6 +77,10 @@ lib.callback.register("polarix_towjob:storeVehicle", function(source, vehicleId,
     return Vehicles.Store(source, vehicleId, netId)
 end)
 
+lib.callback.register("polarix_towjob:parkInVehicle", function(source, vehicleId)
+    return Vehicles.ParkIn(source, vehicleId)
+end)
+
 lib.callback.register("polarix_towjob:unlockSkill", function(source, skillId)
     return Skills.Unlock(source, skillId)
 end)
