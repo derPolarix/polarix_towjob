@@ -27,14 +27,21 @@ end
 -- means the spot is unusable and the caller falls through to the next candidate.
 local function tryClearSpawnPoint(point)
     local coords = vector3(point.x, point.y, point.z)
+    local blocking = {}
 
+    -- Collected first, deleted only once the whole spot is known to be usable — otherwise a
+    -- spot rejected on its last vehicle would already have had the earlier ones destroyed.
     for _, vehicle in ipairs(GetGamePool("CVehicle")) do
         if DoesEntityExist(vehicle) and #(GetEntityCoords(vehicle) - coords) <= SPAWN_POINT_CLEARANCE then
             if isProtectedVehicle(vehicle) then return false end
 
-            SetEntityAsMissionEntity(vehicle, true, true)
-            DeleteEntity(vehicle)
+            blocking[#blocking + 1] = vehicle
         end
+    end
+
+    for _, vehicle in ipairs(blocking) do
+        SetEntityAsMissionEntity(vehicle, true, true)
+        DeleteEntity(vehicle)
     end
 
     return true
