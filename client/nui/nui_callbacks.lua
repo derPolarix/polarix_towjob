@@ -175,7 +175,16 @@ RegisterNUICallback('adminSetDropoffPreview', function(data, cb)
     cb({ ok = true })
 end)
 
-RegisterNUICallback('adminSetSearchPreview', function(data, cb)
-    Admin.SetSearchPreview(data)
+RegisterNUICallback('adminPreviewSpawnPoint', function(data, cb)
+    cb(Admin.PreviewSpawnPoint(data))
+end)
+
+RegisterNUICallback('adminConfirmSpawnPoint', function(data, cb)
+    Admin.ConfirmSpawnPoint(data)
+    cb({ ok = true })
+end)
+
+RegisterNUICallback('adminClearSpawnPointGhosts', function(data, cb)
+    Admin.ClearSpawnPointGhosts()
     cb({ ok = true })
 end)

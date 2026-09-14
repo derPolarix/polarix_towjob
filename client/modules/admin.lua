@@ -42,24 +42,58 @@ CreateThread(function()
     end
 end)
 
--- Semi-transparent radius blip while an admin edits a mission's search-center/radius,
--- same AddBlipForRadius primitive the live search-circle blip uses (client/modules/vehicle.lua).
-local searchPreviewBlip = nil
+-- Ghost preview of a mission spawn point: the mission's own vehicle model, faded and
+-- collisionless, placed at the coordinate the admin just captured. Spawning the real model is
+-- the whole point — a marker can't show whether that car actually fits in that gap. Local-only
+-- (CreateVehicle networked=false), so no other player ever sees an editor ghost.
+-- One ghost per row index, mirroring polarix_truckerjob's pallet editor.
+local spawnPointGhosts = {}
 
-function Admin.SetSearchPreview(data)
-    if searchPreviewBlip then
-        RemoveBlip(searchPreviewBlip)
-        searchPreviewBlip = nil
+local function deleteGhost(index)
+    local entity = spawnPointGhosts[index]
+    if entity and DoesEntityExist(entity) then DeleteEntity(entity) end
+    spawnPointGhosts[index] = nil
+end
+
+function Admin.ClearSpawnPointGhosts()
+    for index in pairs(spawnPointGhosts) do deleteGhost(index) end
+    spawnPointGhosts = {}
+end
+
+function Admin.PreviewSpawnPoint(data)
+    if not data or not data.index then return { ok = false } end
+
+    deleteGhost(data.index)
+
+    local model = data.model
+    if not model or model == "" then return { ok = false, reason = "invalid_model" } end
+
+    local hash = joaat(model)
+    if not IsModelInCdimage(hash) or not IsModelAVehicle(hash) then
+        return { ok = false, reason = "invalid_model" }
     end
 
-    if data and data.active then
-        searchPreviewBlip = AddBlipForRadius(data.x, data.y, data.z, data.radius or 60.0)
-        SetBlipColour(searchPreviewBlip, 5)
-        SetBlipAlpha(searchPreviewBlip, 128)
-    end
+    lib.requestModel(hash)
+
+    local entity = CreateVehicle(hash, data.x, data.y, data.z, data.heading or 0.0, false, false)
+    SetModelAsNoLongerNeeded(hash)
+
+    SetEntityAlpha(entity, 150, false)
+    SetEntityCollision(entity, false, false)
+    SetEntityInvincible(entity, true)
+    SetVehicleOnGroundProperly(entity)
+    FreezeEntityPosition(entity, true)
+
+    spawnPointGhosts[data.index] = entity
+
+    return { ok = true }
+end
+
+function Admin.ConfirmSpawnPoint(data)
+    if data and data.index then deleteGhost(data.index) end
 end
 
 AddEventHandler("onResourceStop", function(resourceName)
     if GetCurrentResourceName() ~= resourceName then return end
-    if searchPreviewBlip then RemoveBlip(searchPreviewBlip) end
+    Admin.ClearSpawnPointGhosts()
 end)
