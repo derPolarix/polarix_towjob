@@ -299,6 +299,7 @@
     "admin.setting_rental_interval_minutes": "Kiralama faturalandırma aralığı (dakika)",
     "admin.setting_repair_cost_per_health_point": "Eksik sağlık puanı başına tamir maliyeti",
     "admin.setting_delivery_heading_tolerance": "Teslimat yönü toleransı (derece)",
+    "admin.setting_search_hint_radius": "Arama ipucu yarıçapı (m)",
     "admin.err_not_admin": "Yönetici değilsin.",
     "admin.err_invalid_key": "Bilinmeyen ayar.",
     "admin.err_invalid_value": "Bu değer bu ayar için aralık dışında.",

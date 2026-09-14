@@ -299,6 +299,7 @@
     "admin.setting_rental_interval_minutes": "Intervallo di fatturazione del noleggio (minuti)",
     "admin.setting_repair_cost_per_health_point": "Costo di riparazione per punto di salute mancante",
     "admin.setting_delivery_heading_tolerance": "Tolleranza di orientamento della consegna (gradi)",
+    "admin.setting_search_hint_radius": "Raggio dell'indizio di ricerca (m)",
     "admin.err_not_admin": "Non sei un amministratore.",
     "admin.err_invalid_key": "Impostazione sconosciuta.",
     "admin.err_invalid_value": "Quel valore è fuori intervallo per questa impostazione.",

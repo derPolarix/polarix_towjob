@@ -299,6 +299,7 @@
     "admin.setting_rental_interval_minutes": "Huurfactureringsinterval (minuten)",
     "admin.setting_repair_cost_per_health_point": "Reparatiekosten per ontbrekend gezondheidspunt",
     "admin.setting_delivery_heading_tolerance": "Tolerantie leveringsrichting (graden)",
+    "admin.setting_search_hint_radius": "Straal van de zoekhint (m)",
     "admin.err_not_admin": "Je bent geen beheerder.",
     "admin.err_invalid_key": "Onbekende instelling.",
     "admin.err_invalid_value": "Die waarde valt buiten het bereik voor deze instelling.",

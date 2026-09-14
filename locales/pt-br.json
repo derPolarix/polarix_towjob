@@ -299,6 +299,7 @@
     "admin.setting_rental_interval_minutes": "Intervalo de cobrança do aluguel (minutos)",
     "admin.setting_repair_cost_per_health_point": "Custo de reparo por ponto de saúde faltante",
     "admin.setting_delivery_heading_tolerance": "Tolerância de direção da entrega (graus)",
+    "admin.setting_search_hint_radius": "Raio da dica de busca (m)",
     "admin.err_not_admin": "Você não é administrador.",
     "admin.err_invalid_key": "Configuração desconhecida.",
     "admin.err_invalid_value": "Esse valor está fora do intervalo para esta configuração.",

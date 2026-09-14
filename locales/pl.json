@@ -299,6 +299,7 @@
     "admin.setting_rental_interval_minutes": "Interwał rozliczania wynajmu (minuty)",
     "admin.setting_repair_cost_per_health_point": "Koszt naprawy za brakujący punkt kondycji",
     "admin.setting_delivery_heading_tolerance": "Tolerancja kierunku dostawy (stopnie)",
+    "admin.setting_search_hint_radius": "Promień wskazówki wyszukiwania (m)",
     "admin.err_not_admin": "Nie jesteś administratorem.",
     "admin.err_invalid_key": "Nieznane ustawienie.",
     "admin.err_invalid_value": "Ta wartość jest poza zakresem dla tego ustawienia.",

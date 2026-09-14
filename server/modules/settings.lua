@@ -61,6 +61,12 @@ local DEFINITIONS = {
         default = serverConfig.DeliveryHeadingTolerance or 25.0,
         validate = function(v) return type(v) == "number" and v >= 0 and v <= 180 end,
     },
+    {
+        key = "search_hint_radius",
+        label = "admin.setting_search_hint_radius",
+        default = serverConfig.SearchHintRadius or 60.0,
+        validate = function(v) return type(v) == "number" and v >= 10 and v <= 500 end,
+    },
 }
 
 local definitionByKey = {}
@@ -97,6 +103,7 @@ function Settings.GetRentalPricePerCharge() return get("rental_price_per_charge"
 function Settings.GetRentalIntervalMinutes() return get("rental_interval_minutes") end
 function Settings.GetRepairCostPerHealthPoint() return get("repair_cost_per_health_point") end
 function Settings.GetDeliveryHeadingTolerance() return get("delivery_heading_tolerance") end
+function Settings.GetSearchHintRadius() return get("search_hint_radius") end
 
 -- Admin UI list: current effective value (DB override or config default) plus the
 -- shipped default, so the editor can show "currently X, default Y" and offer a reset.

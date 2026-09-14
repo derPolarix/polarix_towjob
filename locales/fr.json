@@ -299,6 +299,7 @@
     "admin.setting_rental_interval_minutes": "Intervalle de facturation de la location (minutes)",
     "admin.setting_repair_cost_per_health_point": "Coût de réparation par point de santé manquant",
     "admin.setting_delivery_heading_tolerance": "Tolérance d'orientation de livraison (degrés)",
+    "admin.setting_search_hint_radius": "Rayon de l'indice de recherche (m)",
     "admin.err_not_admin": "Tu n'es pas administrateur.",
     "admin.err_invalid_key": "Réglage inconnu.",
     "admin.err_invalid_value": "Cette valeur est hors plage pour ce réglage.",

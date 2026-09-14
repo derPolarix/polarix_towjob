@@ -299,6 +299,7 @@
     "admin.setting_rental_interval_minutes": "Miet-Abrechnungsintervall (Minuten)",
     "admin.setting_repair_cost_per_health_point": "Reparaturkosten pro fehlendem Zustandspunkt",
     "admin.setting_delivery_heading_tolerance": "Toleranz der Liefer-Ausrichtung (Grad)",
+    "admin.setting_search_hint_radius": "Radius des Suchhinweises (m)",
     "admin.err_not_admin": "Du bist kein Admin.",
     "admin.err_invalid_key": "Unbekannte Einstellung.",
     "admin.err_invalid_value": "Dieser Wert liegt außerhalb des zulässigen Bereichs für diese Einstellung.",

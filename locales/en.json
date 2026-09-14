@@ -299,6 +299,7 @@
     "admin.setting_rental_interval_minutes": "Rental billing interval (minutes)",
     "admin.setting_repair_cost_per_health_point": "Repair cost per missing health point",
     "admin.setting_delivery_heading_tolerance": "Delivery heading tolerance (degrees)",
+    "admin.setting_search_hint_radius": "Search hint radius (m)",
     "admin.err_not_admin": "You are not an admin.",
     "admin.err_invalid_key": "Unknown setting.",
     "admin.err_invalid_value": "That value is out of range for this setting.",
