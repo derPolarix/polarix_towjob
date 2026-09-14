@@ -15,6 +15,11 @@ return {
 
     VehicleFoundRadius = 12.0, -- reaching this range of the target vehicle flips the job to "found"
 
+    -- How close another vehicle has to be to a mission spawn point to count as standing in it:
+    -- ambient traffic that close is deleted, anything protected makes the spot fall through to
+    -- the next candidate (client/modules/vehicle.lua).
+    SpawnPointClearance = 4.0,
+
     DeliveryZoneCheckIntervalMs = 500,
     DamageCheckIntervalMs = 2000,
 }

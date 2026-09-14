@@ -9,6 +9,7 @@
     "notify.job_no_longer_available": "Ese trabajo ya no está disponible.",
     "notify.level_up": "Has alcanzado el nivel %d: %s",
     "notify.vehicle_located": "Vehículo localizado: engánchalo y remólcalo hasta el punto de entrega.",
+    "notify.spawn_failed": "No se pudo colocar el vehículo para este trabajo.",
     "notify.new_tow_job": "Nuevo trabajo de grúa: %s",
     "notify.park_out_to_start": "Abre el panel y saca una grúa del garaje para empezar el trabajo.",
     "notify.no_permission": "No tienes permiso para hacer eso.",

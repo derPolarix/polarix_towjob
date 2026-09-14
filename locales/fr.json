@@ -9,6 +9,7 @@
     "notify.job_no_longer_available": "Ce boulot n'est plus disponible.",
     "notify.level_up": "Tu as atteint le niveau %d : %s",
     "notify.vehicle_located": "Véhicule localisé — accroche-le et remorque-le jusqu'au point de dépôt.",
+    "notify.spawn_failed": "Impossible de placer le véhicule pour cette mission.",
     "notify.new_tow_job": "Nouveau boulot de dépannage : %s",
     "notify.park_out_to_start": "Ouvre le tableau de bord et sors une dépanneuse pour commencer le boulot.",
     "notify.no_permission": "Tu n'as pas la permission de faire ça.",

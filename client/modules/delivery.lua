@@ -9,7 +9,9 @@ local GROUND_OFFSET = 0.8
 
 local function buildUpdatePayload(delivery)
     local playerCoords = GetEntityCoords(PlayerPedId())
-    local objective = delivery.state == "searching" and delivery.mission.search_center or delivery.mission.dropoff
+    -- While searching, distance is to the hint-circle center rather than the vehicle itself —
+    -- the HUD must not be a more precise locator than the map blip.
+    local objective = delivery.state == "searching" and delivery.searchHint or delivery.mission.dropoff
     local distance = math.floor(#(playerCoords - vector3(objective.x, objective.y, objective.z)) + 0.5)
 
     local secondsRemaining = nil

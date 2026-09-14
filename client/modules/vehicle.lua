@@ -5,24 +5,67 @@ local Locale = require("shared.locale")
 Vehicle = {}
 
 local VEHICLE_FOUND_RADIUS = clientConfig.VehicleFoundRadius or 12.0
+local SPAWN_POINT_CLEARANCE = clientConfig.SpawnPointClearance or 4.0
 
 -- Set once Accept returns `needsParkOut` (2+ owned tow trucks) — the delivery row
 -- already exists server-side at this point, we're just waiting for the player to
 -- Park Out a truck (Phase 7's VehiclesTab action) before spawning the target vehicle.
 local pendingMission = nil
 
-local function randomPointInRadius(center, radius)
-    local angle = math.random() * 2 * math.pi
-    local dist = math.sqrt(math.random()) * radius
-    return vector3(center.x + math.cos(angle) * dist, center.y + math.sin(angle) * dist, center.z)
+-- Anything with someone in it, or flagged as a mission entity (framework garage vehicles,
+-- another delivery's target), makes a spot unusable rather than being deleted. The player's
+-- own tow truck is spawned with a plain CreateVehicle (client/modules/garage.lua) so it isn't
+-- mission-flagged — hence the explicit guard on the vehicle they're in or just stepped out of.
+local function isProtectedVehicle(vehicle)
+    if IsEntityAMissionEntity(vehicle) then return true end
+    if not IsVehicleSeatFree(vehicle, -1) or GetVehicleNumberOfPassengers(vehicle) > 0 then return true end
+
+    return vehicle == GetVehiclePedIsIn(PlayerPedId(), true)
 end
 
+-- Ambient traffic sitting in a hand-placed spot is deleted to make room; a protected vehicle
+-- means the spot is unusable and the caller falls through to the next candidate.
+local function tryClearSpawnPoint(point)
+    local coords = vector3(point.x, point.y, point.z)
+
+    for _, vehicle in ipairs(GetGamePool("CVehicle")) do
+        if DoesEntityExist(vehicle) and #(GetEntityCoords(vehicle) - coords) <= SPAWN_POINT_CLEARANCE then
+            if isProtectedVehicle(vehicle) then return false end
+
+            SetEntityAsMissionEntity(vehicle, true, true)
+            DeleteEntity(vehicle)
+        end
+    end
+
+    return true
+end
+
+-- Walks the candidates the server handed down (already shuffled and reservation-filtered) and
+-- takes the first spot that can be cleared. If every one is blocked the last is used anyway —
+-- a job that can't spawn its vehicle at all is worse than one spawned in a tight spot.
+-- Returns the entity plus the candidate index, which the caller reports back so the server can
+-- free the reservations on the spots this delivery didn't take.
 local function spawnTargetVehicle(mission)
+    local candidates = mission.spawn_candidates or {}
+    if #candidates == 0 then
+        debug.DebugPrint("Vehicle.spawnTargetVehicle: mission", mission.id, "has no spawn candidates")
+        return nil
+    end
+
+    local chosenIndex = #candidates
+    for index, candidate in ipairs(candidates) do
+        if tryClearSpawnPoint(candidate.point) then
+            chosenIndex = index
+            break
+        end
+    end
+
+    local chosen = candidates[chosenIndex]
+    local point = chosen.point
+
     lib.requestModel(mission.vehicle_model)
 
-    local point = randomPointInRadius(mission.search_center, mission.search_radius)
-    local heading = math.random(0, 359) * 1.0
-    local entity = CreateVehicle(mission.vehicle_model, point.x, point.y, point.z, heading, true, false)
+    local entity = CreateVehicle(mission.vehicle_model, point.x, point.y, point.z, point.heading or 0.0, true, false)
     SetModelAsNoLongerNeeded(mission.vehicle_model)
     SetVehicleOnGroundProperly(entity)
 
@@ -32,7 +75,7 @@ local function spawnTargetVehicle(mission)
 
     debug.DebugPrint("Vehicle.spawnTargetVehicle: spawned", mission.vehicle_model, "at", point.x, point.y, point.z)
 
-    return entity
+    return entity, chosenIndex, chosen.hint
 end
 
 local function createSearchBlip(center, radius)
@@ -124,17 +167,25 @@ function Vehicle.GetCurrentDelivery()
 end
 
 local function beginDelivery(deliveryId, mission, deadlineAt)
-    local targetVehicle = spawnTargetVehicle(mission)
-    local netId = NetworkGetNetworkIdFromEntity(targetVehicle)
-    TriggerServerEvent("polarix_towjob:setTargetVehicle", deliveryId, netId)
+    local targetVehicle, pointIndex, searchHint = spawnTargetVehicle(mission)
+    if not targetVehicle then
+        Framework.Notify(Locale("notify.spawn_failed"), "error")
+        return
+    end
 
-    local blip, searchRouteBlip = createSearchBlip(mission.search_center, mission.search_radius)
+    local netId = NetworkGetNetworkIdFromEntity(targetVehicle)
+    TriggerServerEvent("polarix_towjob:setTargetVehicle", deliveryId, netId, pointIndex)
+
+    -- The circle is drawn around the server's pre-rolled hint center, not the vehicle itself,
+    -- so the exact spot still has to be found on the ground.
+    local blip, searchRouteBlip = createSearchBlip(searchHint, mission.search_hint_radius or 60.0)
 
     currentDelivery = {
         deliveryId = deliveryId,
         mission = mission,
         targetVehicle = targetVehicle,
         targetNetId = netId,
+        searchHint = searchHint,
         blip = blip,
         searchRouteBlip = searchRouteBlip,
         state = "searching",

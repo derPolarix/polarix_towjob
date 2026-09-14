@@ -9,6 +9,7 @@
     "notify.job_no_longer_available": "That job is no longer available.",
     "notify.level_up": "You reached level %d: %s",
     "notify.vehicle_located": "Vehicle located — hook it up and tow it to the drop-off.",
+    "notify.spawn_failed": "Could not place the vehicle for this job.",
     "notify.new_tow_job": "New tow job: %s",
     "notify.park_out_to_start": "Open the Dashboard and Park Out a tow truck to start the job.",
     "notify.no_permission": "You do not have permission to do that.",

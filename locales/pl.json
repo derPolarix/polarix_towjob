@@ -9,6 +9,7 @@
     "notify.job_no_longer_available": "To zlecenie nie jest już dostępne.",
     "notify.level_up": "Osiągnięto poziom %d: %s",
     "notify.vehicle_located": "Pojazd zlokalizowany — podczep go i odholuj do punktu docelowego.",
+    "notify.spawn_failed": "Nie udało się umieścić pojazdu dla tego zlecenia.",
     "notify.new_tow_job": "Nowe zlecenie holowania: %s",
     "notify.park_out_to_start": "Otwórz panel i wyprowadź lawetę z garażu, aby rozpocząć zlecenie.",
     "notify.no_permission": "Nie masz uprawnień, aby to zrobić.",

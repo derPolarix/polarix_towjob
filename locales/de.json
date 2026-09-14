@@ -9,6 +9,7 @@
     "notify.job_no_longer_available": "Dieser Auftrag ist nicht mehr verfügbar.",
     "notify.level_up": "Du hast Level %d erreicht: %s",
     "notify.vehicle_located": "Fahrzeug gefunden — anhängen und zum Abgabepunkt schleppen.",
+    "notify.spawn_failed": "Das Fahrzeug für diesen Auftrag konnte nicht platziert werden.",
     "notify.new_tow_job": "Neuer Abschleppauftrag: %s",
     "notify.park_out_to_start": "Öffne das Dashboard und parke einen Abschleppwagen aus, um den Auftrag zu starten.",
     "notify.no_permission": "Dazu hast du keine Berechtigung.",

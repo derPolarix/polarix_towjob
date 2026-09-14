@@ -9,6 +9,7 @@
     "notify.job_no_longer_available": "O iş artık müsait değil.",
     "notify.level_up": "%d. seviyeye ulaştın: %s",
     "notify.vehicle_located": "Araç bulundu — bağla ve teslim noktasına çek.",
+    "notify.spawn_failed": "Bu iş için araç yerleştirilemedi.",
     "notify.new_tow_job": "Yeni çekici işi: %s",
     "notify.park_out_to_start": "Paneli aç ve işe başlamak için bir çekiciyi garajdan çıkar.",
     "notify.no_permission": "Bunu yapmaya iznin yok.",

@@ -9,6 +9,7 @@
     "notify.job_no_longer_available": "Esse trabalho não está mais disponível.",
     "notify.level_up": "Você alcançou o nível %d: %s",
     "notify.vehicle_located": "Veículo localizado — engate e reboque até o ponto de entrega.",
+    "notify.spawn_failed": "Não foi possível posicionar o veículo para este trabalho.",
     "notify.new_tow_job": "Novo trabalho de reboque: %s",
     "notify.park_out_to_start": "Abra o painel e tire um reboque da garagem para começar o trabalho.",
     "notify.no_permission": "Você não tem permissão para fazer isso.",

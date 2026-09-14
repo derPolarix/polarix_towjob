@@ -9,6 +9,7 @@
     "notify.job_no_longer_available": "Quel lavoro non è più disponibile.",
     "notify.level_up": "Hai raggiunto il livello %d: %s",
     "notify.vehicle_located": "Veicolo individuato — aggancialo e trainalo al punto di consegna.",
+    "notify.spawn_failed": "Impossibile posizionare il veicolo per questo incarico.",
     "notify.new_tow_job": "Nuovo lavoro di traino: %s",
     "notify.park_out_to_start": "Apri la dashboard e fai uscire un carro attrezzi dal garage per iniziare il lavoro.",
     "notify.no_permission": "Non hai il permesso di farlo.",

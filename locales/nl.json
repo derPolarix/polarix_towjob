@@ -9,6 +9,7 @@
     "notify.job_no_longer_available": "Die klus is niet meer beschikbaar.",
     "notify.level_up": "Je hebt level %d bereikt: %s",
     "notify.vehicle_located": "Voertuig gevonden — haak het aan en sleep het naar het afleverpunt.",
+    "notify.spawn_failed": "Het voertuig voor deze klus kon niet worden geplaatst.",
     "notify.new_tow_job": "Nieuwe takelklus: %s",
     "notify.park_out_to_start": "Open het dashboard en rijd een takelwagen uit om de klus te starten.",
     "notify.no_permission": "Je hebt geen toestemming om dat te doen.",
