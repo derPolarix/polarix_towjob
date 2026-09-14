@@ -90,28 +90,35 @@
 			</div>
 
 			<div style="background:#fff;border:1px solid #dfe2e6;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
-				<div style="display:flex;align-items:center;justify-content:space-between">
-					<span style="font-size:13px;font-weight:700;color:#1b1f24">{{ t("admin.search_area_heading") }}</span>
-					<button type="button" style="font-size:11px;font-weight:600;border-radius:8px;background:#f1f2f4;border:1px solid #dfe2e6;color:#3c424b;padding:6px 10px;cursor:pointer" @click="useCurrentPosition('search')">
-						{{ t("admin.use_current_position") }}
+				<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+					<span style="font-size:13px;font-weight:700;color:#1b1f24">{{ t("admin.spawn_points_heading") }}</span>
+					<button type="button" class="spawn-btn" :disabled="form.spawn_points.length >= MAX_SPAWN_POINTS" @click="addSpawnPoint">
+						<iconify-icon icon="tabler:plus" width="13"></iconify-icon> {{ t("admin.spawn_point_add") }}
 					</button>
 				</div>
-				<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
-					<label class="admin-label">{{ t("admin.axis_x") }} <input v-model.number="form.search_center_x" type="number" step="any" class="admin-input" /></label>
-					<label class="admin-label">{{ t("admin.axis_y") }} <input v-model.number="form.search_center_y" type="number" step="any" class="admin-input" /></label>
-					<label class="admin-label">{{ t("admin.axis_z") }} <input v-model.number="form.search_center_z" type="number" step="any" class="admin-input" /></label>
-					<label class="admin-label">{{ t("admin.axis_radius") }} <input v-model.number="form.search_radius" type="number" step="any" class="admin-input" /></label>
+
+				<div style="font-size:11px;font-weight:600;color:#6b7280">{{ t("admin.spawn_points_count", { count: form.spawn_points.length }) }}</div>
+
+				<div v-for="(point, index) in form.spawn_points" :key="index" style="display:flex;align-items:center;gap:8px">
+					<div style="flex:1;font-size:11px;color:#3c424b;background:#f6f7f8;border:1px solid #eef0f2;border-radius:7px;padding:6px 9px">
+						#{{ index + 1 }} — {{ point.x.toFixed(1) }}, {{ point.y.toFixed(1) }}, {{ point.z.toFixed(1) }} ({{ point.heading.toFixed(0) }}°)
+					</div>
+					<button type="button" class="spawn-icon-btn" :title="t('admin.spawn_point_capture')" @click="captureSpawnPoint(index)">
+						<iconify-icon icon="tabler:crosshair" width="15"></iconify-icon>
+					</button>
+					<button type="button" class="spawn-btn" :title="t('admin.spawn_point_confirm_tooltip')" @click="confirmSpawnPoint(index)">
+						{{ t("admin.spawn_point_confirm") }}
+					</button>
+					<button type="button" class="spawn-btn danger" :title="t('admin.spawn_point_remove')" @click="removeSpawnPoint(index)">✕</button>
 				</div>
-				<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#6b7280">
-					<input v-model="searchPreviewOn" type="checkbox" @change="pushSearchPreview" />
-					{{ t("admin.search_preview_toggle") }}
-				</label>
+
+				<div style="font-size:11px;color:#9aa1ab">{{ t("admin.spawn_points_hint") }}</div>
 			</div>
 
 			<div style="background:#fff;border:1px solid #dfe2e6;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
 				<div style="display:flex;align-items:center;justify-content:space-between">
 					<span style="font-size:13px;font-weight:700;color:#1b1f24">{{ t("admin.dropoff_zone_heading") }}</span>
-					<button type="button" style="font-size:11px;font-weight:600;border-radius:8px;background:#f1f2f4;border:1px solid #dfe2e6;color:#3c424b;padding:6px 10px;cursor:pointer" @click="useCurrentPosition('dropoff')">
+					<button type="button" style="font-size:11px;font-weight:600;border-radius:8px;background:#f1f2f4;border:1px solid #dfe2e6;color:#3c424b;padding:6px 10px;cursor:pointer" @click="useCurrentPosition()">
 						{{ t("admin.use_current_position") }}
 					</button>
 				</div>
@@ -171,7 +178,10 @@ import { getCurrentInstance, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useAdminStore } from "@/stores/adminStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
-import type { AdminActionResult, AdminCurrentPosition, AdminMission } from "@/types/admin";
+import type { AdminActionResult, AdminCurrentPosition, AdminMission, AdminSpawnPoint } from "@/types/admin";
+
+// Mirrors config.server.lua's MaxSpawnPointsPerMission — the server re-validates it anyway.
+const MAX_SPAWN_POINTS = 20;
 
 const { t } = useI18n();
 const proxy = getCurrentInstance()!.proxy!;
@@ -186,7 +196,6 @@ const togglingActive = ref(false);
 const deleting = ref(false);
 const testing = ref(false);
 const errorMessage = ref("");
-const searchPreviewOn = ref(false);
 const dropoffPreviewOn = ref(false);
 
 const form = reactive({
@@ -195,10 +204,7 @@ const form = reactive({
 	vehicle_model: "",
 	vehicle_label: "",
 	vehicle_colors: { primary: 0, secondary: 0 },
-	search_center_x: 0,
-	search_center_y: 0,
-	search_center_z: 0,
-	search_radius: 60,
+	spawn_points: [] as AdminSpawnPoint[],
 	dropoff_x: 0,
 	dropoff_y: 0,
 	dropoff_z: 0,
@@ -228,10 +234,7 @@ function startNew() {
 		vehicle_model: "",
 		vehicle_label: "",
 		vehicle_colors: { primary: 0, secondary: 0 },
-		search_center_x: 0,
-		search_center_y: 0,
-		search_center_z: 0,
-		search_radius: 60,
+		spawn_points: [],
 		dropoff_x: 0,
 		dropoff_y: 0,
 		dropoff_z: 0,
@@ -258,10 +261,7 @@ function selectMission(mission: AdminMission) {
 		vehicle_model: mission.vehicle_model,
 		vehicle_label: mission.vehicle_label,
 		vehicle_colors: { ...mission.vehicle_colors },
-		search_center_x: mission.search_center_x,
-		search_center_y: mission.search_center_y,
-		search_center_z: mission.search_center_z,
-		search_radius: mission.search_radius,
+		spawn_points: mission.spawn_points.map((point) => ({ ...point })),
 		dropoff_x: mission.dropoff_x,
 		dropoff_y: mission.dropoff_y,
 		dropoff_z: mission.dropoff_z,
@@ -277,34 +277,68 @@ function selectMission(mission: AdminMission) {
 	clearPreviews();
 }
 
-async function useCurrentPosition(target: "search" | "dropoff") {
+async function useCurrentPosition() {
 	try {
 		const pos = await nuiCallbackAsync<AdminCurrentPosition>("adminGetCurrentPosition");
 		if (!pos) return;
 
-		if (target === "search") {
-			form.search_center_x = pos.x;
-			form.search_center_y = pos.y;
-			form.search_center_z = pos.z;
-		} else {
-			form.dropoff_x = pos.x;
-			form.dropoff_y = pos.y;
-			form.dropoff_z = pos.z;
-			form.dropoff_heading = pos.heading;
-		}
+		form.dropoff_x = pos.x;
+		form.dropoff_y = pos.y;
+		form.dropoff_z = pos.z;
+		form.dropoff_heading = pos.heading;
 	} catch (error) {
 		console.error("adminGetCurrentPosition failed:", error);
 	}
 }
 
-function pushSearchPreview() {
-	nuiCallbackAsync("adminSetSearchPreview", {
-		active: searchPreviewOn.value,
-		x: form.search_center_x,
-		y: form.search_center_y,
-		z: form.search_center_z,
-		radius: form.search_radius,
-	}).catch((error) => console.error("adminSetSearchPreview failed:", error));
+// Each row previews as a ghost copy of the mission's own vehicle model at that coordinate,
+// so the admin can see whether the car actually fits before saving.
+function previewSpawnPoint(index: number) {
+	const point = form.spawn_points[index];
+	if (!point) return;
+
+	nuiCallbackAsync("adminPreviewSpawnPoint", {
+		index,
+		model: form.vehicle_model,
+		x: point.x,
+		y: point.y,
+		z: point.z,
+		heading: point.heading,
+	}).catch((error) => console.error("adminPreviewSpawnPoint failed:", error));
+}
+
+async function captureSpawnPoint(index: number) {
+	try {
+		const pos = await nuiCallbackAsync<AdminCurrentPosition>("adminGetCurrentPosition");
+		if (!pos) return;
+
+		form.spawn_points[index] = { x: pos.x, y: pos.y, z: pos.z, heading: pos.heading };
+		previewSpawnPoint(index);
+	} catch (error) {
+		console.error("adminGetCurrentPosition failed:", error);
+	}
+}
+
+function addSpawnPoint() {
+	if (form.spawn_points.length >= MAX_SPAWN_POINTS) return;
+
+	form.spawn_points.push({ x: 0, y: 0, z: 0, heading: 0 });
+	captureSpawnPoint(form.spawn_points.length - 1);
+}
+
+function confirmSpawnPoint(index: number) {
+	nuiCallbackAsync("adminConfirmSpawnPoint", { index }).catch((error) => console.error("adminConfirmSpawnPoint failed:", error));
+}
+
+function clearSpawnPointGhosts() {
+	nuiCallbackAsync("adminClearSpawnPointGhosts", {}).catch((error) => console.error("adminClearSpawnPointGhosts failed:", error));
+}
+
+// Removing a row shifts every later index, so the ghosts are cleared wholesale rather than
+// left pointing at coordinates that have moved under them.
+function removeSpawnPoint(index: number) {
+	form.spawn_points.splice(index, 1);
+	clearSpawnPointGhosts();
 }
 
 function pushDropoffPreview() {
@@ -320,10 +354,7 @@ function pushDropoffPreview() {
 }
 
 function clearPreviews() {
-	if (searchPreviewOn.value) {
-		searchPreviewOn.value = false;
-		pushSearchPreview();
-	}
+	clearSpawnPointGhosts();
 	if (dropoffPreviewOn.value) {
 		dropoffPreviewOn.value = false;
 		pushDropoffPreview();
@@ -337,6 +368,9 @@ const reasonMessages: Record<string, string> = {
 	invalid_vehicle_model: "admin.err_invalid_vehicle_model",
 	invalid_reward: "admin.err_invalid_reward",
 	invalid_position: "admin.err_invalid_position_mission",
+	no_spawn_points: "admin.err_no_spawn_points",
+	too_many_spawn_points: "admin.err_too_many_spawn_points",
+	invalid_spawn_point: "admin.err_invalid_spawn_point",
 	not_found: "admin.err_mission_gone",
 	has_delivery_history: "admin.err_has_delivery_history",
 };
@@ -436,3 +470,45 @@ async function testRun() {
 
 startNew();
 </script>
+
+<style scoped>
+.spawn-btn {
+	font-family: inherit;
+	font-size: 11px;
+	font-weight: 600;
+	border-radius: 8px;
+	background: #f1f2f4;
+	border: 1px solid #dfe2e6;
+	color: #3c424b;
+	padding: 6px 10px;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+.spawn-btn:hover:not(:disabled) {
+	background: #e8eaed;
+}
+.spawn-btn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+.spawn-btn.danger {
+	color: #dc2626;
+	border-color: #f3c8c2;
+}
+.spawn-icon-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 8px;
+	background: #f1f2f4;
+	border: 1px solid #dfe2e6;
+	color: #3c424b;
+	padding: 6px 8px;
+	cursor: pointer;
+}
+.spawn-icon-btn:hover {
+	background: #e8eaed;
+}
+</style>

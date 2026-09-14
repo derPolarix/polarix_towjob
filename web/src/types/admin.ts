@@ -5,6 +5,14 @@ export interface AdminVehicleColors {
 
 export type AdminMissionDifficulty = "easy" | "medium" | "hard";
 
+// Hand-placed parked-car spots inside the mission's area — one is picked per delivery.
+export interface AdminSpawnPoint {
+  x: number;
+  y: number;
+  z: number;
+  heading: number;
+}
+
 export interface AdminMission {
   id: string;
   area_id: string;
@@ -13,10 +21,7 @@ export interface AdminMission {
   vehicle_model: string;
   vehicle_label: string;
   vehicle_colors: AdminVehicleColors;
-  search_center_x: number;
-  search_center_y: number;
-  search_center_z: number;
-  search_radius: number;
+  spawn_points: AdminSpawnPoint[];
   dropoff_x: number;
   dropoff_y: number;
   dropoff_z: number;
