@@ -47,8 +47,7 @@ CREATE TABLE IF NOT EXISTS polarix_towjob_missions (
     vehicle_model     VARCHAR(50),
     vehicle_label     VARCHAR(100),
     vehicle_colors    JSON,                  -- { primary = int, secondary = int } for description text
-    search_center_x   FLOAT, search_center_y FLOAT, search_center_z FLOAT,
-    search_radius     FLOAT     DEFAULT 60.0,
+    spawn_points      JSON,           -- hand-placed spawn spots, [{x,y,z,heading}, ...], min 1, max 20 (one is picked per delivery)
     dropoff_x         FLOAT, dropoff_y FLOAT, dropoff_z FLOAT, dropoff_heading FLOAT,
     dropoff_width     FLOAT     DEFAULT 6.0,
     dropoff_length    FLOAT     DEFAULT 10.0,

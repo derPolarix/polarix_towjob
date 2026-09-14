@@ -15,7 +15,9 @@ return {
     -- Launch seed: one default area, 3-4 missions (easy/medium mix, at least one
     -- with time_limit_minutes set to exercise the timed-mission path).
     -- Coordinates below are placeholders (not tied to any real world position) —
-    -- replace with real search/dropoff spots before go-live, same as config/client.lua's NPC/parking placeholders.
+    -- replace with real spawn/dropoff spots before go-live, same as config/client.lua's NPC/parking placeholders.
+    -- Each mission's `spawn_points` are hand-placed parked-car spots inside one small area;
+    -- the server picks one per delivery, so every entry must be somewhere a car can actually stand.
     SeedAreas = {
         {
             id = "area_default",
@@ -47,8 +49,11 @@ return {
             vehicle_model = "asea",
             vehicle_label = "Declasse Asea",
             vehicle_colors = { primary = 0, secondary = 0 },
-            search_center = { x = 215.0, y = -810.0, z = 30.7 },
-            search_radius = 60.0,
+            spawn_points = {
+                { x = 215.0, y = -810.0, z = 30.7, heading = 160.0 },
+                { x = 236.0, y = -845.0, z = 30.5, heading = 250.0 },
+                { x = 190.0, y = -782.0, z = 31.0, heading = 70.0 },
+            },
             dropoff = { x = 398.0, y = -1631.0, z = 29.8, heading = 320.0 },
             dropoff_width = 6.0,
             dropoff_length = 10.0,
@@ -65,8 +70,11 @@ return {
             vehicle_model = "bison",
             vehicle_label = "Bravado Bison",
             vehicle_colors = { primary = 27, secondary = 27 },
-            search_center = { x = 100.0, y = -2790.0, z = 6.0 },
-            search_radius = 70.0,
+            spawn_points = {
+                { x = 100.0, y = -2790.0, z = 6.0, heading = 90.0 },
+                { x = 132.0, y = -2812.0, z = 6.0, heading = 180.0 },
+                { x = 74.0, y = -2764.0, z = 6.0, heading = 355.0 },
+            },
             dropoff = { x = 393.0, y = -1636.0, z = 29.8, heading = 320.0 },
             dropoff_width = 6.0,
             dropoff_length = 10.0,
@@ -83,8 +91,11 @@ return {
             vehicle_model = "sultan",
             vehicle_label = "Karin Sultan",
             vehicle_colors = { primary = 111, secondary = 0 },
-            search_center = { x = -1230.0, y = -1500.0, z = 4.3 },
-            search_radius = 55.0,
+            spawn_points = {
+                { x = -1230.0, y = -1500.0, z = 4.3, heading = 125.0 },
+                { x = -1258.0, y = -1471.0, z = 4.3, heading = 215.0 },
+                { x = -1205.0, y = -1523.0, z = 4.3, heading = 35.0 },
+            },
             dropoff = { x = 388.0, y = -1641.0, z = 29.8, heading = 320.0 },
             dropoff_width = 6.0,
             dropoff_length = 10.0,
@@ -101,8 +112,11 @@ return {
             vehicle_model = "issi2",
             vehicle_label = "Weeny Issi",
             vehicle_colors = { primary = 3, secondary = 3 },
-            search_center = { x = 780.0, y = -1290.0, z = 26.0 },
-            search_radius = 80.0,
+            spawn_points = {
+                { x = 780.0, y = -1290.0, z = 26.0, heading = 275.0 },
+                { x = 812.0, y = -1322.0, z = 26.0, heading = 5.0 },
+                { x = 748.0, y = -1258.0, z = 26.2, heading = 95.0 },
+            },
             dropoff = { x = 405.0, y = -1626.0, z = 29.8, heading = 320.0 },
             dropoff_width = 6.0,
             dropoff_length = 10.0,
@@ -119,8 +133,11 @@ return {
             vehicle_model = "burrito3",
             vehicle_label = "Vapid Burrito",
             vehicle_colors = { primary = 1, secondary = 1 },
-            search_center = { x = -160.0, y = 6350.0, z = 31.0 },
-            search_radius = 65.0,
+            spawn_points = {
+                { x = -160.0, y = 6350.0, z = 31.0, heading = 45.0 },
+                { x = -192.0, y = 6378.0, z = 31.0, heading = 135.0 },
+                { x = -128.0, y = 6322.0, z = 31.2, heading = 315.0 },
+            },
             dropoff = { x = -460.0, y = 6015.0, z = 31.5, heading = 45.0 },
             dropoff_width = 6.0,
             dropoff_length = 10.0,
@@ -175,6 +192,21 @@ return {
     -- Server re-check of a "vehicle found" claim — client's VehicleFoundRadius plus slack for
     -- movement/latency.
     VehicleFoundMaxDistance = 25.0,
+
+    -- Default for the runtime-editable `search_hint_radius` setting: the circle drawn on the
+    -- player's map while searching. The circle's center is offset server-side so the spawn
+    -- point never sits dead-center, which is what keeps the search phase a search.
+    SearchHintRadius = 60.0,
+
+    -- Two spawn points closer than this to each other are treated as the same spot when
+    -- reserving, so two concurrent deliveries never stack their target vehicles.
+    SpawnPointReservationDistance = 8.0,
+
+    -- Candidates handed to the client per delivery: it walks them in order and falls through
+    -- to the next one when a spot is physically blocked (see client/modules/vehicle.lua).
+    SpawnPointCandidates = 3,
+
+    MaxSpawnPointsPerMission = 20,
 
     DamagePenaltyCapPercent = 0.30,
 
