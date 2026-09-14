@@ -68,6 +68,78 @@ function Missions.PickRandomForPager(source)
     }
 end
 
+-- Spawn-point reservations, keyed by deliveryId: every active delivery holds the spots it
+-- was handed, so a second player is never sent to a point a target vehicle already occupies.
+-- Released on complete/fail/abort/unload.
+local reservedSpawnPoints = {}
+
+local function releaseSpawnPoints(deliveryId)
+    reservedSpawnPoints[deliveryId] = nil
+end
+
+local function isSpawnPointReserved(point)
+    local minDistance = serverConfig.SpawnPointReservationDistance or 8.0
+    local coords = vector3(point.x, point.y, point.z)
+
+    for _, points in pairs(reservedSpawnPoints) do
+        for _, reserved in ipairs(points) do
+            if #(coords - reserved) <= minDistance then return true end
+        end
+    end
+
+    return false
+end
+
+-- The search-hint circle is deliberately not centered on the spawn point — it's offset by a
+-- random 35-70% of its own radius, so the point stays inside the circle but never dead-center.
+-- Rolled server-side (one per candidate) so the client can't shortcut back to the true spot.
+local function rollHintCenter(point, radius)
+    local angle = math.random() * 2 * math.pi
+    local distance = radius * (0.35 + math.random() * 0.35)
+
+    return {
+        x = point.x + math.cos(angle) * distance,
+        y = point.y + math.sin(angle) * distance,
+        z = point.z,
+    }
+end
+
+-- Picks the spots one delivery may use. Reserved spots are filtered out first; if that leaves
+-- nothing, the unfiltered list is used anyway rather than refusing an otherwise valid job.
+-- More than one candidate is sent because the client falls through to the next spot when one
+-- is physically blocked (see client/modules/vehicle.lua) — each carries its own hint center so
+-- the circle still contains the car after a fallback.
+local function buildSpawnCandidates(row)
+    local points = row.spawn_points and json.decode(row.spawn_points) or {}
+    if #points == 0 then return nil end
+
+    local pool = {}
+    for _, point in ipairs(points) do
+        if not isSpawnPointReserved(point) then pool[#pool + 1] = point end
+    end
+    if #pool == 0 then
+        for _, point in ipairs(points) do pool[#pool + 1] = point end
+    end
+
+    for i = #pool, 2, -1 do
+        local j = math.random(i)
+        pool[i], pool[j] = pool[j], pool[i]
+    end
+
+    local radius = Settings.GetSearchHintRadius()
+    local candidates = {}
+
+    for i = 1, math.min(#pool, serverConfig.SpawnPointCandidates or 3) do
+        local point = pool[i]
+        candidates[i] = {
+            point = { x = point.x, y = point.y, z = point.z, heading = point.heading or 0.0 },
+            hint = rollHintCenter(point, radius),
+        }
+    end
+
+    return candidates, radius
+end
+
 -- Client-safe mission payload handed to the find/tow/deliver loop on accept.
 local function buildMissionPayload(row)
     return {
@@ -76,8 +148,6 @@ local function buildMissionPayload(row)
         vehicle_model = row.vehicle_model,
         vehicle_label = row.vehicle_label,
         vehicle_colors = row.vehicle_colors and json.decode(row.vehicle_colors) or nil,
-        search_center = { x = row.search_center_x, y = row.search_center_y, z = row.search_center_z },
-        search_radius = row.search_radius,
         dropoff = { x = row.dropoff_x, y = row.dropoff_y, z = row.dropoff_z, heading = row.dropoff_heading },
         dropoff_width = row.dropoff_width,
         dropoff_length = row.dropoff_length,
@@ -96,7 +166,7 @@ end
 -- derived from anything client-reported.
 local activeDeliveryState = {} -- [source] = { deliveryId, targetNetId, found, deadlineAt, bodyHealthBaseline, engineHealthBaseline }
 
-RegisterNetEvent("polarix_towjob:setTargetVehicle", function(deliveryId, netId)
+RegisterNetEvent("polarix_towjob:setTargetVehicle", function(deliveryId, netId, pointIndex)
     local source = source
     local player = Player.GetData(source)
     if not player then return end
@@ -110,6 +180,14 @@ RegisterNetEvent("polarix_towjob:setTargetVehicle", function(deliveryId, netId)
         activeDeliveryState[source] = state
     end
     state.targetNetId = netId
+
+    -- The client reports which candidate it actually spawned at (it skips blocked spots), so
+    -- the ones it didn't use are freed for other players. A spoofed index only ever frees a
+    -- spot that is in fact occupied, whose worst case is a doubled spawn.
+    local reserved = reservedSpawnPoints[deliveryId]
+    if reserved and pointIndex and reserved[pointIndex] then
+        reservedSpawnPoints[deliveryId] = { reserved[pointIndex] }
+    end
 end)
 
 -- Client reports reaching the target; server re-checks the distance against the tracked
@@ -251,6 +329,7 @@ function Missions.Fail(source, deliveryId, reason)
     end
 
     activeDeliveryState[source] = nil
+    releaseSpawnPoints(deliveryId)
     OnCall.HandleDeliveryEnded(source)
 
     Player.RecordDeliveryOutcome(source, "failed")
@@ -288,6 +367,8 @@ CreateThread(function()
 end)
 
 Framework.OnPlayerUnload(function(source)
+    local state = activeDeliveryState[source]
+    if state then releaseSpawnPoints(state.deliveryId) end
     activeDeliveryState[source] = nil
 end)
 
@@ -331,6 +412,11 @@ function Missions.Accept(source, missionId, bypassGates)
         return { ok = false, reason = "area_locked" }
     end
 
+    local spawnCandidates, searchHintRadius = buildSpawnCandidates(row)
+    if not spawnCandidates then
+        return { ok = false, reason = "no_spawn_points" }
+    end
+
     local owned = DB.GetOwnedVehicles(player.identifier)
     local storedCount, deployedCount = 0, 0
     local firstStored = nil
@@ -345,8 +431,19 @@ function Missions.Accept(source, missionId, bypassGates)
 
     local rentalActive = Vehicles.IsRentalActive(source)
     local mission = buildMissionPayload(row)
+    mission.spawn_candidates = spawnCandidates
+    mission.search_hint_radius = searchHintRadius
+
     local usedRental = rentalActive or #owned == 0
     local deliveryId = DB.CreateDelivery(missionId, player.identifier, usedRental)
+
+    -- Every candidate is held until the client reports which one it used (setTargetVehicle),
+    -- so a concurrent accept can't be handed a spot this delivery may still spawn at.
+    local reserved = {}
+    for i, candidate in ipairs(spawnCandidates) do
+        reserved[i] = vector3(candidate.point.x, candidate.point.y, candidate.point.z)
+    end
+    reservedSpawnPoints[deliveryId] = reserved
 
     -- Server is the sole authority on the deadline, stamped here at accept time.
     local deadlineAt = mission.time_limit_minutes and (os.time() + mission.time_limit_minutes * 60) or nil
@@ -369,6 +466,7 @@ function Missions.Accept(source, missionId, bypassGates)
         if not parkResult.ok then
             DB.FailDelivery(deliveryId)
             activeDeliveryState[source] = nil
+            releaseSpawnPoints(deliveryId)
             return { ok = false, reason = parkResult.reason }
         end
         response.vehicle = parkResult.vehicle
@@ -492,6 +590,7 @@ function Missions.Complete(source, deliveryId)
     DB.CompleteDelivery(deliveryId, rewardPaid, xpPaid, damagePenalty)
     Vehicles.OnDeliveryEnded(source)
     activeDeliveryState[source] = nil
+    releaseSpawnPoints(deliveryId)
     OnCall.HandleDeliveryEnded(source)
 
     Player.RecordDeliveryOutcome(source, "completed", rewardPaid)
@@ -523,6 +622,7 @@ function Missions.Abort(source, deliveryId)
     DB.AbortDelivery(deliveryId)
     Vehicles.OnDeliveryEnded(source)
     activeDeliveryState[source] = nil
+    releaseSpawnPoints(deliveryId)
     OnCall.HandleDeliveryEnded(source)
 
     Player.RecordDeliveryOutcome(source, "aborted")
