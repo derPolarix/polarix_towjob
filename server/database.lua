@@ -116,21 +116,17 @@ end
 
 function DB.InsertMission(mission)
     MySQL.insert.await("INSERT INTO " .. server.Tables.missions .. [[ (
-        id, area_id, name, vehicle_model, vehicle_label, vehicle_colors,
-        search_center_x, search_center_y, search_center_z, search_radius,
+        id, area_id, name, vehicle_model, vehicle_label, vehicle_colors, spawn_points,
         dropoff_x, dropoff_y, dropoff_z, dropoff_heading, dropoff_width, dropoff_length,
         reward_base, xp_base, time_limit_minutes, difficulty, level_required
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]], {
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]], {
         mission.id,
         mission.area_id,
         mission.name,
         mission.vehicle_model,
         mission.vehicle_label,
         json.encode(mission.vehicle_colors or {}),
-        mission.search_center.x,
-        mission.search_center.y,
-        mission.search_center.z,
-        mission.search_radius or 60.0,
+        json.encode(mission.spawn_points or {}),
         mission.dropoff.x,
         mission.dropoff.y,
         mission.dropoff.z,
@@ -273,20 +269,19 @@ function DB.MissionIdExists(missionId)
 end
 
 -- Flat column shape (matches DB.GetAllMissionsAdmin's SELECT output and the admin form) —
--- unlike DB.InsertMission, which keeps its nested search_center/dropoff shape because
+-- unlike DB.InsertMission, which keeps its nested dropoff shape because
 -- config/server.lua's SeedMissions data is written that way and Missions.SeedIfEmpty
 -- depends on it unchanged.
 function DB.UpdateMission(missionId, mission, adminIdentifier)
     MySQL.update.await("UPDATE " .. server.Tables.missions .. [[ SET
-        area_id=?, name=?, vehicle_model=?, vehicle_label=?, vehicle_colors=?,
-        search_center_x=?, search_center_y=?, search_center_z=?, search_radius=?,
+        area_id=?, name=?, vehicle_model=?, vehicle_label=?, vehicle_colors=?, spawn_points=?,
         dropoff_x=?, dropoff_y=?, dropoff_z=?, dropoff_heading=?, dropoff_width=?, dropoff_length=?,
         reward_base=?, xp_base=?, time_limit_minutes=?, difficulty=?, level_required=?, updated_by=?
         WHERE id=?
     ]], {
         mission.area_id, mission.name, mission.vehicle_model, mission.vehicle_label,
         json.encode(mission.vehicle_colors or {}),
-        mission.search_center_x, mission.search_center_y, mission.search_center_z, mission.search_radius or 60.0,
+        json.encode(mission.spawn_points or {}),
         mission.dropoff_x, mission.dropoff_y, mission.dropoff_z, mission.dropoff_heading or 0.0,
         mission.dropoff_width or 6.0, mission.dropoff_length or 10.0,
         mission.reward_base, mission.xp_base, mission.time_limit_minutes, mission.difficulty or "easy",
