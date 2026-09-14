@@ -11,7 +11,7 @@ return {
     TowTruckSpawnCoords = vector4(408.7518, -1638.8171, 28.8186, 229.6331), -- depot spawn/retrieve point
     AutoEnterTowTruck = true, -- teleport player into driver seat vs. player walks to it
 
-    ParkingZone = { coords = vector3(402.1923, -1630.8745, 28.8140), radius = 8.0 }, -- store/retrieve zone near NPC
+    ParkingZone = { coords = vector3(403.5785, -1633.3020, 29.2920), radius = 8.0 }, -- store/retrieve zone near NPC
 
     VehicleFoundRadius = 12.0, -- reaching this range of the target vehicle flips the job to "found"
 
