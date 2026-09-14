@@ -1,4 +1,5 @@
 local debug = require("shared.debug")
+local serverConfig = require("config.server")
 
 AdminMissions = {}
 
@@ -22,7 +23,7 @@ end
 
 -- The admin form works with flat columns (matches DB.GetAllMissionsAdmin's SELECT output
 -- and DB.UpdateMission's flat shape) but DB.InsertMission expects the nested
--- search_center/dropoff shape config/server.lua's SeedMissions data uses — reshape here
+-- dropoff shape config/server.lua's SeedMissions data uses — reshape here
 -- rather than duplicating the INSERT statement or changing InsertMission's seed-facing signature.
 local function toNestedMission(flat)
     return {
@@ -31,8 +32,7 @@ local function toNestedMission(flat)
         vehicle_model = flat.vehicle_model,
         vehicle_label = flat.vehicle_label,
         vehicle_colors = flat.vehicle_colors,
-        search_center = { x = flat.search_center_x, y = flat.search_center_y, z = flat.search_center_z },
-        search_radius = flat.search_radius,
+        spawn_points = flat.spawn_points,
         dropoff = { x = flat.dropoff_x, y = flat.dropoff_y, z = flat.dropoff_z, heading = flat.dropoff_heading },
         dropoff_width = flat.dropoff_width,
         dropoff_length = flat.dropoff_length,
@@ -44,12 +44,33 @@ local function toNestedMission(flat)
     }
 end
 
+-- Re-validated here rather than trusted from the NUI form (ground rule 4): every point must
+-- carry a complete coordinate, because the spawn path has no radius left to fall back on.
+local function validateSpawnPoints(points)
+    if type(points) ~= "table" or #points < 1 then return "no_spawn_points" end
+    if #points > serverConfig.MaxSpawnPointsPerMission then return "too_many_spawn_points" end
+
+    for _, point in ipairs(points) do
+        if type(point) ~= "table"
+            or type(point.x) ~= "number" or type(point.y) ~= "number" or type(point.z) ~= "number"
+            or type(point.heading) ~= "number" then
+            return "invalid_spawn_point"
+        end
+    end
+
+    return nil
+end
+
 local function validateMission(mission)
     if not mission.name or mission.name == "" then return "invalid_name" end
     if not mission.area_id or not DB.AreaIdExists(mission.area_id) then return "invalid_area" end
     if not mission.vehicle_model or mission.vehicle_model == "" then return "invalid_vehicle_model" end
     if type(mission.reward_base) ~= "number" or type(mission.xp_base) ~= "number" then return "invalid_reward" end
-    if mission.search_center_x == nil or mission.dropoff_x == nil then return "invalid_position" end
+    if mission.dropoff_x == nil then return "invalid_position" end
+
+    local spawnPointsReason = validateSpawnPoints(mission.spawn_points)
+    if spawnPointsReason then return spawnPointsReason end
+
     return nil
 end
 
@@ -60,6 +81,7 @@ function AdminMissions.ListForAdmin(source)
     local rows = DB.GetAllMissionsAdmin()
     for _, row in ipairs(rows) do
         row.vehicle_colors = row.vehicle_colors and json.decode(row.vehicle_colors) or { primary = 0, secondary = 0 }
+        row.spawn_points = row.spawn_points and json.decode(row.spawn_points) or {}
         row.is_active = row.is_active == 1
         row.delivery_count = DB.CountDeliveriesForMission(row.id)
     end
