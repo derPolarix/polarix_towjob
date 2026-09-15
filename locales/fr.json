@@ -206,6 +206,7 @@
     "error.no_player": "Données du joueur indisponibles, rouvre le tableau de bord.",
     "error.on_call_update_failed": "Impossible de mettre à jour le statut d'astreinte.",
     "error.finish_delivery_before_on_call": "Termine ta livraison en cours avant de passer en astreinte.",
+    "error.no_missions_configured": "Aucune mission de dépannage n'est configurée sur ce serveur — prévenez un administrateur.",
     "error.unlock_failed": "Échec du déblocage.",
     "error.repair_failed": "Échec de la réparation.",
     "error.purchase_failed": "Échec de l'achat.",

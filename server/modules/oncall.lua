@@ -13,6 +13,14 @@ function OnCall.IsOnCall(source)
     return s ~= nil and s.onCall == true
 end
 
+-- An admin who never set up (or deactivated all) missions leaves every player on-call
+-- forever with nothing to receive, so going on-call is refused outright in that state.
+-- Deliberately server-wide, not per-player: a player whose level/unlocked areas happen to
+-- match nothing right now still goes on-call, and the scheduler below keeps retrying.
+local function hasPlayableMissions()
+    return (DB.GetActiveMissionCount() or 0) > 0
+end
+
 -- opts = { fast = bool, extraDelaySeconds = number } — `fast` picks the short post-accept window.
 local function scheduleNextPage(source, opts)
     local s = state[source]
@@ -47,6 +55,12 @@ function OnCall.SetOnCall(source, wantOn)
         return { ok = false, reason = "active_delivery_exists" }
     end
 
+    -- Checked before needs_rental so a truckless player isn't sold a rental on a server that
+    -- can never page them anything.
+    if not hasPlayableMissions() then
+        return { ok = false, reason = "no_missions_configured" }
+    end
+
     if not Vehicles.IsRentalActive(source) and #DB.GetOwnedVehicles(player.identifier) == 0 then
         return { ok = false, reason = "needs_rental" }
     end
@@ -78,6 +92,9 @@ function OnCall.StartStandaloneRental(source)
     end
     if Vehicles.IsRentalActive(source) then
         return { ok = false, reason = "already_renting" }
+    end
+    if not hasPlayableMissions() then
+        return { ok = false, reason = "no_missions_configured" }
     end
     if #DB.GetOwnedVehicles(player.identifier) > 0 then
         return { ok = false, reason = "owned_vehicle_exists" }

@@ -206,6 +206,7 @@
     "error.no_player": "Dati del giocatore non disponibili, riapri la dashboard.",
     "error.on_call_update_failed": "Impossibile aggiornare lo stato di reperibilità.",
     "error.finish_delivery_before_on_call": "Completa la consegna in corso prima di entrare in reperibilità.",
+    "error.no_missions_configured": "Su questo server non è ancora configurata nessuna missione di traino: avvisa un amministratore.",
     "error.unlock_failed": "Sblocco fallito.",
     "error.repair_failed": "Riparazione fallita.",
     "error.purchase_failed": "Acquisto fallito.",

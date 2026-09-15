@@ -206,6 +206,7 @@
     "error.no_player": "Oyuncu verisi kullanılamıyor, paneli yeniden aç.",
     "error.on_call_update_failed": "Nöbet durumu güncellenemedi.",
     "error.finish_delivery_before_on_call": "Nöbete girmeden önce mevcut teslimatını bitir.",
+    "error.no_missions_configured": "Bu sunucuda henüz çekici görevi tanımlanmamış — bir yetkiliye haber ver.",
     "error.unlock_failed": "Açma başarısız.",
     "error.repair_failed": "Tamir başarısız.",
     "error.purchase_failed": "Satın alma başarısız.",

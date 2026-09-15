@@ -206,6 +206,7 @@
     "error.no_player": "Dados do jogador indisponíveis, reabra o painel.",
     "error.on_call_update_failed": "Não foi possível atualizar o status de plantão.",
     "error.finish_delivery_before_on_call": "Termine sua entrega atual antes de entrar de plantão.",
+    "error.no_missions_configured": "Este servidor ainda não tem missões de reboque configuradas — avise um administrador.",
     "error.unlock_failed": "Falha ao desbloquear.",
     "error.repair_failed": "Falha no reparo.",
     "error.purchase_failed": "Falha na compra.",

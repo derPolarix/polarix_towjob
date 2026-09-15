@@ -123,6 +123,7 @@ const onCallError = ref("");
 
 const onCallReasonMessages: Record<string, string> = {
 	active_delivery_exists: "error.finish_delivery_before_on_call",
+	no_missions_configured: "error.no_missions_configured",
 	no_player: "error.no_player",
 };
 

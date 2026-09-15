@@ -206,6 +206,7 @@
     "error.no_player": "Datos del jugador no disponibles, vuelve a abrir el panel.",
     "error.on_call_update_failed": "No se pudo actualizar el estado de guardia.",
     "error.finish_delivery_before_on_call": "Termina tu entrega actual antes de ponerte de guardia.",
+    "error.no_missions_configured": "Este servidor todavía no tiene misiones de grúa configuradas: avisa a un administrador.",
     "error.unlock_failed": "Desbloqueo fallido.",
     "error.repair_failed": "Reparación fallida.",
     "error.purchase_failed": "Compra fallida.",

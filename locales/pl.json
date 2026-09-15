@@ -206,6 +206,7 @@
     "error.no_player": "Dane gracza niedostępne, otwórz panel ponownie.",
     "error.on_call_update_failed": "Nie udało się zaktualizować statusu dyżuru.",
     "error.finish_delivery_before_on_call": "Dokończ bieżącą dostawę, zanim wejdziesz na dyżur.",
+    "error.no_missions_configured": "Na tym serwerze nie skonfigurowano jeszcze żadnych misji holowania — powiadom administratora.",
     "error.unlock_failed": "Odblokowanie nie powiodło się.",
     "error.repair_failed": "Naprawa nie powiodła się.",
     "error.purchase_failed": "Zakup nie powiódł się.",

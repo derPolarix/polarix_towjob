@@ -206,6 +206,7 @@
     "error.no_player": "Spielerdaten nicht verfügbar, öffne das Dashboard erneut.",
     "error.on_call_update_failed": "Bereitschaftsstatus konnte nicht aktualisiert werden.",
     "error.finish_delivery_before_on_call": "Beende deine aktuelle Lieferung, bevor du in Bereitschaft gehst.",
+    "error.no_missions_configured": "Auf diesem Server sind noch keine Abschleppaufträge eingerichtet — wende dich an ein Teammitglied.",
     "error.unlock_failed": "Freischalten fehlgeschlagen.",
     "error.repair_failed": "Reparatur fehlgeschlagen.",
     "error.purchase_failed": "Kauf fehlgeschlagen.",

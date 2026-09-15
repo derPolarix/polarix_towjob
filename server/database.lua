@@ -172,6 +172,17 @@ function DB.GetActiveMissionsWithAreas()
     ]])
 end
 
+-- Cheap "is this server set up at all" probe for the on-call gate — same is_active join as
+-- GetActiveMissionsWithAreas above, without dragging every row over for a zero test.
+function DB.GetActiveMissionCount()
+    return MySQL.scalar.await([[
+        SELECT COUNT(*)
+        FROM ]] .. server.Tables.missions .. [[ m
+        JOIN ]] .. server.Tables.areas .. [[ a ON a.id = m.area_id
+        WHERE m.is_active = 1 AND a.is_active = 1
+    ]]) or 0
+end
+
 function DB.GetMission(missionId)
     return MySQL.single.await("SELECT * FROM " .. server.Tables.missions .. " WHERE id = ? AND is_active = 1", { missionId })
 end

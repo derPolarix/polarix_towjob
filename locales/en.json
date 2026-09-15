@@ -206,6 +206,7 @@
     "error.no_player": "Player data unavailable, try reopening the Dashboard.",
     "error.on_call_update_failed": "Could not update on-call status.",
     "error.finish_delivery_before_on_call": "Finish your current delivery before going on-call.",
+    "error.no_missions_configured": "No tow missions are set up on this server yet — ask an admin to add some.",
     "error.unlock_failed": "Unlock failed.",
     "error.repair_failed": "Repair failed.",
     "error.purchase_failed": "Purchase failed.",

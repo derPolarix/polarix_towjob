@@ -206,6 +206,7 @@
     "error.no_player": "Spelersgegevens niet beschikbaar, open het dashboard opnieuw.",
     "error.on_call_update_failed": "Kon afroepstatus niet bijwerken.",
     "error.finish_delivery_before_on_call": "Rond je huidige levering af voordat je op afroep gaat.",
+    "error.no_missions_configured": "Op deze server zijn nog geen sleepmissies ingesteld — vraag een beheerder om ze toe te voegen.",
     "error.unlock_failed": "Ontgrendelen mislukt.",
     "error.repair_failed": "Reparatie mislukt.",
     "error.purchase_failed": "Aankoop mislukt.",
