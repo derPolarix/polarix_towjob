@@ -31,8 +31,6 @@ AddEventHandler('onResourceStart', function(resourceName)
 
     loadSchema()
     LoadDatabaseToCache()
-    Areas.SeedIfEmpty()
-    Missions.SeedIfEmpty()
     Settings.Load()
 
     -- A mid-session restart wipes PlayerCache but the framework's "player loaded" event

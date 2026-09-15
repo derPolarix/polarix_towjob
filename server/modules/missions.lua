@@ -4,22 +4,6 @@ local Locale = require("shared.locale")
 
 Missions = {}
 
-function Missions.SeedIfEmpty()
-    if (DB.GetMissionCount() or 0) > 0 then return end
-
-    local seeds = serverConfig.SeedMissions
-    if not seeds or #seeds == 0 then
-        debug.DebugPrint("Missions.SeedIfEmpty: no SeedMissions configured, skipping")
-        return
-    end
-
-    for _, mission in ipairs(seeds) do
-        DB.InsertMission(mission)
-    end
-
-    debug.DebugPrint(("Missions.SeedIfEmpty: seeded %d mission(s)"):format(#seeds))
-end
-
 -- Level/area-eligibility filter shared by the pager's random pick below and (inline)
 -- Missions.Accept's own gate check — replaces the old Available Jobs list query
 -- (Missions.GetAvailableForPlayer) now that jobs are paged rather than browsed.
