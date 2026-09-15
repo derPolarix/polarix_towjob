@@ -24,7 +24,7 @@ end
 
 -- The admin form works with flat columns (matches DB.GetAllMissionsAdmin's SELECT output
 -- and DB.UpdateMission's flat shape) but DB.InsertMission expects the nested
--- dropoff shape config/server.lua's SeedMissions data uses — reshape here
+-- dropoff shape server/seed_data.lua's missions use — reshape here
 -- rather than duplicating the INSERT statement or changing InsertMission's seed-facing signature.
 local function toNestedMission(flat)
     return {

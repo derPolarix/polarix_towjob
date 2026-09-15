@@ -281,7 +281,7 @@ end
 
 -- Flat column shape (matches DB.GetAllMissionsAdmin's SELECT output and the admin form) —
 -- unlike DB.InsertMission, which keeps its nested dropoff shape because
--- config/server.lua's SeedMissions data is written that way and Missions.SeedIfEmpty
+-- server/seed_data.lua's missions are written that way and the seed import
 -- depends on it unchanged.
 function DB.UpdateMission(missionId, mission, adminIdentifier)
     MySQL.update.await("UPDATE " .. server.Tables.missions .. [[ SET
