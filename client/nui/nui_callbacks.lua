@@ -136,6 +136,11 @@ RegisterNUICallback('adminTestRunMission', function(data, cb)
     cb(result or { ok = false, reason = "no_response" })
 end)
 
+RegisterNUICallback('adminImportSeedData', function(data, cb)
+    local result = lib.callback.await("polarix_towjob:adminImportSeedData", false)
+    cb(result or { ok = false, reason = "no_response" })
+end)
+
 RegisterNUICallback('adminListAreas', function(data, cb)
     local result = lib.callback.await("polarix_towjob:adminListAreas", false)
     cb(result or { ok = false, reason = "no_response" })

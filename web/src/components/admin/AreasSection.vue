@@ -5,17 +5,27 @@
 				<iconify-icon icon="tabler:plus" width="15"></iconify-icon> {{ t("admin.new_area") }}
 			</button>
 
-			<button
-				v-for="area in adminStore.areas"
-				:key="area.id"
-				type="button"
-				style="width:100%;text-align:left;border-radius:10px;padding:10px 12px;border:1px solid transparent;cursor:pointer;font-family:inherit"
-				:style="editingId === area.id ? 'background:#22262d;border-color:#22262d' : 'background:#fff;border-color:#dfe2e6'"
-				@click="selectArea(area)"
-			>
-				<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" :style="{ color: editingId === area.id ? '#fff' : '#1b1f24' }">{{ area.name }}</div>
-				<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;margin-top:3px;color:#9aa1ab">{{ area.is_active ? t("admin.active") : t("admin.inactive") }}{{ area.is_default ? " · " + t("admin.default") : "" }}</div>
-			</button>
+			<template v-if="adminStore.areas.length">
+				<button
+					v-for="area in adminStore.areas"
+					:key="area.id"
+					type="button"
+					style="width:100%;text-align:left;border-radius:10px;padding:10px 12px;border:1px solid transparent;cursor:pointer;font-family:inherit"
+					:style="editingId === area.id ? 'background:#22262d;border-color:#22262d' : 'background:#fff;border-color:#dfe2e6'"
+					@click="selectArea(area)"
+				>
+					<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" :style="{ color: editingId === area.id ? '#fff' : '#1b1f24' }">{{ area.name }}</div>
+					<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;margin-top:3px;color:#9aa1ab">{{ area.is_active ? t("admin.active") : t("admin.inactive") }}{{ area.is_default ? " · " + t("admin.default") : "" }}</div>
+				</button>
+			</template>
+
+			<div v-else style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px 8px;text-align:center">
+				<iconify-icon icon="tabler:package-import" width="26" style="color:#9aa1ab"></iconify-icon>
+				<p style="margin:0;font-size:11px;line-height:1.5;color:#6b7280">{{ t("admin.no_areas_hint") }}</p>
+				<button type="button" class="accent-btn" style="padding:9px 12px;font-size:11px;justify-content:center" :disabled="importing" :style="{ opacity: importing ? 0.4 : 1 }" @click="importSeed">
+					{{ importing ? t("admin.importing") : t("admin.import_seed_missions") }}
+				</button>
+			</div>
 		</aside>
 
 		<div style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px">
@@ -127,6 +137,7 @@ const areaReasonKeys: Record<string, string> = {
 	invalid_position: "admin.err_invalid_position",
 	invalid_multiplier: "admin.err_invalid_multiplier",
 	not_found: "admin.err_area_gone",
+	not_empty: "admin.err_import_not_empty",
 };
 function areaReasonKey(reason: string | undefined): string | undefined {
 	return reason ? areaReasonKeys[reason] : undefined;
@@ -137,6 +148,7 @@ const selectedIsActive = ref(true);
 const saving = ref(false);
 const togglingActive = ref(false);
 const errorMessage = ref("");
+const importing = ref(false);
 
 const form = reactive({
 	name: "",
@@ -221,6 +233,30 @@ function selectArea(area: AdminArea) {
 	if (map && form.points.length > 0) {
 		const bounds = form.points.map((point) => gtaToLatLng(point.x, point.y));
 		map.fitBounds(bounds, { maxZoom: 0, padding: [20, 20] });
+	}
+}
+
+// Seed content ships with the resource (server/seed_data.lua) and covers areas + missions in
+// one go; the server refuses the import unless both tables are empty, which is also the only
+// state this button renders in.
+async function importSeed() {
+	if (importing.value) return;
+	importing.value = true;
+	errorMessage.value = "";
+
+	try {
+		const result = await nuiCallbackAsync<AdminActionResult>("adminImportSeedData");
+		if (result?.ok) {
+			await adminStore.fetchAreas();
+			await adminStore.fetchMissions();
+		} else {
+			errorMessage.value = t(areaReasonKey(result?.reason) ?? "admin.err_import_seed");
+		}
+	} catch (error) {
+		console.error("adminImportSeedData failed:", error);
+		errorMessage.value = t("admin.err_import_seed");
+	} finally {
+		importing.value = false;
 	}
 }
 

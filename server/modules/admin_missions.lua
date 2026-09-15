@@ -1,5 +1,6 @@
 local debug = require("shared.debug")
 local serverConfig = require("config.server")
+local seedData = require("server.seed_data")
 
 AdminMissions = {}
 
@@ -155,6 +156,31 @@ function AdminMissions.Delete(source, missionId)
     return { ok = true }
 end
 
+-- Areas and missions import as one set: the seed missions reference the seed area ids, so
+-- a server with either table populated has content of its own and is left alone (the Admin
+-- UI only offers the button when both lists are empty, but that is a hint, not the gate).
+function AdminMissions.ImportSeedData(source)
+    local ok, reason = requireAdmin(source)
+    if not ok then return { ok = false, reason = reason } end
+
+    if (DB.GetMissionCount() or 0) > 0 or (DB.GetAreaCount() or 0) > 0 then
+        return { ok = false, reason = "not_empty" }
+    end
+
+    for _, area in ipairs(seedData.areas) do
+        DB.InsertArea(area)
+    end
+
+    for _, mission in ipairs(seedData.missions) do
+        DB.InsertMission(mission)
+    end
+
+    debug.DebugPrint(("AdminMissions.ImportSeedData: imported %d area(s) and %d mission(s)")
+        :format(#seedData.areas, #seedData.missions))
+
+    return { ok = true, areas = #seedData.areas, missions = #seedData.missions }
+end
+
 -- Step 13.3: QA-only test button — bypasses level_required/area_locked (the mission-
 -- availability gates) the same way trucker job's TestRun bypasses level/hazmat/long-hauler,
 -- but never the player's own active-delivery/vehicle-state checks inside Missions.Accept,
@@ -173,4 +199,5 @@ lib.callback.register("polarix_towjob:adminCreateMission", function(source, miss
 lib.callback.register("polarix_towjob:adminUpdateMission", function(source, missionId, mission) return AdminMissions.Update(source, missionId, mission) end)
 lib.callback.register("polarix_towjob:adminSetMissionActive", function(source, missionId, isActive) return AdminMissions.SetActive(source, missionId, isActive) end)
 lib.callback.register("polarix_towjob:adminDeleteMission", function(source, missionId) return AdminMissions.Delete(source, missionId) end)
+lib.callback.register("polarix_towjob:adminImportSeedData", function(source) return AdminMissions.ImportSeedData(source) end)
 lib.callback.register("polarix_towjob:adminTestRunMission", function(source, missionId) return AdminMissions.TestRun(source, missionId) end)
