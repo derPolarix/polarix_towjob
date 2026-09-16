@@ -27,6 +27,29 @@
     "notify.rental_payment_charged": "Pagamento del noleggio addebitato.",
     "notify.rental_payment_due_1m": "Pagamento del noleggio dovuto tra 1 minuto.",
     "notify.rental_payment_due_5m": "Pagamento del noleggio dovuto tra 5 minuti.",
+    "notify.mark_not_authorized": "Non sei autorizzato a richiedere carri attrezzi.",
+    "notify.mark_vehicle_not_found": "Nessun veicolo a portata.",
+    "notify.mark_too_far": "Avvicinati al veicolo.",
+    "notify.mark_occupied": "C'è qualcuno a bordo di quel veicolo.",
+    "notify.mark_is_tow_truck": "Non puoi richiedere il traino di un carro attrezzi.",
+    "notify.mark_already_in_delivery": "Quel veicolo è già in fase di traino.",
+    "notify.mark_not_player_owned": "Quel veicolo non è intestato a nessuno.",
+    "notify.mark_pool_full": "La centrale è al completo — riprova tra poco.",
+    "notify.mark_officer_limit": "Hai già il numero massimo di richieste aperte.",
+    "notify.mark_no_missions": "Nessun punto di consegna configurato su questo server.",
+    "notify.mark_already_claimed": "Un operatore è già in arrivo per quel veicolo.",
+    "notify.mark_cooldown": "Attendi %d secondi prima di un'altra richiesta.",
+    "notify.tow_request_registered": "Richiesta di traino registrata per %s — la centrale chiamerà un operatore.",
+    "notify.tow_request_cancelled": "Richiesta di traino per %s annullata.",
+    "notify.tow_request_expired": "La tua richiesta di traino per %s è scaduta.",
+    "notify.tow_request_completed": "%s è stato portato al deposito.",
+    "notify.tow_request_target_moved": "Richiesta per %s annullata — il veicolo è stato spostato.",
+    "notify.tow_request_target_occupied": "Richiesta per %s annullata — qualcuno è salito a bordo.",
+    "notify.tow_request_target_gone": "Richiesta per %s annullata — il veicolo non c'è più.",
+    "notify.tow_request_target_destroyed": "Richiesta per %s annullata — il veicolo è stato distrutto.",
+    "notify.police_cut_paid": "Compenso richiesta di traino: $%d",
+    "notify.cancel_target_left_scene": "Il veicolo ha lasciato il posto — incarico annullato.",
+    "notify.cancel_target_gone": "Il veicolo non è più sul posto — incarico annullato.",
 
     "ui.confirm_delivery": "[E] Conferma consegna",
     "ui.store_tow_truck": "Riponi carro attrezzi",
@@ -91,8 +114,10 @@
     "hud.tow_to_dropoff": "Aggancia e traina al punto di consegna",
     "hud.distance_away": "a {distance} m",
     "hud.time_remaining": "{time} rimanente",
+    "hud.priority": "PRIORITÀ",
 
     "pager.incoming_job": "LAVORO IN ARRIVO",
+    "pager.police_dispatch": "CHIAMATA POLIZIA",
 
     "rental.prompt_title": "Prendi un carro attrezzi a noleggio",
     "rental.prompt_body": "Non possiedi ancora un carro attrezzi. Noleggiandone uno appare subito e ti addebita {price} ogni {minutes} min finché è fuori — passerai in reperibilità appena lo parcheggi.",
@@ -336,5 +361,11 @@
     "admin.err_save_mission": "Impossibile salvare la missione.",
     "admin.err_update_mission": "Impossibile aggiornare la missione.",
     "admin.err_delete_mission": "Impossibile eliminare la missione.",
-    "admin.err_test_run": "Impossibile avviare la prova."
+    "admin.err_test_run": "Impossibile avviare la prova.",
+
+    "mission.police_impound": "Sequestro: %s",
+
+    "target.mark_for_tow": "Richiedi traino",
+
+    "blip.tow_request": "Richiesta di traino: %s"
 }

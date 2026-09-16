@@ -27,6 +27,29 @@
     "notify.rental_payment_charged": "Paiement de location prélevé.",
     "notify.rental_payment_due_1m": "Paiement de location dû dans 1 minute.",
     "notify.rental_payment_due_5m": "Paiement de location dû dans 5 minutes.",
+    "notify.mark_not_authorized": "Vous n'êtes pas autorisé à demander un remorquage.",
+    "notify.mark_vehicle_not_found": "Aucun véhicule à portée.",
+    "notify.mark_too_far": "Approchez-vous du véhicule.",
+    "notify.mark_occupied": "Quelqu'un est assis dans ce véhicule.",
+    "notify.mark_is_tow_truck": "Vous ne pouvez pas demander le remorquage d'une dépanneuse.",
+    "notify.mark_already_in_delivery": "Ce véhicule est déjà en cours de remorquage.",
+    "notify.mark_not_player_owned": "Ce véhicule n'est immatriculé à personne.",
+    "notify.mark_pool_full": "Le central est saturé — réessayez dans un instant.",
+    "notify.mark_officer_limit": "Vous avez déjà le maximum de demandes en cours.",
+    "notify.mark_no_missions": "Aucun point de dépôt n'est configuré sur ce serveur.",
+    "notify.mark_already_claimed": "Un opérateur est déjà en route pour ce véhicule.",
+    "notify.mark_cooldown": "Attendez %d secondes avant une nouvelle demande.",
+    "notify.tow_request_registered": "Demande de remorquage enregistrée pour %s — le central va appeler un opérateur.",
+    "notify.tow_request_cancelled": "Demande de remorquage pour %s annulée.",
+    "notify.tow_request_expired": "Votre demande de remorquage pour %s a expiré.",
+    "notify.tow_request_completed": "%s a été conduit à la fourrière.",
+    "notify.tow_request_target_moved": "Demande pour %s abandonnée — le véhicule a été déplacé.",
+    "notify.tow_request_target_occupied": "Demande pour %s abandonnée — quelqu'un est monté à bord.",
+    "notify.tow_request_target_gone": "Demande pour %s abandonnée — le véhicule a disparu.",
+    "notify.tow_request_target_destroyed": "Demande pour %s abandonnée — le véhicule a été détruit.",
+    "notify.police_cut_paid": "Paiement demande de remorquage : $%d",
+    "notify.cancel_target_left_scene": "Le véhicule a quitté les lieux — mission annulée.",
+    "notify.cancel_target_gone": "Le véhicule n'est plus sur place — mission annulée.",
 
     "ui.confirm_delivery": "[E] Confirmer la livraison",
     "ui.store_tow_truck": "Ranger la dépanneuse",
@@ -91,8 +114,10 @@
     "hud.tow_to_dropoff": "Accroche et remorque jusqu'au point de dépôt",
     "hud.distance_away": "à {distance} m",
     "hud.time_remaining": "{time} restant",
+    "hud.priority": "PRIORITÉ",
 
     "pager.incoming_job": "BOULOT ENTRANT",
+    "pager.police_dispatch": "APPEL POLICE",
 
     "rental.prompt_title": "Prendre une dépanneuse de location",
     "rental.prompt_body": "Tu n'as pas encore de dépanneuse. En louer une la fait apparaître aussitôt et te facture {price} toutes les {minutes} min tant qu'elle est dehors — tu passeras en astreinte dès qu'elle est garée.",
@@ -336,5 +361,11 @@
     "admin.err_save_mission": "Échec de l'enregistrement de la mission.",
     "admin.err_update_mission": "Échec de la mise à jour de la mission.",
     "admin.err_delete_mission": "Échec de la suppression de la mission.",
-    "admin.err_test_run": "Échec du démarrage du test."
+    "admin.err_test_run": "Échec du démarrage du test.",
+
+    "mission.police_impound": "Fourrière : %s",
+
+    "target.mark_for_tow": "Demander un remorquage",
+
+    "blip.tow_request": "Demande de remorquage : %s"
 }

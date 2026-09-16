@@ -27,6 +27,29 @@
     "notify.rental_payment_charged": "Pobrano płatność za wynajem.",
     "notify.rental_payment_due_1m": "Płatność za wynajem za 1 minutę.",
     "notify.rental_payment_due_5m": "Płatność za wynajem za 5 minut.",
+    "notify.mark_not_authorized": "Nie masz uprawnień do zlecania odholowania.",
+    "notify.mark_vehicle_not_found": "Brak pojazdu w zasięgu.",
+    "notify.mark_too_far": "Podejdź bliżej pojazdu.",
+    "notify.mark_occupied": "W tym pojeździe ktoś siedzi.",
+    "notify.mark_is_tow_truck": "Nie możesz zlecić odholowania lawety.",
+    "notify.mark_already_in_delivery": "Ten pojazd jest już odholowywany.",
+    "notify.mark_not_player_owned": "Ten pojazd nie jest na nikogo zarejestrowany.",
+    "notify.mark_pool_full": "Dyspozytornia jest przeciążona — spróbuj za chwilę.",
+    "notify.mark_officer_limit": "Masz już maksymalną liczbę otwartych zleceń.",
+    "notify.mark_no_missions": "Na tym serwerze nie skonfigurowano punktu odbioru.",
+    "notify.mark_already_claimed": "Do tego pojazdu już jedzie laweta.",
+    "notify.mark_cooldown": "Odczekaj %d sekund przed kolejnym zleceniem.",
+    "notify.tow_request_registered": "Zlecenie odholowania %s przyjęte — dyspozytornia wezwie lawetę.",
+    "notify.tow_request_cancelled": "Zlecenie odholowania %s anulowane.",
+    "notify.tow_request_expired": "Twoje zlecenie odholowania %s wygasło.",
+    "notify.tow_request_completed": "%s został odholowany na parking depozytowy.",
+    "notify.tow_request_target_moved": "Zlecenie na %s odrzucone — pojazd został przestawiony.",
+    "notify.tow_request_target_occupied": "Zlecenie na %s odrzucone — ktoś wsiadł.",
+    "notify.tow_request_target_gone": "Zlecenie na %s odrzucone — pojazdu już nie ma.",
+    "notify.tow_request_target_destroyed": "Zlecenie na %s odrzucone — pojazd został zniszczony.",
+    "notify.police_cut_paid": "Wypłata za zlecenie odholowania: $%d",
+    "notify.cancel_target_left_scene": "Pojazd opuścił miejsce — zlecenie anulowane.",
+    "notify.cancel_target_gone": "Pojazdu nie ma już na miejscu — zlecenie anulowane.",
 
     "ui.confirm_delivery": "[E] Potwierdź dostawę",
     "ui.store_tow_truck": "Schowaj lawetę",
@@ -91,8 +114,10 @@
     "hud.tow_to_dropoff": "Podczep i odholuj do punktu docelowego",
     "hud.distance_away": "{distance} m stąd",
     "hud.time_remaining": "pozostało {time}",
+    "hud.priority": "PRIORYTET",
 
     "pager.incoming_job": "PRZYCHODZĄCE ZLECENIE",
+    "pager.police_dispatch": "WEZWANIE POLICJI",
 
     "rental.prompt_title": "Weź lawetę na wynajem",
     "rental.prompt_body": "Nie masz jeszcze lawety. Wynajęcie jej natychmiast ją tworzy i pobiera {price} co {minutes} min, dopóki jest na zewnątrz — przejdziesz na dyżur, gdy tylko ją zaparkujesz.",
@@ -336,5 +361,11 @@
     "admin.err_save_mission": "Nie udało się zapisać misji.",
     "admin.err_update_mission": "Nie udało się zaktualizować misji.",
     "admin.err_delete_mission": "Nie udało się usunąć misji.",
-    "admin.err_test_run": "Nie udało się uruchomić testu."
+    "admin.err_test_run": "Nie udało się uruchomić testu.",
+
+    "mission.police_impound": "Depozyt policyjny: %s",
+
+    "target.mark_for_tow": "Wezwij lawetę",
+
+    "blip.tow_request": "Zlecenie odholowania: %s"
 }

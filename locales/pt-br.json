@@ -27,6 +27,29 @@
     "notify.rental_payment_charged": "Pagamento do aluguel cobrado.",
     "notify.rental_payment_due_1m": "Pagamento do aluguel vence em 1 minuto.",
     "notify.rental_payment_due_5m": "Pagamento do aluguel vence em 5 minutos.",
+    "notify.mark_not_authorized": "Você não tem autorização para solicitar reboques.",
+    "notify.mark_vehicle_not_found": "Nenhum veículo ao alcance.",
+    "notify.mark_too_far": "Aproxime-se do veículo.",
+    "notify.mark_occupied": "Há alguém dentro desse veículo.",
+    "notify.mark_is_tow_truck": "Você não pode solicitar o reboque de um reboque.",
+    "notify.mark_already_in_delivery": "Esse veículo já está sendo rebocado.",
+    "notify.mark_not_player_owned": "Esse veículo não está registrado no nome de ninguém.",
+    "notify.mark_pool_full": "A central está lotada — tente novamente em instantes.",
+    "notify.mark_officer_limit": "Você já tem o máximo de solicitações abertas.",
+    "notify.mark_no_missions": "Nenhum ponto de entrega configurado neste servidor.",
+    "notify.mark_already_claimed": "Já há um operador a caminho desse veículo.",
+    "notify.mark_cooldown": "Aguarde %d segundos antes de solicitar outro reboque.",
+    "notify.tow_request_registered": "Solicitação de reboque registrada para %s — a central vai chamar um operador.",
+    "notify.tow_request_cancelled": "Solicitação de reboque para %s cancelada.",
+    "notify.tow_request_expired": "Sua solicitação de reboque para %s expirou.",
+    "notify.tow_request_completed": "%s foi levado ao pátio.",
+    "notify.tow_request_target_moved": "Solicitação de %s descartada — o veículo foi movido.",
+    "notify.tow_request_target_occupied": "Solicitação de %s descartada — alguém entrou.",
+    "notify.tow_request_target_gone": "Solicitação de %s descartada — o veículo desapareceu.",
+    "notify.tow_request_target_destroyed": "Solicitação de %s descartada — o veículo foi destruído.",
+    "notify.police_cut_paid": "Pagamento da solicitação de reboque: $%d",
+    "notify.cancel_target_left_scene": "O veículo saiu do local — trabalho cancelado.",
+    "notify.cancel_target_gone": "O veículo não está mais no local — trabalho cancelado.",
 
     "ui.confirm_delivery": "[E] Confirmar entrega",
     "ui.store_tow_truck": "Guardar reboque",
@@ -91,8 +114,10 @@
     "hud.tow_to_dropoff": "Engate e reboque até o ponto de entrega",
     "hud.distance_away": "a {distance} m",
     "hud.time_remaining": "{time} restante",
+    "hud.priority": "PRIORIDADE",
 
     "pager.incoming_job": "TRABALHO RECEBIDO",
+    "pager.police_dispatch": "CHAMADO POLICIAL",
 
     "rental.prompt_title": "Alugue um reboque",
     "rental.prompt_body": "Você ainda não tem um reboque. Ao alugar um, ele aparece na hora e cobra {price} a cada {minutes} min enquanto estiver fora — você fica de plantão assim que estacioná-lo.",
@@ -336,5 +361,11 @@
     "admin.err_save_mission": "Não foi possível salvar a missão.",
     "admin.err_update_mission": "Não foi possível atualizar a missão.",
     "admin.err_delete_mission": "Não foi possível excluir a missão.",
-    "admin.err_test_run": "Não foi possível iniciar o teste."
+    "admin.err_test_run": "Não foi possível iniciar o teste.",
+
+    "mission.police_impound": "Pátio policial: %s",
+
+    "target.mark_for_tow": "Solicitar reboque",
+
+    "blip.tow_request": "Solicitação de reboque: %s"
 }

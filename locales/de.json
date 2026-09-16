@@ -27,6 +27,29 @@
     "notify.rental_payment_charged": "Mietzahlung abgebucht.",
     "notify.rental_payment_due_1m": "Mietzahlung in 1 Minute fällig.",
     "notify.rental_payment_due_5m": "Mietzahlung in 5 Minuten fällig.",
+    "notify.mark_not_authorized": "Du darfst keine Abschleppaufträge erteilen.",
+    "notify.mark_vehicle_not_found": "Kein Fahrzeug in Reichweite.",
+    "notify.mark_too_far": "Geh näher an das Fahrzeug heran.",
+    "notify.mark_occupied": "In dem Fahrzeug sitzt jemand.",
+    "notify.mark_is_tow_truck": "Für einen Abschleppwagen kannst du keinen Auftrag erteilen.",
+    "notify.mark_already_in_delivery": "Dieses Fahrzeug wird bereits abgeschleppt.",
+    "notify.mark_not_player_owned": "Dieses Fahrzeug ist auf niemanden zugelassen.",
+    "notify.mark_pool_full": "Die Leitstelle ist ausgelastet — versuche es gleich erneut.",
+    "notify.mark_officer_limit": "Du hast bereits die maximale Anzahl offener Aufträge.",
+    "notify.mark_no_missions": "Auf diesem Server ist keine Abgabestelle konfiguriert.",
+    "notify.mark_already_claimed": "Für dieses Fahrzeug ist bereits ein Fahrer unterwegs.",
+    "notify.mark_cooldown": "Warte %d Sekunden bis zum nächsten Auftrag.",
+    "notify.tow_request_registered": "Abschleppauftrag für %s erfasst — die Leitstelle ruft einen Fahrer.",
+    "notify.tow_request_cancelled": "Abschleppauftrag für %s storniert.",
+    "notify.tow_request_expired": "Dein Abschleppauftrag für %s ist abgelaufen.",
+    "notify.tow_request_completed": "%s wurde zur Verwahrstelle gebracht.",
+    "notify.tow_request_target_moved": "Auftrag für %s verworfen — das Fahrzeug wurde bewegt.",
+    "notify.tow_request_target_occupied": "Auftrag für %s verworfen — jemand ist eingestiegen.",
+    "notify.tow_request_target_gone": "Auftrag für %s verworfen — das Fahrzeug ist verschwunden.",
+    "notify.tow_request_target_destroyed": "Auftrag für %s verworfen — das Fahrzeug wurde zerstört.",
+    "notify.police_cut_paid": "Auszahlung Abschleppauftrag: $%d",
+    "notify.cancel_target_left_scene": "Das Fahrzeug hat den Ort verlassen — Auftrag abgebrochen.",
+    "notify.cancel_target_gone": "Das Fahrzeug ist nicht mehr vor Ort — Auftrag abgebrochen.",
 
     "ui.confirm_delivery": "[E] Lieferung bestätigen",
     "ui.store_tow_truck": "Abschleppwagen einlagern",
@@ -91,8 +114,10 @@
     "hud.tow_to_dropoff": "Anhängen & zum Abgabepunkt schleppen",
     "hud.distance_away": "{distance} m entfernt",
     "hud.time_remaining": "{time} verbleibend",
+    "hud.priority": "PRIORITÄT",
 
     "pager.incoming_job": "EINGEHENDER AUFTRAG",
+    "pager.police_dispatch": "POLIZEIAUFTRAG",
 
     "rental.prompt_title": "Miet-Abschleppwagen holen",
     "rental.prompt_body": "Du besitzt noch keinen Abschleppwagen. Beim Mieten wird sofort einer bereitgestellt und alle {minutes} Min. werden {price} berechnet, solange er draußen ist — du gehst in Bereitschaft, sobald er geparkt ist.",
@@ -336,5 +361,11 @@
     "admin.err_save_mission": "Auftrag konnte nicht gespeichert werden.",
     "admin.err_update_mission": "Auftrag konnte nicht aktualisiert werden.",
     "admin.err_delete_mission": "Auftrag konnte nicht gelöscht werden.",
-    "admin.err_test_run": "Testlauf konnte nicht gestartet werden."
+    "admin.err_test_run": "Testlauf konnte nicht gestartet werden.",
+
+    "mission.police_impound": "Beschlagnahmung: %s",
+
+    "target.mark_for_tow": "Abschleppen anfordern",
+
+    "blip.tow_request": "Abschleppauftrag: %s"
 }

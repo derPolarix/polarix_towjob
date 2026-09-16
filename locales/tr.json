@@ -27,6 +27,29 @@
     "notify.rental_payment_charged": "Kiralama ödemesi tahsil edildi.",
     "notify.rental_payment_due_1m": "Kiralama ödemesi 1 dakika içinde.",
     "notify.rental_payment_due_5m": "Kiralama ödemesi 5 dakika içinde.",
+    "notify.mark_not_authorized": "Çekici talep etme yetkin yok.",
+    "notify.mark_vehicle_not_found": "Menzilde araç yok.",
+    "notify.mark_too_far": "Aracın yanına yaklaş.",
+    "notify.mark_occupied": "O aracın içinde biri var.",
+    "notify.mark_is_tow_truck": "Bir çekici için çekici talep edemezsin.",
+    "notify.mark_already_in_delivery": "O araç zaten çekiliyor.",
+    "notify.mark_not_player_owned": "O araç kimsenin adına kayıtlı değil.",
+    "notify.mark_pool_full": "Merkez dolu — birazdan tekrar dene.",
+    "notify.mark_officer_limit": "Zaten açık talep sınırına ulaştın.",
+    "notify.mark_no_missions": "Bu sunucuda teslim noktası tanımlı değil.",
+    "notify.mark_already_claimed": "O araç için bir operatör zaten yolda.",
+    "notify.mark_cooldown": "Yeni talep için %d saniye bekle.",
+    "notify.tow_request_registered": "%s için çekici talebi alındı — merkez bir operatör çağıracak.",
+    "notify.tow_request_cancelled": "%s için çekici talebi iptal edildi.",
+    "notify.tow_request_expired": "%s için çekici talebinin süresi doldu.",
+    "notify.tow_request_completed": "%s otoparka çekildi.",
+    "notify.tow_request_target_moved": "%s talebi düştü — araç yerinden oynatıldı.",
+    "notify.tow_request_target_occupied": "%s talebi düştü — birisi araç içine geçti.",
+    "notify.tow_request_target_gone": "%s talebi düştü — araç ortada yok.",
+    "notify.tow_request_target_destroyed": "%s talebi düştü — araç imha edildi.",
+    "notify.police_cut_paid": "Çekici talebi ödemesi: $%d",
+    "notify.cancel_target_left_scene": "Araç olay yerinden ayrıldı — iş iptal edildi.",
+    "notify.cancel_target_gone": "Araç artık olay yerinde değil — iş iptal edildi.",
 
     "ui.confirm_delivery": "[E] Teslimatı onayla",
     "ui.store_tow_truck": "Çekiciyi kaldır",
@@ -91,8 +114,10 @@
     "hud.tow_to_dropoff": "Bağla ve teslim noktasına çek",
     "hud.distance_away": "{distance} m uzakta",
     "hud.time_remaining": "{time} kaldı",
+    "hud.priority": "ÖNCELİK",
 
     "pager.incoming_job": "GELEN İŞ",
+    "pager.police_dispatch": "POLİS ÇAĞRISI",
 
     "rental.prompt_title": "Kiralık çekici al",
     "rental.prompt_body": "Henüz bir çekicin yok. Bir tane kiralamak onu hemen oluşturur ve dışarıda olduğu sürece her {minutes} dk'da bir {price} tahsil eder — park eder etmez nöbete geçersin.",
@@ -336,5 +361,11 @@
     "admin.err_save_mission": "Görev kaydedilemedi.",
     "admin.err_update_mission": "Görev güncellenemedi.",
     "admin.err_delete_mission": "Görev silinemedi.",
-    "admin.err_test_run": "Test çalıştırması başlatılamadı."
+    "admin.err_test_run": "Test çalıştırması başlatılamadı.",
+
+    "mission.police_impound": "Polis Otoparkı: %s",
+
+    "target.mark_for_tow": "Çekici talep et",
+
+    "blip.tow_request": "Çekici talebi: %s"
 }

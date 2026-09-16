@@ -27,6 +27,29 @@
     "notify.rental_payment_charged": "Pago del alquiler cobrado.",
     "notify.rental_payment_due_1m": "El pago del alquiler vence en 1 minuto.",
     "notify.rental_payment_due_5m": "El pago del alquiler vence en 5 minutos.",
+    "notify.mark_not_authorized": "No tienes autorización para solicitar grúas.",
+    "notify.mark_vehicle_not_found": "Ningún vehículo al alcance.",
+    "notify.mark_too_far": "Acércate más al vehículo.",
+    "notify.mark_occupied": "Hay alguien dentro de ese vehículo.",
+    "notify.mark_is_tow_truck": "No puedes solicitar una grúa para una grúa.",
+    "notify.mark_already_in_delivery": "Ese vehículo ya está siendo remolcado.",
+    "notify.mark_not_player_owned": "Ese vehículo no está registrado a nombre de nadie.",
+    "notify.mark_pool_full": "La central está saturada — inténtalo en un momento.",
+    "notify.mark_officer_limit": "Ya tienes el máximo de solicitudes abiertas.",
+    "notify.mark_no_missions": "No hay punto de entrega configurado en este servidor.",
+    "notify.mark_already_claimed": "Ya hay un operador en camino para ese vehículo.",
+    "notify.mark_cooldown": "Espera %d segundos antes de solicitar otra grúa.",
+    "notify.tow_request_registered": "Solicitud de grúa registrada para %s — la central avisará a un operador.",
+    "notify.tow_request_cancelled": "Solicitud de grúa para %s cancelada.",
+    "notify.tow_request_expired": "Tu solicitud de grúa para %s ha caducado.",
+    "notify.tow_request_completed": "%s ha sido llevado al depósito.",
+    "notify.tow_request_target_moved": "Solicitud para %s descartada — el vehículo se movió.",
+    "notify.tow_request_target_occupied": "Solicitud para %s descartada — alguien se subió.",
+    "notify.tow_request_target_gone": "Solicitud para %s descartada — el vehículo ya no está.",
+    "notify.tow_request_target_destroyed": "Solicitud para %s descartada — el vehículo fue destruido.",
+    "notify.police_cut_paid": "Pago por solicitud de grúa: $%d",
+    "notify.cancel_target_left_scene": "El vehículo abandonó el lugar — trabajo cancelado.",
+    "notify.cancel_target_gone": "El vehículo ya no está en el lugar — trabajo cancelado.",
 
     "ui.confirm_delivery": "[E] Confirmar entrega",
     "ui.store_tow_truck": "Guardar grúa",
@@ -91,8 +114,10 @@
     "hud.tow_to_dropoff": "Engancha y remolca al punto de entrega",
     "hud.distance_away": "a {distance} m",
     "hud.time_remaining": "{time} restante",
+    "hud.priority": "PRIORIDAD",
 
     "pager.incoming_job": "TRABAJO ENTRANTE",
+    "pager.police_dispatch": "AVISO POLICIAL",
 
     "rental.prompt_title": "Consigue una grúa de alquiler",
     "rental.prompt_body": "Aún no tienes una grúa. Al alquilar una, aparece de inmediato y se cobran {price} cada {minutes} min mientras esté fuera; te pondrás de guardia en cuanto la aparques.",
@@ -336,5 +361,11 @@
     "admin.err_save_mission": "No se pudo guardar la misión.",
     "admin.err_update_mission": "No se pudo actualizar la misión.",
     "admin.err_delete_mission": "No se pudo eliminar la misión.",
-    "admin.err_test_run": "No se pudo iniciar la prueba."
+    "admin.err_test_run": "No se pudo iniciar la prueba.",
+
+    "mission.police_impound": "Depósito policial: %s",
+
+    "target.mark_for_tow": "Solicitar grúa",
+
+    "blip.tow_request": "Solicitud de grúa: %s"
 }

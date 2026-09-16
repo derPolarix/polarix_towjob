@@ -27,6 +27,29 @@
     "notify.rental_payment_charged": "Huurbetaling afgeschreven.",
     "notify.rental_payment_due_1m": "Huurbetaling verschuldigd over 1 minuut.",
     "notify.rental_payment_due_5m": "Huurbetaling verschuldigd over 5 minuten.",
+    "notify.mark_not_authorized": "Je mag geen sleepopdrachten aanvragen.",
+    "notify.mark_vehicle_not_found": "Geen voertuig binnen bereik.",
+    "notify.mark_too_far": "Ga dichter bij het voertuig staan.",
+    "notify.mark_occupied": "Er zit iemand in dat voertuig.",
+    "notify.mark_is_tow_truck": "Je kunt geen sleepopdracht aanvragen voor een sleepwagen.",
+    "notify.mark_already_in_delivery": "Dat voertuig wordt al weggesleept.",
+    "notify.mark_not_player_owned": "Dat voertuig staat op niemands naam.",
+    "notify.mark_pool_full": "De centrale zit vol — probeer het straks opnieuw.",
+    "notify.mark_officer_limit": "Je hebt al het maximum aan open aanvragen.",
+    "notify.mark_no_missions": "Er is geen afleverpunt ingesteld op deze server.",
+    "notify.mark_already_claimed": "Er is al een berger op weg naar dat voertuig.",
+    "notify.mark_cooldown": "Wacht %d seconden voor een nieuwe aanvraag.",
+    "notify.tow_request_registered": "Sleepopdracht voor %s geregistreerd — de centrale piept een berger op.",
+    "notify.tow_request_cancelled": "Sleepopdracht voor %s geannuleerd.",
+    "notify.tow_request_expired": "Je sleepopdracht voor %s is verlopen.",
+    "notify.tow_request_completed": "%s is naar de bewaarplaats gebracht.",
+    "notify.tow_request_target_moved": "Opdracht voor %s vervallen — het voertuig is verplaatst.",
+    "notify.tow_request_target_occupied": "Opdracht voor %s vervallen — er is iemand ingestapt.",
+    "notify.tow_request_target_gone": "Opdracht voor %s vervallen — het voertuig is weg.",
+    "notify.tow_request_target_destroyed": "Opdracht voor %s vervallen — het voertuig is vernield.",
+    "notify.police_cut_paid": "Uitbetaling sleepopdracht: $%d",
+    "notify.cancel_target_left_scene": "Het voertuig is vertrokken — klus geannuleerd.",
+    "notify.cancel_target_gone": "Het voertuig staat er niet meer — klus geannuleerd.",
 
     "ui.confirm_delivery": "[E] Levering bevestigen",
     "ui.store_tow_truck": "Takelwagen opbergen",
@@ -91,8 +114,10 @@
     "hud.tow_to_dropoff": "Aanhaken & naar afleverpunt slepen",
     "hud.distance_away": "{distance} m verderop",
     "hud.time_remaining": "{time} resterend",
+    "hud.priority": "PRIORITEIT",
 
     "pager.incoming_job": "BINNENKOMENDE KLUS",
+    "pager.police_dispatch": "POLITIEMELDING",
 
     "rental.prompt_title": "Huur een takelwagen",
     "rental.prompt_body": "Je hebt nog geen takelwagen. Er een huren laat hem meteen verschijnen en rekent {price} elke {minutes} min zolang hij buiten staat — je gaat op afroep zodra hij geparkeerd is.",
@@ -336,5 +361,11 @@
     "admin.err_save_mission": "Kon missie niet opslaan.",
     "admin.err_update_mission": "Kon missie niet bijwerken.",
     "admin.err_delete_mission": "Kon missie niet verwijderen.",
-    "admin.err_test_run": "Kon testrun niet starten."
+    "admin.err_test_run": "Kon testrun niet starten.",
+
+    "mission.police_impound": "Inbeslagname: %s",
+
+    "target.mark_for_tow": "Sleepwagen aanvragen",
+
+    "blip.tow_request": "Sleepopdracht: %s"
 }
