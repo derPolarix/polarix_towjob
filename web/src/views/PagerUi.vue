@@ -6,7 +6,9 @@
 					<div class="pager-image" :style="{ backgroundImage: `url(${pagerImageUrl})` }" />
 					<div class="pager-screen">
 						<div class="pager-text">
-							<div class="pager-title">{{ t("pager.incoming_job") }} · {{ offer.area_name }}</div>
+							<div class="pager-title" :class="{ 'pager-title-priority': offer.is_priority }">
+								{{ offer.is_priority ? t("pager.police_dispatch") : t("pager.incoming_job") }} · {{ offer.area_name }}
+							</div>
 							<div class="pager-name">{{ offer.name }}</div>
 							<div class="pager-meta">
 								${{ offer.reward_base }} · +{{ offer.xp_base }} XP
@@ -175,6 +177,10 @@ async function decline() {
 	color: #c9cdd3;
 	margin-top: 3px;
 	line-height: 1.3;
+}
+
+.pager-title-priority {
+	color: #60a5fa;
 }
 
 .pager-timer {

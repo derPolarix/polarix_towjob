@@ -1,7 +1,15 @@
 <template>
 	<div v-if="data" class="absolute top-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white">
 		<div class="rounded-md bg-neutral-900/80 border border-white/10 px-4 py-2 min-w-[260px] text-center">
-			<div class="text-xs uppercase tracking-wide text-white/50">{{ data.missionName }}</div>
+			<div class="flex items-center justify-center gap-1.5 text-xs uppercase tracking-wide text-white/50">
+				<span
+					v-if="data.isPriority"
+					class="rounded-sm bg-blue-500/20 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider text-blue-300"
+				>
+					{{ t("hud.priority") }}
+				</span>
+				<span>{{ data.missionName }}</span>
+			</div>
 
 			<div class="mt-1 text-sm font-medium">
 				{{ data.state === "searching" ? t("hud.find_vehicle") : t("hud.tow_to_dropoff") }}

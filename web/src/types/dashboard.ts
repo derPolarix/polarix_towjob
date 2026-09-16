@@ -32,6 +32,8 @@ export interface PagerOffer {
   level_required: number;
   area_name: string;
   expiresAt: number;
+  /** Police-marked tow request (server/modules/priority.lua) rather than a mission template. */
+  is_priority?: boolean;
 }
 
 export interface MapAreaPoint {
