@@ -49,6 +49,27 @@ return {
         return xPlayer and xPlayer.job.name == jobName or false
     end,
 
+    -- ESX has no duty concept in core, so onDuty is always true — config.RequireOnDuty is
+    -- effectively a no-op on esx rather than locking every officer out.
+    GetJob = function(source)
+        local xPlayer = getESX().GetPlayerFromId(source)
+        if not xPlayer then return nil end
+        return { name = xPlayer.job.name, grade = xPlayer.job.grade or 0, onDuty = true }
+    end,
+
+    GetVehicleOwner = function(plate)
+        local ok, owner = pcall(MySQL.scalar.await, "SELECT owner FROM owned_vehicles WHERE TRIM(plate) = ? LIMIT 1", { plate })
+        return ok and owner or nil
+    end,
+
+    -- Stock ESX has no impound state at all (owned_vehicles only tracks `stored`), so
+    -- "framework" ImpoundMode can do no more here than force the car back into storage.
+    -- Servers running an impound resource should stay on "event" and handle the event.
+    ImpoundVehicle = function(plate)
+        local ok = pcall(MySQL.update.await, "UPDATE owned_vehicles SET stored = 1 WHERE TRIM(plate) = ?", { plate })
+        return ok
+    end,
+
     OnPlayerLoaded = function(callback)
         RegisterNetEvent("esx:playerLoaded", function(playerId)
             callback(playerId)
