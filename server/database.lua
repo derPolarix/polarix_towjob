@@ -187,11 +187,17 @@ function DB.GetMission(missionId)
     return MySQL.single.await("SELECT * FROM " .. server.Tables.missions .. " WHERE id = ? AND is_active = 1", { missionId })
 end
 
-function DB.CreateDelivery(missionId, identifier, usedRental)
+function DB.CreateDelivery(missionId, identifier, usedRental, missionName)
     return MySQL.insert.await(
-        "INSERT INTO " .. server.Tables.deliveries .. " (mission_id, identifier, status, used_rental) VALUES (?, ?, 'active', ?)",
-        { missionId, identifier, usedRental and 1 or 0 }
+        "INSERT INTO " .. server.Tables.deliveries .. " (mission_id, mission_name, identifier, status, used_rental) VALUES (?, ?, ?, 'active', ?)",
+        { missionId, missionName, identifier, usedRental and 1 or 0 }
     )
+end
+
+-- Priority jobs (server/modules/priority.lua) live in memory only, so there is no mission
+-- row to mark aborted against — the delivery row carries the whole story on its own.
+function DB.CancelDelivery(deliveryId)
+    MySQL.update.await("UPDATE " .. server.Tables.deliveries .. " SET status = 'aborted', completed_at = NOW() WHERE id = ?", { deliveryId })
 end
 
 function DB.CompleteDelivery(deliveryId, rewardPaid, xpPaid, damagePenalty)
@@ -221,9 +227,12 @@ end
 
 -- LEFT JOIN, not DB.GetMission's `is_active = 1`-filtered lookup: a deactivated or
 -- (per Step 13.3) hard-deleted mission template must not erase its own delivery history.
+-- d.mission_name wins over the joined template name: it's the snapshot taken at accept time
+-- and the only name a priority job ever had.
 function DB.GetDeliveryHistory(identifier, limit, offset)
     return MySQL.query.await([[
-        SELECT d.id, d.status, d.reward_paid, d.xp_paid, d.damage_penalty, d.started_at, d.completed_at, m.name AS mission_name
+        SELECT d.id, d.status, d.reward_paid, d.xp_paid, d.damage_penalty, d.started_at, d.completed_at,
+               COALESCE(d.mission_name, m.name) AS mission_name
         FROM ]] .. server.Tables.deliveries .. [[ d
         LEFT JOIN ]] .. server.Tables.missions .. [[ m ON m.id = d.mission_id
         WHERE d.identifier = ?

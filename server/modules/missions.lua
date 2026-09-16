@@ -419,7 +419,7 @@ function Missions.Accept(source, missionId, bypassGates)
     mission.search_hint_radius = searchHintRadius
 
     local usedRental = rentalActive or #owned == 0
-    local deliveryId = DB.CreateDelivery(missionId, player.identifier, usedRental)
+    local deliveryId = DB.CreateDelivery(missionId, player.identifier, usedRental, row.name)
 
     -- Every candidate is held until the client reports which one it used (setTargetVehicle),
     -- so a concurrent accept can't be handed a spot this delivery may still spawn at.

@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS polarix_towjob_missions (
 CREATE TABLE IF NOT EXISTS polarix_towjob_deliveries (
     id             INT AUTO_INCREMENT PRIMARY KEY,
     mission_id     VARCHAR(36),
+    mission_name   VARCHAR(100),  -- snapshot: priority jobs have no template row, and a hard-deleted template would otherwise blank its history
     identifier     VARCHAR(60),
     status         ENUM('active','completed','failed','aborted') DEFAULT 'active',
     reward_paid    INT DEFAULT 0,
@@ -104,3 +105,4 @@ ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS points JSON;
 ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS reward_multiplier DECIMAL(4,2) DEFAULT 1.00;
 ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS xp_multiplier DECIMAL(4,2) DEFAULT 1.00;
 ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS note VARCHAR(140) DEFAULT NULL;
+ALTER TABLE polarix_towjob_deliveries ADD COLUMN IF NOT EXISTS mission_name VARCHAR(100);
