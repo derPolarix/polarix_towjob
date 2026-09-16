@@ -121,6 +121,24 @@ lib.callback.register("polarix_towjob:abortDelivery", function(source, deliveryI
     return Missions.Abort(source, deliveryId)
 end)
 
+-- Police "mark for tow" (client/modules/police.lua). The client only ever learns *whether*
+-- it may mark and how to trigger it; every rule about what may be marked is re-checked in
+-- Priority.Mark itself (ground rule 4).
+lib.callback.register("polarix_towjob:getPoliceMarkConfig", function(source)
+    local canMark = Priority.CanMark(source)
+
+    return {
+        canMark = canMark,
+        command = serverConfig.PoliceMarkCommand,
+        distance = serverConfig.PoliceMarkDistance,
+        blips = canMark and Priority.GetBlipsForOfficer(source) or {},
+    }
+end)
+
+lib.callback.register("polarix_towjob:markForTow", function(source, netId, label, colors)
+    return Priority.Mark(source, netId, label, colors)
+end)
+
 lib.callback.register("polarix_towjob:getLeaderboard", function(source)
     return Deliveries.GetLeaderboard(source)
 end)
