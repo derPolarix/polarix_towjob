@@ -441,22 +441,24 @@ function Priority.OnDeliveryCompleted(missionId, source, rewardPaid)
     debug.DebugPrint(("Priority.OnDeliveryCompleted: %s impounded (mode %s)"):format(job.plate, mode))
 end
 
--- An abort puts a still-valid request back in the queue (the car is sitting right there;
--- no reason to waste the officer's call), keeping its ORIGINAL expiry so total lifetime
--- stays bounded. Every other ending kills it — moved means the coords are stale, destroyed
--- and gone mean there's nothing to tow.
+-- Only the target going bad kills a request: moved means its coords are stale, destroyed
+-- and gone mean there is nothing left to tow. Every other ending (the operator aborted,
+-- their truck was wrecked, their rental was repossessed, a timed job ran out) puts a
+-- still-valid request back in the queue — the car is sitting right where the officer
+-- called it in. A requeue keeps the ORIGINAL expiry, so total lifetime stays bounded.
+local TARGET_LOST_MESSAGES = {
+    target_moved = "notify.tow_request_target_moved",
+    target_gone = "notify.tow_request_target_gone",
+    vehicle_destroyed = "notify.tow_request_target_destroyed",
+}
+
 function Priority.OnDeliveryEnded(missionId, source, reason)
     local job = findById(missionId)
     if not job then return end
 
-    if reason ~= "aborted" then
-        local messages = {
-            target_moved = "notify.tow_request_target_moved",
-            target_gone = "notify.tow_request_target_gone",
-            vehicle_destroyed = "notify.tow_request_target_destroyed",
-        }
-        local key = messages[reason]
-        removeJob(job, key and Locale(key):format(job.vehicle_label) or nil, "error")
+    local targetLost = TARGET_LOST_MESSAGES[reason]
+    if targetLost then
+        removeJob(job, Locale(targetLost):format(job.vehicle_label), "error")
         return
     end
 
@@ -478,7 +480,7 @@ function Priority.OnDeliveryEnded(missionId, source, reason)
     job.deliveryId = nil
     job.offeredTo = nil
 
-    debug.DebugPrint(("Priority.OnDeliveryEnded: %s requeued after abort"):format(job.id))
+    debug.DebugPrint(("Priority.OnDeliveryEnded: %s requeued after %s"):format(job.id, tostring(reason)))
 end
 
 -- Unclaimed requests are validated against the live entity; a claimed one is the delivery
