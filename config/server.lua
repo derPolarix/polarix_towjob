@@ -94,6 +94,7 @@ return {
 
     -- reward/xp = base + perMeter * (marked spot -> dropoff distance), clamped to max. Feeds
     -- reward_base/xp_base, so the area/settings multipliers and skill bonuses still apply on top.
+    PriorityTimeLimitMinutes = nil, -- priority jobs are untimed by default; set a number to time them
     PriorityReward = { base = 400, perMeter = 0.15, max = 2500 },
     PriorityXp = { base = 45, perMeter = 0.01, max = 200 },
     PoliceCutPercent = 0.0, -- share of the payout paid to the marking officer (0 = off)

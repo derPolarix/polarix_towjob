@@ -108,6 +108,22 @@ function OnCall.StartStandaloneRental(source)
     return { ok = true, onCall = true, rental = serverConfig.RentalTruck }
 end
 
+-- Called by Priority.Mark: a police request queue-jumps the pager but doesn't page anyone
+-- instantly, so this only caps how long an idle operator's next page can still be away.
+-- Resolution is the scheduler's 10s tick, which is plenty for a ~45s cap.
+function OnCall.PullInPages(maxWaitSeconds)
+    local cap = os.time() + (maxWaitSeconds or 45)
+
+    for source, s in pairs(state) do
+        if s.onCall and not s.pendingOffer and s.nextPageAt and s.nextPageAt > cap then
+            local player = Player.GetData(source)
+            if player and not DB.GetActiveDelivery(player.identifier) then
+                s.nextPageAt = cap
+            end
+        end
+    end
+end
+
 function OnCall.HandleRentalRepossessed(source)
     if not state[source] then return end
     state[source] = nil
@@ -143,6 +159,10 @@ function OnCall.AcceptOffer(source)
     if result.ok then
         s.pendingOffer = nil
         s.declineStreak = 0
+    elseif Priority.IsPriorityId(offer.missionId) then
+        -- Accept refused it (target gone, no truck available, ...) — drop the offer lock so
+        -- the request can reach somebody else instead of sitting on this player.
+        Priority.OnOfferFailed(source, offer.missionId)
     end
 
     return result
@@ -153,6 +173,10 @@ end
 function OnCall.DeclineOffer(source)
     local s = state[source]
     if not s or not s.pendingOffer then return { ok = false, reason = "no_offer" } end
+
+    if Priority.IsPriorityId(s.pendingOffer.missionId) then
+        Priority.OnOfferDeclined(source, s.pendingOffer.missionId)
+    end
 
     s.pendingOffer = nil
     s.declineStreak = (s.declineStreak or 0) + 1
@@ -210,7 +234,9 @@ CreateThread(function()
                 elseif s.nextPageAt and now >= s.nextPageAt then
                     local player = Player.GetData(source)
                     if player and not DB.GetActiveDelivery(player.identifier) then
-                        local offer = Missions.PickRandomForPager(source)
+                        -- Police requests queue-jump: the player's next page serves the oldest
+                        -- open one instead of a random template.
+                        local offer = Priority.TakeNextFor(source) or Missions.PickRandomForPager(source)
                         if offer then
                             local expiresAt = now + serverConfig.PagerOfferTimeoutSeconds
                             s.pendingOffer = { missionId = offer.id, expiresAt = expiresAt }
@@ -229,5 +255,10 @@ CreateThread(function()
 end)
 
 Framework.OnPlayerUnload(function(source)
+    local s = state[source]
+    if s and s.pendingOffer and Priority.IsPriorityId(s.pendingOffer.missionId) then
+        Priority.OnOfferFailed(source, s.pendingOffer.missionId)
+    end
+
     state[source] = nil
 end)
