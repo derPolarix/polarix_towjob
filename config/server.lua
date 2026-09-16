@@ -71,6 +71,42 @@ return {
 
     DamagePenaltyCapPercent = 0.30,
 
+    -- Police "mark for tow": an officer marks a player-owned vehicle and it becomes a
+    -- priority job that queue-jumps the on-call pager (server/modules/priority.lua).
+    -- Job name -> minimum grade allowed to mark.
+    PoliceJobs = { police = 0, sheriff = 2 },
+    RequireOnDuty = false,
+    PoliceMarkCommand = "towrequest", -- raycast fallback, registered only when ox_target isn't running
+    PoliceMarkDistance = 12.0, -- max raycast/target reach to the vehicle being marked
+
+    MaxPriorityJobs = 5,      -- global cap on unclaimed priority jobs
+    MaxMarksPerOfficer = 2,   -- concurrent unclaimed marks one officer may hold
+    MarkCooldownSeconds = 30, -- per-officer cooldown between marks
+
+    PriorityExpiryMinutes = 15,      -- unclaimed marks die after this
+    PriorityMoveTolerance = 10.0,    -- unclaimed: moved further than this from the marked spot -> dropped
+    PriorityAbandonDistance = 150.0, -- claimed: moved further than this -> delivery cancelled, no penalty
+    -- An idle on-call player's next page is pulled in to at most this far out when a mark
+    -- lands, so a police call reaches somebody without waiting out the full pager interval.
+    PriorityMaxWaitSeconds = 45,
+    -- Deliberately tighter than SearchHintRadius: dispatch gave a location, it just isn't exact.
+    PrioritySearchRadius = 25.0,
+
+    -- reward/xp = base + perMeter * (marked spot -> dropoff distance), clamped to max. Feeds
+    -- reward_base/xp_base, so the area/settings multipliers and skill bonuses still apply on top.
+    PriorityReward = { base = 400, perMeter = 0.15, max = 2500 },
+    PriorityXp = { base = 45, perMeter = 0.01, max = 200 },
+    PoliceCutPercent = 0.0, -- share of the payout paid to the marking officer (0 = off)
+
+    -- What towing a marked vehicle to the impound actually does:
+    --   "none"      -> the entity is deleted, nothing else
+    --   "event"     -> also emits polarix_towjob:vehicleImpounded for your own impound script
+    --   "framework" -> additionally writes the framework's own vehicle table (Framework.ImpoundVehicle)
+    -- The event fires in "event" and "framework" mode alike.
+    ImpoundMode = "event",
+    ImpoundGarage = "impound", -- qbox/qb-core: garage column written in "framework" mode
+    ImpoundFee = 500,          -- qbox/qb-core: depotprice column written in "framework" mode
+
     -- Heading tolerance (degrees) for the delivery-zone placement check — the position bound
     -- is already the mission's own dropoff_width/dropoff_length rectangle, this only gates how
     -- closely the towed vehicle's heading must match dropoff_heading. Ground rule 3 names this
