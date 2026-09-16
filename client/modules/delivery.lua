@@ -22,6 +22,7 @@ local function buildUpdatePayload(delivery)
     return {
         deliveryId = delivery.deliveryId,
         state = delivery.state,
+        isPriority = delivery.isPriority == true,
         missionName = delivery.mission.name,
         vehicleLabel = delivery.mission.vehicle_label,
         vehicleColors = delivery.mission.vehicle_colors,
@@ -79,7 +80,7 @@ end
 local function canComplete()
     local delivery = Vehicle.GetCurrentDelivery()
     if not delivery or delivery.state ~= "found" then return false end
-    if not DoesEntityExist(delivery.targetVehicle) then return false end
+    if not delivery.targetVehicle or not DoesEntityExist(delivery.targetVehicle) then return false end
 
     return isAligned(delivery.mission, GetEntityCoords(delivery.targetVehicle), GetEntityHeading(delivery.targetVehicle))
 end

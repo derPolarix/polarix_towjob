@@ -141,14 +141,19 @@ end
 
 -- Detaches/despawns the target vehicle and clears delivery state. Called directly for
 -- the in-world completion confirm, and via the `polarix_towjob:deliveryEnded` net event
--- below for every server-driven end (complete/fail/abort).
+-- below for every server-driven end (complete/fail/abort/cancel).
 function Vehicle.EndDelivery(reason)
     if not currentDelivery then return end
 
     local target = currentDelivery.targetVehicle
-    if DoesEntityExist(target) then
+    if target and DoesEntityExist(target) then
         DetachVehicleFromAnyTowTruck(target)
-        DeleteEntity(target)
+
+        -- A priority job's target is a real, player-owned car that was never spawned by this
+        -- resource: only an actual impound removes it. Every other ending leaves it standing.
+        if not currentDelivery.isPriority or reason == "completed" then
+            DeleteEntity(target)
+        end
     end
 
     if currentDelivery.blip then
@@ -173,15 +178,46 @@ function Vehicle.GetCurrentDelivery()
     return currentDelivery
 end
 
-local function beginDelivery(deliveryId, mission, deadlineAt)
-    local targetVehicle, pointIndex, searchHint = spawnTargetVehicle(mission)
-    if not targetVehicle then
-        Framework.Notify(Locale("notify.spawn_failed"), "error")
-        return
-    end
+-- A priority job's target already exists in the world, so there is nothing to spawn — but
+-- the entity only resolves once the player has streamed it in, which won't be true at accept
+-- time. The delivery therefore starts with no entity and picks it up on arrival; if it never
+-- resolves (cleaned up while nobody was near it), the server's sweep cancels the job without
+-- a failure on the operator's record.
+local function adoptTargetVehicle(delivery)
+    CreateThread(function()
+        while currentDelivery == delivery and delivery.state == "searching" do
+            local entity = NetworkDoesEntityExistWithNetworkId(delivery.targetNetId)
+                and NetworkGetEntityFromNetworkId(delivery.targetNetId) or nil
 
-    local netId = NetworkGetNetworkIdFromEntity(targetVehicle)
-    TriggerServerEvent("polarix_towjob:setTargetVehicle", deliveryId, netId, pointIndex)
+            if entity and entity ~= 0 and DoesEntityExist(entity) then
+                delivery.targetVehicle = entity
+                setupFoundDetection(entity)
+                return
+            end
+
+            Wait(1000)
+        end
+    end)
+end
+
+local function beginDelivery(deliveryId, mission, deadlineAt)
+    local isPriority = mission.is_priority == true
+    local targetVehicle, netId, searchHint
+
+    if isPriority then
+        netId = mission.target_net_id
+        searchHint = mission.search_hint
+    else
+        local pointIndex
+        targetVehicle, pointIndex, searchHint = spawnTargetVehicle(mission)
+        if not targetVehicle then
+            Framework.Notify(Locale("notify.spawn_failed"), "error")
+            return
+        end
+
+        netId = NetworkGetNetworkIdFromEntity(targetVehicle)
+        TriggerServerEvent("polarix_towjob:setTargetVehicle", deliveryId, netId, pointIndex)
+    end
 
     -- The circle is drawn around the server's pre-rolled hint center, not the vehicle itself,
     -- so the exact spot still has to be found on the ground.
@@ -197,9 +233,14 @@ local function beginDelivery(deliveryId, mission, deadlineAt)
         searchRouteBlip = searchRouteBlip,
         state = "searching",
         deadlineAt = deadlineAt,
+        isPriority = isPriority,
     }
 
-    setupFoundDetection(targetVehicle)
+    if isPriority then
+        adoptTargetVehicle(currentDelivery)
+    else
+        setupFoundDetection(targetVehicle)
+    end
 
     Framework.Notify(Locale("notify.new_tow_job"):format(mission.name), "info")
 end
