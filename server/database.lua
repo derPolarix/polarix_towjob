@@ -187,11 +187,15 @@ function DB.GetMission(missionId)
     return MySQL.single.await("SELECT * FROM " .. server.Tables.missions .. " WHERE id = ? AND is_active = 1", { missionId })
 end
 
-function DB.CreateDelivery(missionId, identifier, usedRental, missionName)
+function DB.CreateDelivery(missionId, identifier, usedRental, missionName, isTest)
     return MySQL.insert.await(
-        "INSERT INTO " .. server.Tables.deliveries .. " (mission_id, mission_name, identifier, status, used_rental) VALUES (?, ?, ?, 'active', ?)",
-        { missionId, missionName, identifier, usedRental and 1 or 0 }
+        "INSERT INTO " .. server.Tables.deliveries .. " (mission_id, mission_name, identifier, status, used_rental, is_test) VALUES (?, ?, ?, 'active', ?, ?)",
+        { missionId, missionName, identifier, usedRental and 1 or 0, isTest and 1 or 0 }
     )
+end
+
+function DB.DeleteDelivery(deliveryId)
+    MySQL.update.await("DELETE FROM " .. server.Tables.deliveries .. " WHERE id = ?", { deliveryId })
 end
 
 -- Priority jobs (server/modules/priority.lua) live in memory only, so there is no mission

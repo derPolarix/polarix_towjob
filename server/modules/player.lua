@@ -32,6 +32,12 @@ local function reconcileStalePlayerState(source, identifier)
     local delivery = DB.GetActiveDelivery(identifier)
     if not delivery then return end
 
+    if delivery.is_test == 1 then
+        DB.DeleteDelivery(delivery.id)
+        debug.DebugPrint("Player.Load: dropped stale test delivery", delivery.id, "for", identifier)
+        return
+    end
+
     DB.FailDelivery(delivery.id)
     debug.DebugPrint("Player.Load: auto-failed stale active delivery", delivery.id, "for", identifier)
     TriggerClientEvent("polarix_towjob:notify", source, Locale("notify.previous_delivery_interrupted"), "error")

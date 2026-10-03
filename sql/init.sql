@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS polarix_towjob_deliveries (
     xp_paid        INT DEFAULT 0,
     damage_penalty INT DEFAULT 0,
     used_rental    TINYINT(1) DEFAULT 0,
+    is_test        TINYINT(1) DEFAULT 0,  -- admin test run: never paid or counted, row deleted when it ends
     started_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     completed_at   TIMESTAMP NULL
 );
@@ -106,3 +107,4 @@ ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS reward_multiplier DECI
 ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS xp_multiplier DECIMAL(4,2) DEFAULT 1.00;
 ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS note VARCHAR(140) DEFAULT NULL;
 ALTER TABLE polarix_towjob_deliveries ADD COLUMN IF NOT EXISTS mission_name VARCHAR(100);
+ALTER TABLE polarix_towjob_deliveries ADD COLUMN IF NOT EXISTS is_test TINYINT(1) DEFAULT 0;
