@@ -381,10 +381,10 @@ end
 -- the player runs on it) from the older delivery-scoped rental Missions.Accept still spawns
 -- for the Admin "Test mission" bypass path — only the latter should be torn down the instant
 -- its one delivery ends; see Vehicles.OnDeliveryEnded below.
-local rentalState = {} -- [source] = { lastCharge, warned5, warned1, deliveryId, standalone }
+local rentalState = {} -- [source] = { lastCharge, warned5, warned1, deliveryId, standalone, free }
 
-function Vehicles.StartRental(source, deliveryId, standalone)
-    rentalState[source] = { lastCharge = os.time(), warned5 = false, warned1 = false, deliveryId = deliveryId, standalone = standalone or false }
+function Vehicles.StartRental(source, deliveryId, standalone, free)
+    rentalState[source] = { lastCharge = os.time(), warned5 = false, warned1 = false, deliveryId = deliveryId, standalone = standalone or false, free = free or false }
 end
 
 function Vehicles.StopRental(source)
@@ -447,6 +447,8 @@ CreateThread(function()
         local warnAt1 = (serverConfig.RentalWarningMinutesBefore[2] or 1) * 60
 
         for source, state in pairs(rentalState) do
+            if state.free then goto continue end
+
             local remaining = intervalSeconds - (now - state.lastCharge)
 
             if remaining <= 0 then
@@ -481,6 +483,8 @@ CreateThread(function()
                 state.warned5 = true
                 TriggerClientEvent("polarix_towjob:notify", source, Locale("notify.rental_payment_due_5m"), "warning")
             end
+
+            ::continue::
         end
     end
 end)

@@ -359,7 +359,11 @@ function Missions.Fail(source, deliveryId, reason)
     local state = activeDeliveryState[source]
     if not state or state.deliveryId ~= deliveryId then return end
 
-    DB.FailDelivery(deliveryId)
+    if state.isTest then
+        DB.DeleteDelivery(deliveryId)
+    else
+        DB.FailDelivery(deliveryId)
+    end
 
     -- A destroyed tow truck can't keep being rented — tear the rental down (and pull the
     -- wreck) rather than leaving the player billed for a truck that no longer exists. For a
@@ -378,7 +382,7 @@ function Missions.Fail(source, deliveryId, reason)
     releaseSpawnPoints(deliveryId)
     OnCall.HandleDeliveryEnded(source)
 
-    Player.RecordDeliveryOutcome(source, "failed")
+    if not state.isTest then Player.RecordDeliveryOutcome(source, "failed") end
 
     if state.isPriority and state.missionId then
         Priority.OnDeliveryEnded(state.missionId, source, reason)
@@ -442,9 +446,10 @@ end)
 --   exactly 1 owned, stored                        -> auto-parked-out and spawned
 --   2+ owned, none deployed                        -> needsParkOut: client keeps the
 --        Dashboard open, player Parks Out one (Vehicle.ContinueAfterParkOut resumes it)
--- `bypassGates` is never client-controlled — only AdminMissions.TestRun (which re-checks
--- Framework.IsAdmin itself) passes true, to skip the level/area-lock gates for QA.
-function Missions.Accept(source, missionId, bypassGates)
+-- `isTest` is never client-controlled — only AdminMissions.TestRun (which re-checks
+-- Framework.IsAdmin itself) passes true: it skips the level/area-lock gates and the run
+-- leaves no trace (no payout, XP, stats, history row or rental charge).
+function Missions.Accept(source, missionId, isTest)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
 
@@ -463,7 +468,7 @@ function Missions.Accept(source, missionId, bypassGates)
     local isPriority = row.is_priority == true
 
     local effectiveLevelRequired = math.max(1, row.level_required - Skills.GetLevelRequirementReduction(source))
-    if not bypassGates and not isPriority and effectiveLevelRequired > player.level then
+    if not isTest and not isPriority and effectiveLevelRequired > player.level then
         return { ok = false, reason = "level_too_low" }
     end
 
@@ -476,7 +481,7 @@ function Missions.Accept(source, missionId, bypassGates)
     for _, id in ipairs(Player.GetUnlockedAreaIds(source)) do
         unlockedAreaIds[id] = true
     end
-    if not bypassGates and not isPriority and not unlockedAreaIds[row.area_id] then
+    if not isTest and not isPriority and not unlockedAreaIds[row.area_id] then
         return { ok = false, reason = "area_locked" }
     end
 
@@ -510,6 +515,7 @@ function Missions.Accept(source, missionId, bypassGates)
 
     local rentalActive = Vehicles.IsRentalActive(source)
     local mission = buildMissionPayload(row)
+    mission.is_test = isTest == true
 
     if isPriority then
         mission.is_priority = true
@@ -522,7 +528,7 @@ function Missions.Accept(source, missionId, bypassGates)
     end
 
     local usedRental = rentalActive or #owned == 0
-    local deliveryId = DB.CreateDelivery(missionId, player.identifier, usedRental, row.name)
+    local deliveryId = DB.CreateDelivery(missionId, player.identifier, usedRental, row.name, isTest)
 
     -- Every candidate is held until the client reports which one it used (setTargetVehicle),
     -- so a concurrent accept can't be handed a spot this delivery may still spawn at.
@@ -540,6 +546,7 @@ function Missions.Accept(source, missionId, bypassGates)
         missionId = missionId,
         deadlineAt = deadlineAt,
         isPriority = isPriority,
+        isTest = isTest == true,
         targetNetId = isPriority and priorityTarget.netId or nil,
     }
 
@@ -556,11 +563,11 @@ function Missions.Accept(source, missionId, bypassGates)
     elseif #owned == 0 then
         response.usedRental = true
         response.rental = serverConfig.RentalTruck
-        Vehicles.StartRental(source, deliveryId)
+        Vehicles.StartRental(source, deliveryId, false, isTest)
     elseif storedCount == 1 then
         local parkResult = Vehicles.ParkOut(source, firstStored.id)
         if not parkResult.ok then
-            DB.FailDelivery(deliveryId)
+            if isTest then DB.DeleteDelivery(deliveryId) else DB.FailDelivery(deliveryId) end
             activeDeliveryState[source] = nil
             releaseSpawnPoints(deliveryId)
             return { ok = false, reason = parkResult.reason }
@@ -646,6 +653,10 @@ function Missions.Complete(source, deliveryId)
         return { ok = false, reason = "not_in_zone" }
     end
 
+    if state.isTest then
+        return Missions.FinishTest(source, deliveryId, "completed")
+    end
+
     local bodyLoss = math.max(0, (state.bodyHealthBaseline or 1000.0) - GetVehicleBodyHealth(target))
     local engineLoss = math.max(0, (state.engineHealthBaseline or 1000.0) - GetVehicleEngineHealth(target))
 
@@ -714,6 +725,29 @@ function Missions.Complete(source, deliveryId)
     return { ok = true, reward = rewardPaid, xp = xpPaid, damagePenalty = damagePenalty }
 end
 
+-- Admin test runs end here whatever the cause: the delivery row is dropped instead of
+-- marked, and nothing is paid or counted.
+function Missions.FinishTest(source, deliveryId, outcome)
+    DB.DeleteDelivery(deliveryId)
+    Vehicles.OnDeliveryEnded(source)
+
+    activeDeliveryState[source] = nil
+    releaseSpawnPoints(deliveryId)
+    OnCall.HandleDeliveryEnded(source)
+
+    TriggerClientEvent("polarix_towjob:notify", source, Locale("notify.test_ended"), "info")
+    TriggerClientEvent("polarix_towjob:deliveryEnded", source, outcome)
+
+    debug.DebugPrint(("Missions.FinishTest: test delivery %d ended for source %s (%s)"):format(deliveryId, source, outcome))
+
+    return { ok = true, reward = 0, xp = 0, damagePenalty = 0 }
+end
+
+function Missions.IsTestActive(source)
+    local state = activeDeliveryState[source]
+    return state ~= nil and state.isTest == true
+end
+
 -- Step 10.4: player-initiated cancel, Dashboard-only (no in-world trigger — confirmed
 -- with user). Detach/despawn of the target vehicle happens client-side via the same
 -- `polarix_towjob:deliveryEnded` event Complete/Fail already use.
@@ -726,10 +760,14 @@ function Missions.Abort(source, deliveryId)
         return { ok = false, reason = "no_active_delivery" }
     end
 
+    local state = activeDeliveryState[source]
+    if state and state.isTest then
+        return Missions.FinishTest(source, deliveryId, "aborted")
+    end
+
     DB.AbortDelivery(deliveryId)
     Vehicles.OnDeliveryEnded(source)
 
-    local state = activeDeliveryState[source]
     activeDeliveryState[source] = nil
     releaseSpawnPoints(deliveryId)
     OnCall.HandleDeliveryEnded(source)

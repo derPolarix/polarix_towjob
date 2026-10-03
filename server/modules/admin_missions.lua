@@ -87,7 +87,7 @@ function AdminMissions.ListForAdmin(source)
         row.delivery_count = DB.CountDeliveriesForMission(row.id)
     end
 
-    return { ok = true, missions = rows }
+    return { ok = true, missions = rows, testActive = Missions.IsTestActive(source) }
 end
 
 function AdminMissions.Create(source, mission)
@@ -194,10 +194,21 @@ function AdminMissions.TestRun(source, missionId)
     return Missions.Accept(source, missionId, true)
 end
 
+function AdminMissions.EndTest(source)
+    local ok, reason = requireAdmin(source)
+    if not ok then return { ok = false, reason = reason } end
+
+    local state = Missions.GetActiveDeliveryState(source)
+    if not state or not state.isTest then return { ok = false, reason = "no_active_test" } end
+
+    return Missions.FinishTest(source, state.deliveryId, "aborted")
+end
+
 lib.callback.register("polarix_towjob:adminListMissions", function(source) return AdminMissions.ListForAdmin(source) end)
 lib.callback.register("polarix_towjob:adminCreateMission", function(source, mission) return AdminMissions.Create(source, mission) end)
 lib.callback.register("polarix_towjob:adminUpdateMission", function(source, missionId, mission) return AdminMissions.Update(source, missionId, mission) end)
 lib.callback.register("polarix_towjob:adminSetMissionActive", function(source, missionId, isActive) return AdminMissions.SetActive(source, missionId, isActive) end)
 lib.callback.register("polarix_towjob:adminDeleteMission", function(source, missionId) return AdminMissions.Delete(source, missionId) end)
 lib.callback.register("polarix_towjob:adminImportSeedData", function(source) return AdminMissions.ImportSeedData(source) end)
+lib.callback.register("polarix_towjob:adminEndTestMission", function(source) return AdminMissions.EndTest(source) end)
 lib.callback.register("polarix_towjob:adminTestRunMission", function(source, missionId) return AdminMissions.TestRun(source, missionId) end)
