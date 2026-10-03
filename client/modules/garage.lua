@@ -16,6 +16,29 @@ local function applyHealth(entity, bodyHealth, engineHealth)
     SetVehicleEngineHealth(entity, engineHealth)
 end
 
+local function applyAppearance(entity, data)
+    if data.colors then
+        SetVehicleColours(entity, data.colors.primary or 0, data.colors.secondary or 0)
+    end
+
+    if data.mods or data.livery then
+        SetVehicleModKit(entity, 0)
+    end
+
+    for modType, index in pairs(data.mods or {}) do
+        SetVehicleMod(entity, modType, index, false)
+    end
+
+    if data.livery then
+        SetVehicleMod(entity, 48, data.livery, false)
+        SetVehicleLivery(entity, data.livery)
+    end
+
+    for extraId, shown in pairs(data.extras or {}) do
+        SetVehicleExtra(entity, extraId, not shown)
+    end
+end
+
 local function warpOrLeaveForPlayer(entity)
     if clientConfig.AutoEnterTowTruck then
         TaskWarpPedIntoVehicle(PlayerPedId(), entity, -1)
@@ -31,6 +54,7 @@ function Garage.SpawnVehicle(vehicleData)
 
     SetVehicleNumberPlateText(entity, vehicleData.plate)
     applyHealth(entity, vehicleData.body_health, vehicleData.engine_health)
+    applyAppearance(entity, vehicleData)
 
     Framework.GiveVehicleKeys(entity, vehicleData.plate)
     warpOrLeaveForPlayer(entity)
@@ -47,6 +71,8 @@ function Garage.SpawnRental(rentalData)
     local coords = clientConfig.TowTruckSpawnCoords
     rentalVehicle = CreateVehicle(rentalData.model, coords.x, coords.y, coords.z, coords.w, true, false)
     SetModelAsNoLongerNeeded(rentalData.model)
+
+    applyAppearance(rentalVehicle, rentalData)
 
     local plate = GetVehicleNumberPlateText(rentalVehicle):gsub("%s+$", "")
     Framework.GiveVehicleKeys(rentalVehicle, plate)

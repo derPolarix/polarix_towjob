@@ -17,6 +17,11 @@ return {
     -- Tow truck ownership catalog — 2 tiers for v1, both models confirmed to carry
     -- GTA's native tow-arm rig. Do not add further models without first verifying
     -- in-game that AttachVehicleToTowTruck behaves correctly on them.
+    -- Optional per-vehicle look, applied right after spawn (VehicleTiers entries and RentalTruck):
+    --   livery = 0,                              -- livery index
+    --   extras = { [1] = true, [2] = false },    -- extra id -> shown
+    --   colors = { primary = 0, secondary = 0 }, -- GTA colour ids
+    --   mods   = { [11] = 2 },                   -- SetVehicleMod type -> index
     VehicleTiers = {
         { id = "standard", model = "towtruck2", label = "Tow Truck", price = 45000, damage_resistance = 0.0, level_required = 1 },
         { id = "heavy",    model = "towtruck",  label = "Heavy Duty Tow",   price = 95000, damage_resistance = 0.20, level_required = 5 },

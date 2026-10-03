@@ -221,6 +221,10 @@ function Vehicles.ParkOut(source, vehicleId)
             plate = vehicle.plate,
             body_health = vehicle.body_health,
             engine_health = vehicle.engine_health,
+            livery = tier.livery,
+            extras = tier.extras,
+            colors = tier.colors,
+            mods = tier.mods,
         },
         vehicles = Vehicles.GetOwnedForPlayer(source),
     }
