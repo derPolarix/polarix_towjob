@@ -236,6 +236,10 @@ local function beginDelivery(deliveryId, mission, deadlineAt)
         isPriority = isPriority,
     }
 
+    if mission.is_test then
+        currentDelivery.dropoffBlip = createDropoffBlip(mission.dropoff)
+    end
+
     if isPriority then
         adoptTargetVehicle(currentDelivery)
     else

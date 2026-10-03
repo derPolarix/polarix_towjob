@@ -23,6 +23,7 @@
     "notify.delivery_complete": "Levering voltooid! %s verdiend, +%d XP.",
     "notify.delivery_complete_with_damage": "Levering voltooid! %s verdiend (-%s schade), +%d XP.",
     "notify.delivery_aborted": "Levering geannuleerd.",
+    "notify.test_ended": "Testrun beëindigd. Er is niets uitbetaald of vastgelegd.",
     "notify.previous_delivery_interrupted": "Je vorige levering werd onderbroken en is als mislukt gemarkeerd.",
     "notify.rental_payment_charged": "Huurbetaling afgeschreven.",
     "notify.rental_payment_due_1m": "Huurbetaling verschuldigd over 1 minuut.",
@@ -285,6 +286,8 @@
     "admin.deleting": "Verwijderen…",
     "admin.starting": "Starten…",
     "admin.test_mission": "Missie testen",
+    "admin.end_test": "Test beëindigen",
+    "admin.ending": "Beëindigen…",
     "admin.undo_point": "Punt ongedaan maken",
     "admin.clear": "Wissen",
     "admin.use_current_position": "Huidige positie gebruiken",
@@ -366,6 +369,9 @@
     "admin.err_update_mission": "Kon missie niet bijwerken.",
     "admin.err_delete_mission": "Kon missie niet verwijderen.",
     "admin.err_test_run": "Kon testrun niet starten.",
+    "admin.err_end_test": "Kon testrun niet beëindigen.",
+    "admin.err_no_active_test": "Er is geen testrun actief.",
+    "admin.err_test_active_delivery": "Rond eerst je huidige levering af voordat je een test start.",
 
     "mission.police_impound": "Inbeslagname: %s",
 

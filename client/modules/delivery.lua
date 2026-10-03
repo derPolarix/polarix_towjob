@@ -135,7 +135,7 @@ CreateThread(function()
     while true do
         local delivery = Vehicle.GetCurrentDelivery()
 
-        if delivery and delivery.state == "found" then
+        if delivery and (delivery.state == "found" or delivery.mission.is_test) then
             local d = delivery.mission.dropoff
             local outlineCenter = vector3(d.x, d.y, d.z - GROUND_OFFSET)
             local nearDropoff = #(GetEntityCoords(PlayerPedId()) - outlineCenter) < DROPOFF_RENDER_DISTANCE

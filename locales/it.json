@@ -23,6 +23,7 @@
     "notify.delivery_complete": "Consegna completata! %s guadagnati, +%d XP.",
     "notify.delivery_complete_with_damage": "Consegna completata! %s guadagnati (-%s per danni), +%d XP.",
     "notify.delivery_aborted": "Consegna annullata.",
+    "notify.test_ended": "Prova terminata. Nulla è stato pagato o registrato.",
     "notify.previous_delivery_interrupted": "La tua consegna precedente è stata interrotta ed è stata segnata come fallita.",
     "notify.rental_payment_charged": "Pagamento del noleggio addebitato.",
     "notify.rental_payment_due_1m": "Pagamento del noleggio dovuto tra 1 minuto.",
@@ -285,6 +286,8 @@
     "admin.deleting": "Eliminazione…",
     "admin.starting": "Avvio…",
     "admin.test_mission": "Prova missione",
+    "admin.end_test": "Termina prova",
+    "admin.ending": "Chiusura…",
     "admin.undo_point": "Annulla punto",
     "admin.clear": "Cancella",
     "admin.use_current_position": "Usa posizione attuale",
@@ -366,6 +369,9 @@
     "admin.err_update_mission": "Impossibile aggiornare la missione.",
     "admin.err_delete_mission": "Impossibile eliminare la missione.",
     "admin.err_test_run": "Impossibile avviare la prova.",
+    "admin.err_end_test": "Impossibile terminare la prova.",
+    "admin.err_no_active_test": "Nessuna prova attiva.",
+    "admin.err_test_active_delivery": "Termina la consegna in corso prima di avviare una prova.",
 
     "mission.police_impound": "Sequestro: %s",
 

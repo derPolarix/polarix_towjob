@@ -23,6 +23,7 @@
     "notify.delivery_complete": "Entrega concluída! %s ganhos, +%d XP.",
     "notify.delivery_complete_with_damage": "Entrega concluída! %s ganhos (-%s de dano), +%d XP.",
     "notify.delivery_aborted": "Entrega cancelada.",
+    "notify.test_ended": "Teste encerrado. Nada foi pago ou registrado.",
     "notify.previous_delivery_interrupted": "Sua entrega anterior foi interrompida e marcada como falha.",
     "notify.rental_payment_charged": "Pagamento do aluguel cobrado.",
     "notify.rental_payment_due_1m": "Pagamento do aluguel vence em 1 minuto.",
@@ -285,6 +286,8 @@
     "admin.deleting": "Excluindo…",
     "admin.starting": "Iniciando…",
     "admin.test_mission": "Testar missão",
+    "admin.end_test": "Encerrar teste",
+    "admin.ending": "Encerrando…",
     "admin.undo_point": "Desfazer ponto",
     "admin.clear": "Limpar",
     "admin.use_current_position": "Usar posição atual",
@@ -366,6 +369,9 @@
     "admin.err_update_mission": "Não foi possível atualizar a missão.",
     "admin.err_delete_mission": "Não foi possível excluir a missão.",
     "admin.err_test_run": "Não foi possível iniciar o teste.",
+    "admin.err_end_test": "Não foi possível encerrar o teste.",
+    "admin.err_no_active_test": "Nenhum teste ativo.",
+    "admin.err_test_active_delivery": "Termine sua entrega atual antes de iniciar um teste.",
 
     "mission.police_impound": "Pátio policial: %s",
 

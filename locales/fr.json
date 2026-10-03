@@ -23,6 +23,7 @@
     "notify.delivery_complete": "Livraison terminée ! %s gagnés, +%d XP.",
     "notify.delivery_complete_with_damage": "Livraison terminée ! %s gagnés (-%s de dégâts), +%d XP.",
     "notify.delivery_aborted": "Livraison annulée.",
+    "notify.test_ended": "Test terminé. Rien n'a été payé ni enregistré.",
     "notify.previous_delivery_interrupted": "Ta livraison précédente a été interrompue et marquée comme échouée.",
     "notify.rental_payment_charged": "Paiement de location prélevé.",
     "notify.rental_payment_due_1m": "Paiement de location dû dans 1 minute.",
@@ -285,6 +286,8 @@
     "admin.deleting": "Suppression…",
     "admin.starting": "Démarrage…",
     "admin.test_mission": "Tester la mission",
+    "admin.end_test": "Terminer le test",
+    "admin.ending": "Fin en cours…",
     "admin.undo_point": "Annuler le point",
     "admin.clear": "Effacer",
     "admin.use_current_position": "Utiliser la position actuelle",
@@ -366,6 +369,9 @@
     "admin.err_update_mission": "Échec de la mise à jour de la mission.",
     "admin.err_delete_mission": "Échec de la suppression de la mission.",
     "admin.err_test_run": "Échec du démarrage du test.",
+    "admin.err_end_test": "Échec de l'arrêt du test.",
+    "admin.err_no_active_test": "Aucun test n'est actif.",
+    "admin.err_test_active_delivery": "Termine ta livraison en cours avant de lancer un test.",
 
     "mission.police_impound": "Fourrière : %s",
 

@@ -170,12 +170,12 @@
 					<button
 						type="button"
 						style="margin-left:auto;border-radius:10px;background:#3b82f6;border:none;color:#fff;font-family:inherit;font-weight:600;font-size:13px;padding:10px 16px;cursor:pointer"
-						:disabled="testing || !selectedIsActive"
-						:title="!selectedIsActive ? t('admin.test_needs_active') : t('admin.test_qa_hint')"
-						:style="{ opacity: (testing || !selectedIsActive) ? 0.4 : 1 }"
-						@click="testRun"
+						:disabled="testing || (!adminStore.testActive && !selectedIsActive)"
+						:title="adminStore.testActive ? '' : (!selectedIsActive ? t('admin.test_needs_active') : t('admin.test_qa_hint'))"
+						:style="{ opacity: (testing || (!adminStore.testActive && !selectedIsActive)) ? 0.4 : 1 }"
+						@click="adminStore.testActive ? endTest() : testRun()"
 					>
-						{{ testing ? t("admin.starting") : t("admin.test_mission") }}
+						{{ adminStore.testActive ? (testing ? t("admin.ending") : t("admin.end_test")) : (testing ? t("admin.starting") : t("admin.test_mission")) }}
 					</button>
 				</template>
 			</div>
@@ -385,6 +385,7 @@ const reasonMessages: Record<string, string> = {
 	not_found: "admin.err_mission_gone",
 	not_empty: "admin.err_import_not_empty",
 	has_delivery_history: "admin.err_has_delivery_history",
+	active_delivery_exists: "admin.err_test_active_delivery",
 };
 
 // Seed content ships with the resource (server/seed_data.lua) and covers areas + missions in
@@ -499,6 +500,24 @@ async function testRun() {
 	} catch (error) {
 		console.error("adminTestRunMission failed:", error);
 		errorMessage.value = t("admin.err_test_run");
+	} finally {
+		testing.value = false;
+	}
+}
+
+async function endTest() {
+	testing.value = true;
+	errorMessage.value = "";
+	try {
+		const result = await nuiCallbackAsync<AdminActionResult>("adminEndTestMission");
+		if (result?.ok || result?.reason === "no_active_test") {
+			adminStore.testActive = false;
+		} else {
+			errorMessage.value = t("admin.err_end_test");
+		}
+	} catch (error) {
+		console.error("adminEndTestMission failed:", error);
+		errorMessage.value = t("admin.err_end_test");
 	} finally {
 		testing.value = false;
 	}

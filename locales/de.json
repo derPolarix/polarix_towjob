@@ -23,6 +23,7 @@
     "notify.delivery_complete": "Lieferung abgeschlossen! %s verdient, +%d XP.",
     "notify.delivery_complete_with_damage": "Lieferung abgeschlossen! %s verdient (-%s Schaden), +%d XP.",
     "notify.delivery_aborted": "Lieferung abgebrochen.",
+    "notify.test_ended": "Testlauf beendet. Es wurde nichts ausgezahlt oder gespeichert.",
     "notify.previous_delivery_interrupted": "Deine vorherige Lieferung wurde unterbrochen und als fehlgeschlagen markiert.",
     "notify.rental_payment_charged": "Mietzahlung abgebucht.",
     "notify.rental_payment_due_1m": "Mietzahlung in 1 Minute fällig.",
@@ -285,6 +286,8 @@
     "admin.deleting": "Löschen…",
     "admin.starting": "Starten…",
     "admin.test_mission": "Auftrag testen",
+    "admin.end_test": "Test beenden",
+    "admin.ending": "Wird beendet…",
     "admin.undo_point": "Punkt zurück",
     "admin.clear": "Leeren",
     "admin.use_current_position": "Aktuelle Position verwenden",
@@ -366,6 +369,9 @@
     "admin.err_update_mission": "Auftrag konnte nicht aktualisiert werden.",
     "admin.err_delete_mission": "Auftrag konnte nicht gelöscht werden.",
     "admin.err_test_run": "Testlauf konnte nicht gestartet werden.",
+    "admin.err_end_test": "Testlauf konnte nicht beendet werden.",
+    "admin.err_no_active_test": "Es läuft kein Testlauf.",
+    "admin.err_test_active_delivery": "Beende zuerst deine aktuelle Lieferung, bevor du einen Test startest.",
 
     "mission.police_impound": "Beschlagnahmung: %s",
 

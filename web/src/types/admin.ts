@@ -69,6 +69,7 @@ export interface AdminListMissionsResult {
   ok: boolean;
   reason?: string;
   missions?: AdminMission[];
+  testActive?: boolean;
 }
 
 export interface AdminListAreasResult {

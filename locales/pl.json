@@ -23,6 +23,7 @@
     "notify.delivery_complete": "Dostawa ukończona! Zarobiono %s, +%d XP.",
     "notify.delivery_complete_with_damage": "Dostawa ukończona! Zarobiono %s (-%s za uszkodzenia), +%d XP.",
     "notify.delivery_aborted": "Dostawa przerwana.",
+    "notify.test_ended": "Test zakończony. Nic nie zostało wypłacone ani zapisane.",
     "notify.previous_delivery_interrupted": "Twoja poprzednia dostawa została przerwana i oznaczona jako nieudana.",
     "notify.rental_payment_charged": "Pobrano płatność za wynajem.",
     "notify.rental_payment_due_1m": "Płatność za wynajem za 1 minutę.",
@@ -285,6 +286,8 @@
     "admin.deleting": "Usuwanie…",
     "admin.starting": "Uruchamianie…",
     "admin.test_mission": "Testuj misję",
+    "admin.end_test": "Zakończ test",
+    "admin.ending": "Kończenie…",
     "admin.undo_point": "Cofnij punkt",
     "admin.clear": "Wyczyść",
     "admin.use_current_position": "Użyj bieżącej pozycji",
@@ -366,6 +369,9 @@
     "admin.err_update_mission": "Nie udało się zaktualizować misji.",
     "admin.err_delete_mission": "Nie udało się usunąć misji.",
     "admin.err_test_run": "Nie udało się uruchomić testu.",
+    "admin.err_end_test": "Nie udało się zakończyć testu.",
+    "admin.err_no_active_test": "Żaden test nie jest aktywny.",
+    "admin.err_test_active_delivery": "Zakończ bieżącą dostawę, zanim rozpoczniesz test.",
 
     "mission.police_impound": "Depozyt policyjny: %s",
 

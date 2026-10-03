@@ -13,6 +13,7 @@ import type {
 type AdminState = {
 	section: AdminSection;
 	missions: AdminMission[];
+	testActive: boolean;
 	areas: AdminArea[];
 	settings: AdminSetting[];
 	loading: boolean;
@@ -23,6 +24,7 @@ export const useAdminStore = defineStore("admin", {
 	state: (): AdminState => ({
 		section: "missions",
 		missions: [],
+		testActive: false,
 		areas: [],
 		settings: [],
 		loading: false,
@@ -39,6 +41,7 @@ export const useAdminStore = defineStore("admin", {
 				const result = await nuiCallbackAsync<AdminListMissionsResult>("adminListMissions");
 				if (result?.ok && result.missions) {
 					this.missions = result.missions;
+					this.testActive = result.testActive === true;
 				} else {
 					this.error = result?.reason ?? "Failed to load missions.";
 				}

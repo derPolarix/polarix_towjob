@@ -23,6 +23,7 @@
     "notify.delivery_complete": "Teslimat tamamlandı! %s kazanıldı, +%d XP.",
     "notify.delivery_complete_with_damage": "Teslimat tamamlandı! %s kazanıldı (-%s hasar), +%d XP.",
     "notify.delivery_aborted": "Teslimat iptal edildi.",
+    "notify.test_ended": "Test bitti. Hiçbir ödeme yapılmadı veya kayıt tutulmadı.",
     "notify.previous_delivery_interrupted": "Önceki teslimatın kesintiye uğradı ve başarısız olarak işaretlendi.",
     "notify.rental_payment_charged": "Kiralama ödemesi tahsil edildi.",
     "notify.rental_payment_due_1m": "Kiralama ödemesi 1 dakika içinde.",
@@ -285,6 +286,8 @@
     "admin.deleting": "Siliniyor…",
     "admin.starting": "Başlatılıyor…",
     "admin.test_mission": "Görevi test et",
+    "admin.end_test": "Testi bitir",
+    "admin.ending": "Bitiriliyor…",
     "admin.undo_point": "Noktayı geri al",
     "admin.clear": "Temizle",
     "admin.use_current_position": "Mevcut konumu kullan",
@@ -366,6 +369,9 @@
     "admin.err_update_mission": "Görev güncellenemedi.",
     "admin.err_delete_mission": "Görev silinemedi.",
     "admin.err_test_run": "Test çalıştırması başlatılamadı.",
+    "admin.err_end_test": "Test sonlandırılamadı.",
+    "admin.err_no_active_test": "Aktif test yok.",
+    "admin.err_test_active_delivery": "Test başlatmadan önce mevcut teslimatını bitir.",
 
     "mission.police_impound": "Polis Otoparkı: %s",
 

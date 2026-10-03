@@ -23,6 +23,7 @@
     "notify.delivery_complete": "Delivery complete! %s earned, +%d XP.",
     "notify.delivery_complete_with_damage": "Delivery complete! %s earned (-%s damage), +%d XP.",
     "notify.delivery_aborted": "Delivery aborted.",
+    "notify.test_ended": "Test run finished. Nothing was paid or recorded.",
     "notify.previous_delivery_interrupted": "Your previous delivery was interrupted and has been marked as failed.",
     "notify.rental_payment_charged": "Rental payment charged.",
     "notify.rental_payment_due_1m": "Rental payment due in 1 minute.",
@@ -285,6 +286,8 @@
     "admin.deleting": "Deleting…",
     "admin.starting": "Starting…",
     "admin.test_mission": "Test mission",
+    "admin.end_test": "End test",
+    "admin.ending": "Ending…",
     "admin.undo_point": "Undo point",
     "admin.clear": "Clear",
     "admin.use_current_position": "Use current position",
@@ -366,6 +369,9 @@
     "admin.err_update_mission": "Failed to update mission.",
     "admin.err_delete_mission": "Failed to delete mission.",
     "admin.err_test_run": "Failed to start test run.",
+    "admin.err_end_test": "Failed to end the test run.",
+    "admin.err_no_active_test": "No test run is active.",
+    "admin.err_test_active_delivery": "Finish your current delivery before starting a test.",
 
     "mission.police_impound": "Police Impound: %s",
 
