@@ -414,6 +414,7 @@ function clearPreviews() {
 const reasonMessages: Record<string, string> = {
 	not_admin: "admin.err_not_admin",
 	invalid_name: "admin.err_name_required",
+	name_taken: "admin.err_name_taken",
 	invalid_area: "admin.err_invalid_area",
 	invalid_vehicle_model: "admin.err_invalid_vehicle_model",
 	invalid_reward: "admin.err_invalid_reward",

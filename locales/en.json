@@ -344,6 +344,7 @@
     "admin.err_invalid_value": "That value is out of range for this setting.",
     "admin.err_save_setting": "Failed to save setting.",
     "admin.err_name_required": "Name is required.",
+    "admin.err_name_taken": "Another one already uses this name.",
     "admin.err_area_min_points": "Area needs at least 3 points.",
     "admin.err_invalid_position": "Position is required.",
     "admin.err_invalid_multiplier": "Multipliers must be between 0 and 10.",

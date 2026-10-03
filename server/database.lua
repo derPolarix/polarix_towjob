@@ -290,6 +290,14 @@ function DB.GetAllMissionsAdmin()
     ]])
 end
 
+function DB.MissionNameTaken(name, exceptId)
+    return (MySQL.scalar.await("SELECT COUNT(*) FROM " .. server.Tables.missions .. " WHERE LOWER(name) = LOWER(?) AND id <> ?", { name, exceptId or "" }) or 0) > 0
+end
+
+function DB.AreaNameTaken(name, exceptId)
+    return (MySQL.scalar.await("SELECT COUNT(*) FROM " .. server.Tables.areas .. " WHERE LOWER(name) = LOWER(?) AND id <> ?", { name, exceptId or "" }) or 0) > 0
+end
+
 function DB.MissionIdExists(missionId)
     return (MySQL.scalar.await("SELECT COUNT(*) FROM " .. server.Tables.missions .. " WHERE id = ?", { missionId }) or 0) > 0
 end

@@ -344,6 +344,7 @@
     "admin.err_invalid_value": "Cette valeur est hors plage pour ce réglage.",
     "admin.err_save_setting": "Échec de l'enregistrement du réglage.",
     "admin.err_name_required": "Le nom est obligatoire.",
+    "admin.err_name_taken": "Ce nom est déjà utilisé.",
     "admin.err_area_min_points": "La zone a besoin d'au moins 3 points.",
     "admin.err_invalid_position": "La position est obligatoire.",
     "admin.err_invalid_multiplier": "Les multiplicateurs doivent être entre 0 et 10.",

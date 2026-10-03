@@ -344,6 +344,7 @@
     "admin.err_invalid_value": "Dieser Wert liegt außerhalb des zulässigen Bereichs für diese Einstellung.",
     "admin.err_save_setting": "Einstellung konnte nicht gespeichert werden.",
     "admin.err_name_required": "Name ist erforderlich.",
+    "admin.err_name_taken": "Dieser Name wird bereits verwendet.",
     "admin.err_area_min_points": "Das Gebiet braucht mindestens 3 Punkte.",
     "admin.err_invalid_position": "Position ist erforderlich.",
     "admin.err_invalid_multiplier": "Multiplikatoren müssen zwischen 0 und 10 liegen.",

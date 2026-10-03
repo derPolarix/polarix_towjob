@@ -64,8 +64,9 @@ local function validateSpawnPoints(points)
     return nil
 end
 
-local function validateMission(mission)
+local function validateMission(mission, exceptId)
     if not mission.name or mission.name == "" then return "invalid_name" end
+    if DB.MissionNameTaken(mission.name, exceptId) then return "name_taken" end
     if not mission.area_id or not DB.AreaIdExists(mission.area_id) then return "invalid_area" end
     if not mission.vehicle_model or mission.vehicle_model == "" then return "invalid_vehicle_model" end
     if type(mission.reward_base) ~= "number" or mission.reward_base <= 0
@@ -139,7 +140,7 @@ function AdminMissions.Update(source, missionId, mission)
     if not ok then return { ok = false, reason = reason } end
     if not DB.MissionIdExists(missionId) then return { ok = false, reason = "not_found" } end
 
-    local invalidReason = validateMission(mission)
+    local invalidReason = validateMission(mission, missionId)
     if invalidReason then return { ok = false, reason = invalidReason } end
 
     local player = Player.GetData(source)

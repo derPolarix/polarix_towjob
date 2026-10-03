@@ -344,6 +344,7 @@
     "admin.err_invalid_value": "Bu değer bu ayar için aralık dışında.",
     "admin.err_save_setting": "Ayar kaydedilemedi.",
     "admin.err_name_required": "Ad gerekli.",
+    "admin.err_name_taken": "Bu isim zaten kullanılıyor.",
     "admin.err_area_min_points": "Bölge en az 3 nokta gerektirir.",
     "admin.err_invalid_position": "Konum gerekli.",
     "admin.err_invalid_multiplier": "Çarpanlar 0 ile 10 arasında olmalı.",

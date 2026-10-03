@@ -344,6 +344,7 @@
     "admin.err_invalid_value": "Esse valor está fora do intervalo para esta configuração.",
     "admin.err_save_setting": "Não foi possível salvar a configuração.",
     "admin.err_name_required": "O nome é obrigatório.",
+    "admin.err_name_taken": "Este nome já está em uso.",
     "admin.err_area_min_points": "A área precisa de pelo menos 3 pontos.",
     "admin.err_invalid_position": "A posição é obrigatória.",
     "admin.err_invalid_multiplier": "Os multiplicadores devem estar entre 0 e 10.",

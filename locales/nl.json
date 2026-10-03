@@ -344,6 +344,7 @@
     "admin.err_invalid_value": "Die waarde valt buiten het bereik voor deze instelling.",
     "admin.err_save_setting": "Kon instelling niet opslaan.",
     "admin.err_name_required": "Naam is verplicht.",
+    "admin.err_name_taken": "Deze naam is al in gebruik.",
     "admin.err_area_min_points": "Het gebied heeft minstens 3 punten nodig.",
     "admin.err_invalid_position": "Positie is verplicht.",
     "admin.err_invalid_multiplier": "Vermenigvuldigers moeten tussen 0 en 10 liggen.",

@@ -344,6 +344,7 @@
     "admin.err_invalid_value": "Ese valor está fuera del rango para este ajuste.",
     "admin.err_save_setting": "No se pudo guardar el ajuste.",
     "admin.err_name_required": "El nombre es obligatorio.",
+    "admin.err_name_taken": "Ya existe otro con este nombre.",
     "admin.err_area_min_points": "La zona necesita al menos 3 puntos.",
     "admin.err_invalid_position": "La posición es obligatoria.",
     "admin.err_invalid_multiplier": "Los multiplicadores deben estar entre 0 y 10.",

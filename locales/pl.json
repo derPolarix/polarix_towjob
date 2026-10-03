@@ -344,6 +344,7 @@
     "admin.err_invalid_value": "Ta wartość jest poza zakresem dla tego ustawienia.",
     "admin.err_save_setting": "Nie udało się zapisać ustawienia.",
     "admin.err_name_required": "Nazwa jest wymagana.",
+    "admin.err_name_taken": "Ta nazwa jest już używana.",
     "admin.err_area_min_points": "Obszar wymaga co najmniej 3 punktów.",
     "admin.err_invalid_position": "Pozycja jest wymagana.",
     "admin.err_invalid_multiplier": "Mnożniki muszą mieścić się w zakresie od 0 do 10.",

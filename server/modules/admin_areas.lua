@@ -58,6 +58,7 @@ function AdminAreas.Create(source, area)
     if not ok then return { ok = false, reason = reason } end
 
     if not area.name or area.name == "" then return { ok = false, reason = "invalid_name" } end
+    if DB.AreaNameTaken(area.name) then return { ok = false, reason = "name_taken" } end
     if not isValidPoints(area.points) then return { ok = false, reason = "invalid_position" } end
     if not isValidMultiplier(area.reward_multiplier) or not isValidMultiplier(area.xp_multiplier) then
         return { ok = false, reason = "invalid_multiplier" }
@@ -82,6 +83,7 @@ function AdminAreas.Update(source, areaId, area)
     if not DB.AreaIdExists(areaId) then return { ok = false, reason = "not_found" } end
 
     if not area.name or area.name == "" then return { ok = false, reason = "invalid_name" } end
+    if DB.AreaNameTaken(area.name, areaId) then return { ok = false, reason = "name_taken" } end
     if not isValidPoints(area.points) then return { ok = false, reason = "invalid_position" } end
     if not isValidMultiplier(area.reward_multiplier) or not isValidMultiplier(area.xp_multiplier) then
         return { ok = false, reason = "invalid_multiplier" }

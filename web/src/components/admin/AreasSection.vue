@@ -136,6 +136,7 @@ const areaReasonKeys: Record<string, string> = {
 	invalid_name: "admin.err_name_required",
 	invalid_position: "admin.err_invalid_position",
 	invalid_multiplier: "admin.err_invalid_multiplier",
+	name_taken: "admin.err_name_taken",
 	not_found: "admin.err_area_gone",
 	not_empty: "admin.err_import_not_empty",
 };
