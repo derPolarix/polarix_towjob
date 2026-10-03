@@ -20,6 +20,13 @@ return {
     -- the next candidate (client/modules/vehicle.lua).
     SpawnPointClearance = 4.0,
 
+    -- Default keys only: a player who already rebound an action under Settings > Key Bindings > FiveM keeps theirs.
+    Keybinds = {
+        OpenDashboard   = "E", -- open the job at the depot NPC (only without a target system)
+        StoreTruck      = "E", -- store the tow truck in the parking zone (only without a target system)
+        ConfirmDelivery = "E", -- confirm the delivery once the towed vehicle is placed at the dropoff
+    },
+
     DeliveryZoneCheckIntervalMs = 500,
     DamageCheckIntervalMs = 2000,
 }

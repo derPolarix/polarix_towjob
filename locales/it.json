@@ -51,11 +51,13 @@
     "notify.cancel_target_left_scene": "Il veicolo ha lasciato il posto — incarico annullato.",
     "notify.cancel_target_gone": "Il veicolo non è più sul posto — incarico annullato.",
 
-    "ui.confirm_delivery": "[E] Conferma consegna",
+    "ui.confirm_delivery": "Conferma consegna",
     "ui.store_tow_truck": "Riponi carro attrezzi",
-    "ui.e_store_tow_truck": "[E] Riponi carro attrezzi",
     "ui.open_tow_dashboard": "Apri la dashboard del traino",
-    "ui.e_open_tow_dashboard": "[E] Apri la dashboard del traino",
+
+    "keybind.open_dashboard": "Apri il lavoro di traino (deposito)",
+    "keybind.store_truck": "Riponi carro attrezzi",
+    "keybind.confirm_delivery": "Conferma consegna (destinazione)",
 
     "misc.unknown_job": "Lavoro sconosciuto",
 

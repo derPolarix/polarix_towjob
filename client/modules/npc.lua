@@ -1,5 +1,6 @@
 local clientConfig = require("config.client")
 local Locale = require("shared.locale")
+local Keybinds = require("client.lib.keybinds")
 
 local npc = nil
 
@@ -31,9 +32,13 @@ local function setupInteraction()
         return
     end
 
-    CreateThread(function()
-        local textUIShown = false
+    local textUIShown = false
 
+    Keybinds.Register("OpenDashboard", function()
+        if textUIShown then onInteract() end
+    end)
+
+    CreateThread(function()
         while DoesEntityExist(npc) do
             local playerCoords = GetEntityCoords(PlayerPedId())
             local npcCoords = GetEntityCoords(npc)
@@ -47,11 +52,7 @@ local function setupInteraction()
                 if dist < 1.5 then
                     if not textUIShown then
                         textUIShown = true
-                        lib.showTextUI(Locale("ui.e_open_tow_dashboard"))
-                    end
-
-                    if IsControlJustReleased(0, 38) then
-                        onInteract()
+                        lib.showTextUI(Keybinds.Prompt("OpenDashboard", "ui.open_tow_dashboard"))
                     end
                 elseif textUIShown then
                     textUIShown = false

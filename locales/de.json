@@ -51,11 +51,13 @@
     "notify.cancel_target_left_scene": "Das Fahrzeug hat den Ort verlassen — Auftrag abgebrochen.",
     "notify.cancel_target_gone": "Das Fahrzeug ist nicht mehr vor Ort — Auftrag abgebrochen.",
 
-    "ui.confirm_delivery": "[E] Lieferung bestätigen",
+    "ui.confirm_delivery": "Lieferung bestätigen",
     "ui.store_tow_truck": "Abschleppwagen einlagern",
-    "ui.e_store_tow_truck": "[E] Abschleppwagen einlagern",
     "ui.open_tow_dashboard": "Abschlepp-Dashboard öffnen",
-    "ui.e_open_tow_dashboard": "[E] Abschlepp-Dashboard öffnen",
+
+    "keybind.open_dashboard": "Abschleppjob öffnen (Depot)",
+    "keybind.store_truck": "Abschleppwagen einlagern",
+    "keybind.confirm_delivery": "Lieferung bestätigen (Abgabe)",
 
     "misc.unknown_job": "Unbekannter Auftrag",
 

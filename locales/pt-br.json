@@ -51,11 +51,13 @@
     "notify.cancel_target_left_scene": "O veículo saiu do local — trabalho cancelado.",
     "notify.cancel_target_gone": "O veículo não está mais no local — trabalho cancelado.",
 
-    "ui.confirm_delivery": "[E] Confirmar entrega",
+    "ui.confirm_delivery": "Confirmar entrega",
     "ui.store_tow_truck": "Guardar reboque",
-    "ui.e_store_tow_truck": "[E] Guardar reboque",
     "ui.open_tow_dashboard": "Abrir painel do reboque",
-    "ui.e_open_tow_dashboard": "[E] Abrir painel do reboque",
+
+    "keybind.open_dashboard": "Abrir trabalho de reboque (depósito)",
+    "keybind.store_truck": "Guardar reboque",
+    "keybind.confirm_delivery": "Confirmar entrega (destino)",
 
     "misc.unknown_job": "Trabalho desconhecido",
 

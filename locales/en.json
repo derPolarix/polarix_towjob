@@ -51,11 +51,13 @@
     "notify.cancel_target_left_scene": "The vehicle left the scene — job cancelled.",
     "notify.cancel_target_gone": "The vehicle is no longer on scene — job cancelled.",
 
-    "ui.confirm_delivery": "[E] Confirm Delivery",
+    "ui.confirm_delivery": "Confirm Delivery",
     "ui.store_tow_truck": "Store Tow Truck",
-    "ui.e_store_tow_truck": "[E] Store Tow Truck",
     "ui.open_tow_dashboard": "Open Tow Job Dashboard",
-    "ui.e_open_tow_dashboard": "[E] Open Tow Job Dashboard",
+
+    "keybind.open_dashboard": "Open tow job (depot)",
+    "keybind.store_truck": "Store tow truck",
+    "keybind.confirm_delivery": "Confirm delivery (dropoff)",
 
     "misc.unknown_job": "Unknown Job",
 

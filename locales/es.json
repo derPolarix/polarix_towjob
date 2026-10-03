@@ -51,11 +51,13 @@
     "notify.cancel_target_left_scene": "El vehículo abandonó el lugar — trabajo cancelado.",
     "notify.cancel_target_gone": "El vehículo ya no está en el lugar — trabajo cancelado.",
 
-    "ui.confirm_delivery": "[E] Confirmar entrega",
+    "ui.confirm_delivery": "Confirmar entrega",
     "ui.store_tow_truck": "Guardar grúa",
-    "ui.e_store_tow_truck": "[E] Guardar grúa",
     "ui.open_tow_dashboard": "Abrir panel del trabajo de grúa",
-    "ui.e_open_tow_dashboard": "[E] Abrir panel del trabajo de grúa",
+
+    "keybind.open_dashboard": "Abrir trabajo de grúa (depósito)",
+    "keybind.store_truck": "Guardar grúa",
+    "keybind.confirm_delivery": "Confirmar entrega (destino)",
 
     "misc.unknown_job": "Trabajo desconocido",
 

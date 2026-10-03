@@ -49,6 +49,7 @@ server_scripts {
 
 files {
     'locales/*.json',
+    'client/lib/*.lua',
     "sql/init.sql",
     "html/*",
     "html/assets/*",

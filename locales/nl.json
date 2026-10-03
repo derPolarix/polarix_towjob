@@ -51,11 +51,13 @@
     "notify.cancel_target_left_scene": "Het voertuig is vertrokken — klus geannuleerd.",
     "notify.cancel_target_gone": "Het voertuig staat er niet meer — klus geannuleerd.",
 
-    "ui.confirm_delivery": "[E] Levering bevestigen",
+    "ui.confirm_delivery": "Levering bevestigen",
     "ui.store_tow_truck": "Takelwagen opbergen",
-    "ui.e_store_tow_truck": "[E] Takelwagen opbergen",
     "ui.open_tow_dashboard": "Takeldashboard openen",
-    "ui.e_open_tow_dashboard": "[E] Takeldashboard openen",
+
+    "keybind.open_dashboard": "Takelklus openen (depot)",
+    "keybind.store_truck": "Takelwagen opbergen",
+    "keybind.confirm_delivery": "Levering bevestigen (afleverpunt)",
 
     "misc.unknown_job": "Onbekende klus",
 

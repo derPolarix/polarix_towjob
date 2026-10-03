@@ -1,5 +1,6 @@
 local clientConfig = require("config.client")
 local Locale = require("shared.locale")
+local Keybinds = require("client.lib.keybinds")
 
 local HUD_UPDATE_INTERVAL_MS = 500
 local DROPOFF_RENDER_DISTANCE = 30.0
@@ -115,18 +116,22 @@ CreateThread(function()
     end
 end)
 
--- Renders the red/green ground outline near the dropoff and drives the [E] confirm. The
+local promptShown = false
+
+local function hidePromptIfShown()
+    if promptShown then
+        promptShown = false
+        lib.hideTextUI()
+    end
+end
+
+Keybinds.Register("ConfirmDelivery", function()
+    if promptShown then attemptComplete() end
+end)
+
+-- Renders the red/green ground outline near the dropoff and shows the confirm prompt. The
 -- rectangle checks the *towed vehicle's* position/heading, never the player's/tow truck's.
 CreateThread(function()
-    local promptShown = false
-
-    local function hidePromptIfShown()
-        if promptShown then
-            promptShown = false
-            lib.hideTextUI()
-        end
-    end
-
     while true do
         local delivery = Vehicle.GetCurrentDelivery()
 
@@ -142,10 +147,7 @@ CreateThread(function()
                 if aligned then
                     if not promptShown then
                         promptShown = true
-                        lib.showTextUI(Locale("ui.confirm_delivery"))
-                    end
-                    if IsControlJustReleased(0, 38) then
-                        attemptComplete()
+                        lib.showTextUI(Keybinds.Prompt("ConfirmDelivery", "ui.confirm_delivery"))
                     end
                 else
                     hidePromptIfShown()

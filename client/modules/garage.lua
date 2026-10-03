@@ -1,5 +1,6 @@
 local clientConfig = require("config.client")
 local Locale = require("shared.locale")
+local Keybinds = require("client.lib.keybinds")
 
 Garage = {}
 
@@ -140,9 +141,13 @@ local function setupParkingInteraction()
         return
     end
 
-    CreateThread(function()
-        local promptShown = false
+    local promptShown = false
 
+    Keybinds.Register("StoreTruck", function()
+        if promptShown then attemptStore() end
+    end)
+
+    CreateThread(function()
         while true do
             local playerCoords = GetEntityCoords(PlayerPedId())
             local dist = #(playerCoords - zone.coords)
@@ -154,11 +159,7 @@ local function setupParkingInteraction()
 
                 if not promptShown then
                     promptShown = true
-                    lib.showTextUI(Locale("ui.e_store_tow_truck"))
-                end
-
-                if IsControlJustReleased(0, 38) then
-                    attemptStore()
+                    lib.showTextUI(Keybinds.Prompt("StoreTruck", "ui.store_tow_truck"))
                 end
             elseif promptShown then
                 promptShown = false

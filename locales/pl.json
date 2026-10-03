@@ -51,11 +51,13 @@
     "notify.cancel_target_left_scene": "Pojazd opuścił miejsce — zlecenie anulowane.",
     "notify.cancel_target_gone": "Pojazdu nie ma już na miejscu — zlecenie anulowane.",
 
-    "ui.confirm_delivery": "[E] Potwierdź dostawę",
+    "ui.confirm_delivery": "Potwierdź dostawę",
     "ui.store_tow_truck": "Schowaj lawetę",
-    "ui.e_store_tow_truck": "[E] Schowaj lawetę",
     "ui.open_tow_dashboard": "Otwórz panel holowania",
-    "ui.e_open_tow_dashboard": "[E] Otwórz panel holowania",
+
+    "keybind.open_dashboard": "Otwórz pracę holownika (baza)",
+    "keybind.store_truck": "Schowaj lawetę",
+    "keybind.confirm_delivery": "Potwierdź dostawę (cel)",
 
     "misc.unknown_job": "Nieznane zlecenie",
 

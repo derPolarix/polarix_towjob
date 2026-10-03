@@ -51,11 +51,13 @@
     "notify.cancel_target_left_scene": "Araç olay yerinden ayrıldı — iş iptal edildi.",
     "notify.cancel_target_gone": "Araç artık olay yerinde değil — iş iptal edildi.",
 
-    "ui.confirm_delivery": "[E] Teslimatı onayla",
+    "ui.confirm_delivery": "Teslimatı onayla",
     "ui.store_tow_truck": "Çekiciyi kaldır",
-    "ui.e_store_tow_truck": "[E] Çekiciyi kaldır",
     "ui.open_tow_dashboard": "Çekici panelini aç",
-    "ui.e_open_tow_dashboard": "[E] Çekici panelini aç",
+
+    "keybind.open_dashboard": "Çekici işini aç (depo)",
+    "keybind.store_truck": "Çekiciyi kaldır",
+    "keybind.confirm_delivery": "Teslimatı onayla (teslim noktası)",
 
     "misc.unknown_job": "Bilinmeyen iş",
 
