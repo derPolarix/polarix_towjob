@@ -125,20 +125,16 @@ end
 local function setupParkingInteraction()
     local zone = clientConfig.ParkingZone
 
-    if GetResourceState("ox_target") == "started" then
-        exports.ox_target:addSphereZone({
-            coords = zone.coords,
-            radius = zone.radius,
-            options = {
-                {
-                    name = "polarix_towjob:storevehicle",
-                    icon = "fa-solid fa-warehouse",
-                    label = Locale("ui.store_tow_truck"),
-                    canInteract = function()
-                        return findDeployedVehicleNearPlayer() ~= nil
-                    end,
-                    onSelect = attemptStore,
-                },
+    if Target.IsAvailable() then
+        Target.AddSphereZone("polarix_towjob:parking", zone.coords, zone.radius, {
+            {
+                name = "polarix_towjob:storevehicle",
+                icon = "fa-solid fa-warehouse",
+                label = Locale("ui.store_tow_truck"),
+                canInteract = function()
+                    return findDeployedVehicleNearPlayer() ~= nil
+                end,
+                onSelect = attemptStore,
             },
         })
         return

@@ -76,7 +76,7 @@ return {
     -- Job name -> minimum grade allowed to mark.
     PoliceJobs = { police = 0, sheriff = 2 },
     RequireOnDuty = false,
-    PoliceMarkCommand = "towrequest", -- raycast fallback, registered only when ox_target isn't running
+    PoliceMarkCommand = "towrequest", -- raycast fallback, registered only when no target system is available
     PoliceMarkDistance = 12.0, -- max raycast/target reach to the vehicle being marked
 
     MaxPriorityJobs = 5,      -- global cap on unclaimed priority jobs

@@ -25,6 +25,11 @@ client_scripts {
     "framework/qb-core/client.lua",
     "framework/esx/client.lua",
     "framework/client.lua",
+    "target/ox_target/client.lua",
+    "target/qb-target/client.lua",
+    "target/sleepless_interact/client.lua",
+    "target/none/client.lua",
+    "target/client.lua",
     "client/*.lua",
     "client/modules/*.lua",
     "client/nui/*.lua",
@@ -59,8 +64,9 @@ ox_libs {
     'table',
 }
 
--- ox_target is deliberately NOT listed here — ground rule 5 requires a native-fallback path
--- whenever it isn't running, so it must stay a soft, GetResourceState()-checked dependency.
+-- Target systems are deliberately NOT listed here — ground rule 5 requires a native-fallback path
+-- whenever the configured one isn't running, so they stay soft, GetResourceState()-checked
+-- dependencies (target/**).
 -- Framework core (qbx_core / qb-core / es_extended) and the per-framework vehicle-keys
 -- resources are the same story: only one is ever active per config/shared.lua's Framework
 -- value, and every reference to them is already runtime-guarded (see framework/**, ground

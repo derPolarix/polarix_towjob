@@ -19,8 +19,8 @@ local function createBlip(coords, blip)
 end
 
 local function setupInteraction()
-    if GetResourceState("ox_target") == "started" then
-        exports.ox_target:addLocalEntity(npc, {
+    if Target.IsAvailable() then
+        Target.AddLocalEntity(npc, {
             {
                 name = "polarix_towjob:npc",
                 icon = "fa-solid fa-clipboard-list",

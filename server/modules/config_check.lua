@@ -5,6 +5,7 @@ local serverConfig = require("config.server")
 local debug = require("shared.debug")
 
 local ALLOWED_FRAMEWORKS = { qbox = true, ["qb-core"] = true, esx = true }
+local ALLOWED_TARGETS    = { ox_target = true, ["qb-target"] = true, sleepless_interact = true, none = true }
 
 local function listKeys(t)
     local keys = {}
@@ -28,6 +29,11 @@ end
 if not ALLOWED_FRAMEWORKS[sharedConfig.Framework] then
     debug.Error(("Invalid Framework \"%s\" in config/shared.lua — allowed values: %s")
         :format(tostring(sharedConfig.Framework), listKeys(ALLOWED_FRAMEWORKS)))
+end
+
+if not ALLOWED_TARGETS[sharedConfig.Target] then
+    debug.Error(("Invalid Target \"%s\" in config/shared.lua — allowed values: %s")
+        :format(tostring(sharedConfig.Target), listKeys(ALLOWED_TARGETS)))
 end
 
 local language = sharedConfig.Language or "en"

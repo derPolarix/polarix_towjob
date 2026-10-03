@@ -5,6 +5,8 @@ return {
     CheckForUpdates = true, -- warn in server console when a newer GitHub release exists
 
     Framework = "qbox", -- "qbox" | "qb-core" | "esx"
+    -- When the chosen system isn't running, interactions fall back to markers/TextUI and /towrequest.
+    Target = "ox_target", -- "ox_target" | "qb-target" | "sleepless_interact" | "none"
 
     -- Language for locales/<Language>.json — the SSOT for every user-facing string
     -- (Lua notifications + NUI). Ships: de, en, es, fr, it, nl, pl, pt-br, tr.

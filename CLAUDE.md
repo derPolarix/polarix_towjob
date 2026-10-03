@@ -10,6 +10,8 @@ FiveM resource for a tow job. Stack: Lua (client/server) + Vue 3 NUI
 
 Supports **qbox**, **qb-core**, and **esx**. Active framework set in `config/shared.lua`. Framework-specific code lives in adapter files - never call framework globals directly. Always go through the adapter so the rest of the codebase stays framework-agnostic.
 
+Same for target systems (**ox_target**, **qb-target**, **sleepless_interact**, **none**): set via `Target` in `config/shared.lua`, used only through the `Target` global from `target/client.lua`. Every target interaction needs a non-target fallback for when `Target.IsAvailable()` is false.
+
 ## Comments
 Keep Code comments to a minimal, only explain otherwise non understandable workarounds.
 
@@ -24,6 +26,9 @@ framework/       # framework adapters
   qbox/          # qbox provider — shared.lua, client.lua, server.lua
   qb-core/       # qb-core provider — shared.lua, client.lua, server.lua
   esx/           # esx provider — shared.lua, client.lua, server.lua
+target/          # target-system adapters (client only)
+  client.lua     # dispatcher — requires target/<active>/client.lua based on config Target
+  ox_target/ qb-target/ sleepless_interact/ none/
 shared/          # utilities loaded on both sides (debug module)
 client/
   modules/       # self-contained logic modules (one concern per file)

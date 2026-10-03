@@ -81,7 +81,7 @@ local function looksMarkable(vehicle)
     return IsVehicleSeatFree(vehicle, -1)
 end
 
--- Native fallback for servers without ox_target: raycast from the camera so the officer
+-- Native fallback for servers without a target system: raycast from the camera so the officer
 -- marks the car they're looking at rather than whichever one happens to be nearest.
 local function raycastVehicle()
     local ped = PlayerPedId()
@@ -110,19 +110,19 @@ CreateThread(function()
         addBlip(job)
     end
 
-    if GetResourceState("ox_target") == "started" then
-        exports.ox_target:addGlobalVehicle({
+    if Target.IsAvailable() then
+        Target.AddGlobalVehicle({
             {
                 name = "polarix_towjob:markForTow",
                 icon = "fa-solid fa-truck-ramp-box",
                 label = Locale("target.mark_for_tow"),
                 distance = markConfig.distance or 12.0,
                 canInteract = function(entity) return looksMarkable(entity) end,
-                onSelect = function(data) requestMark(data.entity) end,
+                onSelect = requestMark,
             },
         })
 
-        debug.DebugPrint("Police: registered ox_target mark-for-tow option")
+        debug.DebugPrint("Police: registered target mark-for-tow option")
     else
         RegisterCommand(config.command or "towrequest", function()
             if not markConfig.canMark then
@@ -139,7 +139,7 @@ CreateThread(function()
             requestMark(vehicle)
         end, false)
 
-        debug.DebugPrint("Police: ox_target not running, registered /" .. (config.command or "towrequest"))
+        debug.DebugPrint("Police: no target system available, registered /" .. (config.command or "towrequest"))
     end
 
     -- The frameworks don't share a job-change event this resource abstracts, so the officer
