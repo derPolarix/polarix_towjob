@@ -118,8 +118,8 @@ function DB.InsertMission(mission)
     MySQL.insert.await("INSERT INTO " .. server.Tables.missions .. [[ (
         id, area_id, name, vehicle_model, vehicle_label, vehicle_colors, spawn_points,
         dropoff_x, dropoff_y, dropoff_z, dropoff_heading, dropoff_width, dropoff_length,
-        reward_base, xp_base, time_limit_minutes, difficulty, level_required
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]], {
+        reward_base, xp_base, reward_per_km, xp_per_km, time_limit_minutes, difficulty, level_required
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]], {
         mission.id,
         mission.area_id,
         mission.name,
@@ -135,6 +135,8 @@ function DB.InsertMission(mission)
         mission.dropoff_length or 10.0,
         mission.reward_base,
         mission.xp_base,
+        mission.reward_per_km or 0,
+        mission.xp_per_km or 0,
         mission.time_limit_minutes,
         mission.difficulty or "easy",
         mission.level_required or 1,
@@ -300,7 +302,7 @@ function DB.UpdateMission(missionId, mission, adminIdentifier)
     MySQL.update.await("UPDATE " .. server.Tables.missions .. [[ SET
         area_id=?, name=?, vehicle_model=?, vehicle_label=?, vehicle_colors=?, spawn_points=?,
         dropoff_x=?, dropoff_y=?, dropoff_z=?, dropoff_heading=?, dropoff_width=?, dropoff_length=?,
-        reward_base=?, xp_base=?, time_limit_minutes=?, difficulty=?, level_required=?, updated_by=?
+        reward_base=?, xp_base=?, reward_per_km=?, xp_per_km=?, time_limit_minutes=?, difficulty=?, level_required=?, updated_by=?
         WHERE id=?
     ]], {
         mission.area_id, mission.name, mission.vehicle_model, mission.vehicle_label,
@@ -308,7 +310,8 @@ function DB.UpdateMission(missionId, mission, adminIdentifier)
         json.encode(mission.spawn_points or {}),
         mission.dropoff_x, mission.dropoff_y, mission.dropoff_z, mission.dropoff_heading or 0.0,
         mission.dropoff_width or 6.0, mission.dropoff_length or 10.0,
-        mission.reward_base, mission.xp_base, mission.time_limit_minutes, mission.difficulty or "easy",
+        mission.reward_base, mission.xp_base, mission.reward_per_km or 0, mission.xp_per_km or 0,
+        mission.time_limit_minutes, mission.difficulty or "easy",
         mission.level_required or 1, adminIdentifier, missionId,
     })
 end

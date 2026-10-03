@@ -41,6 +41,38 @@ local function getEligibleMissionRows(source)
     return eligible
 end
 
+local function distanceKm(from, row)
+    return #(vector3(from.x, from.y, from.z) - vector3(row.dropoff_x, row.dropoff_y, row.dropoff_z)) / 1000.0
+end
+
+local function distanceBonus(perKm, km)
+    return math.floor((perKm or 0) * km + 0.5)
+end
+
+-- Reward/xp before any multiplier, for one spawn point. The picked point is only known once
+-- the client spawns the target, so the pager and editor show the range over every point.
+local function payoutAt(row, point)
+    local km = distanceKm(point, row)
+    return row.reward_base + distanceBonus(row.reward_per_km, km), row.xp_base + distanceBonus(row.xp_per_km, km)
+end
+
+local function payoutRange(row)
+    local points = row.spawn_points and json.decode(row.spawn_points) or {}
+    local minReward, maxReward, minXp, maxXp = row.reward_base, row.reward_base, row.xp_base, row.xp_base
+
+    for i, point in ipairs(points) do
+        local reward, xp = payoutAt(row, point)
+        if i == 1 then
+            minReward, maxReward, minXp, maxXp = reward, reward, xp, xp
+        else
+            minReward, maxReward = math.min(minReward, reward), math.max(maxReward, reward)
+            minXp, maxXp = math.min(minXp, xp), math.max(maxXp, xp)
+        end
+    end
+
+    return minReward, maxReward, minXp, maxXp
+end
+
 -- Called by the on-call scheduler (server/modules/oncall.lua) to pick one job to page.
 -- Deliberately no `distance`/exact coords here — the old Available Jobs payload already
 -- didn't send raw search/dropoff coords, and a pager offer sends even less (no client-side
@@ -50,14 +82,17 @@ function Missions.PickRandomForPager(source)
     if #eligible == 0 then return nil end
 
     local row = eligible[math.random(1, #eligible)]
+    local minReward, maxReward, minXp, maxXp = payoutRange(row)
 
     return {
         id = row.id,
         name = row.name,
         vehicle_label = row.vehicle_label,
         difficulty = row.difficulty,
-        reward_base = row.reward_base,
-        xp_base = row.xp_base,
+        reward_base = minReward,
+        reward_max = maxReward,
+        xp_base = minXp,
+        xp_max = maxXp,
         time_limit_minutes = row.time_limit_minutes,
         level_required = row.level_required,
         area_name = row.area_name,
@@ -183,6 +218,7 @@ RegisterNetEvent("polarix_towjob:setTargetVehicle", function(deliveryId, netId, 
     local reserved = reservedSpawnPoints[deliveryId]
     if reserved and pointIndex and reserved[pointIndex] then
         reservedSpawnPoints[deliveryId] = { reserved[pointIndex] }
+        state.spawnCoords = reserved[pointIndex]
     end
 end)
 
@@ -679,7 +715,12 @@ function Missions.Complete(source, deliveryId)
     -- Phase 13's global reward_multiplier is a base economy-tuning knob, applied to
     -- reward_base before anything else (cap included) so an admin's multiplier scales the
     -- mission's whole economy proportionally, not just the payout on top.
-    local effectiveRewardBase = mission.reward_base * Settings.GetRewardMultiplier() * areaRewardMultiplier
+    local rewardBase, xpBase = mission.reward_base, mission.xp_base
+    if state.spawnCoords then
+        rewardBase, xpBase = payoutAt(mission, state.spawnCoords)
+    end
+
+    local effectiveRewardBase = rewardBase * Settings.GetRewardMultiplier() * areaRewardMultiplier
 
     -- Cap is always a fraction of the (multiplier-adjusted) reward_base, never the
     -- Economy-branch-bonused amount below — confirmed with user, keeps the cap
@@ -694,7 +735,7 @@ function Missions.Complete(source, deliveryId)
     local bonusedReward = math.floor(effectiveRewardBase * (1 + payoutBonus) + 0.5)
 
     local rewardPaid = math.max(0, bonusedReward - damagePenalty)
-    local xpPaid = math.floor(mission.xp_base * Settings.GetXpMultiplier() * areaXpMultiplier + 0.5)
+    local xpPaid = math.floor(xpBase * Settings.GetXpMultiplier() * areaXpMultiplier + 0.5)
 
     Framework.AddMoney(source, rewardPaid)
 

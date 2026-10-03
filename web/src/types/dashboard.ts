@@ -27,7 +27,10 @@ export interface PagerOffer {
   vehicle_label: string;
   difficulty: MissionDifficulty;
   reward_base: number;
+  /** Set only when the payout depends on the spawn point (reward_per_km > 0). */
+  reward_max?: number;
   xp_base: number;
+  xp_max?: number;
   time_limit_minutes: number | null;
   level_required: number;
   area_name: string;

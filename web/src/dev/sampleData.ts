@@ -68,7 +68,7 @@ export const sampleAdminMissions: AdminMission[] = [
 		vehicle_model: "asea", vehicle_label: "Declasse Asea", vehicle_colors: { primary: 0, secondary: 0 },
 		spawn_points: [{ x: 120.0, y: 80.0, z: 30.0, heading: 160.0 }, { x: 148.0, y: 62.0, z: 30.0, heading: 250.0 }],
 		dropoff_x: 200.0, dropoff_y: 80.0, dropoff_z: 30.0, dropoff_heading: 90.0, dropoff_width: 6.0, dropoff_length: 10.0,
-		reward_base: 350, xp_base: 40, time_limit_minutes: null, difficulty: "easy", level_required: 1,
+		reward_base: 350, xp_base: 40, reward_per_km: 0, xp_per_km: 0, time_limit_minutes: null, difficulty: "easy", level_required: 1,
 		is_active: true, created_by: "dev", updated_by: "dev", delivery_count: 12,
 	},
 	{
@@ -76,7 +76,7 @@ export const sampleAdminMissions: AdminMission[] = [
 		vehicle_model: "issi2", vehicle_label: "Weeny Issi", vehicle_colors: { primary: 3, secondary: 3 },
 		spawn_points: [{ x: 60.0, y: -200.0, z: 35.0, heading: 275.0 }],
 		dropoff_x: 10.0, dropoff_y: -200.0, dropoff_z: 35.0, dropoff_heading: 0.0, dropoff_width: 6.0, dropoff_length: 10.0,
-		reward_base: 800, xp_base: 110, time_limit_minutes: 8, difficulty: "medium", level_required: 3,
+		reward_base: 800, xp_base: 110, reward_per_km: 0, xp_per_km: 0, time_limit_minutes: 8, difficulty: "medium", level_required: 3,
 		is_active: true, created_by: "dev", updated_by: "dev", delivery_count: 4,
 	},
 ];

@@ -39,6 +39,8 @@ local function toNestedMission(flat)
         dropoff_length = flat.dropoff_length,
         reward_base = flat.reward_base,
         xp_base = flat.xp_base,
+        reward_per_km = flat.reward_per_km,
+        xp_per_km = flat.xp_per_km,
         time_limit_minutes = flat.time_limit_minutes,
         difficulty = flat.difficulty,
         level_required = flat.level_required,
@@ -69,6 +71,10 @@ local function validateMission(mission)
     if type(mission.reward_base) ~= "number" or mission.reward_base <= 0
         or type(mission.xp_base) ~= "number" or mission.xp_base <= 0 then
         return "invalid_reward"
+    end
+
+    for _, key in ipairs({ "reward_per_km", "xp_per_km" }) do
+        if mission[key] ~= nil and (type(mission[key]) ~= "number" or mission[key] < 0) then return "invalid_reward" end
     end
 
     for _, key in ipairs({ "dropoff_x", "dropoff_y", "dropoff_z", "dropoff_heading" }) do

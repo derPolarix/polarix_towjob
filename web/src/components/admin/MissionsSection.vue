@@ -84,6 +84,18 @@
 				</label>
 
 				<label class="admin-label">
+					{{ t("admin.field_reward_per_km") }}
+					<input v-model.number="form.reward_per_km" type="number" min="0" class="admin-input" :title="t('admin.payout_per_km_hint')" />
+				</label>
+
+				<label class="admin-label">
+					{{ t("admin.field_xp_per_km") }}
+					<input v-model.number="form.xp_per_km" type="number" min="0" class="admin-input" :title="t('admin.payout_per_km_hint')" />
+				</label>
+
+				<div style="grid-column:span 2;font-size:11px;color:#6b7280">{{ payoutRangeText }}</div>
+
+				<label class="admin-label">
 					{{ t("admin.field_level_required") }}
 					<input v-model.number="form.level_required" type="number" min="1" class="admin-input" />
 				</label>
@@ -184,10 +196,11 @@
 </template>
 
 <script setup lang="ts">
-import { getCurrentInstance, reactive, ref } from "vue";
+import { computed, getCurrentInstance, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useAdminStore } from "@/stores/adminStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
+import { formatMoney } from "@/lib/uiConfig";
 import type { AdminActionResult, AdminCurrentPosition, AdminMission, AdminSpawnPoint } from "@/types/admin";
 
 // Mirrors config.server.lua's MaxSpawnPointsPerMission — the server re-validates it anyway.
@@ -224,9 +237,31 @@ const form = reactive({
 	dropoff_length: 10,
 	reward_base: 100,
 	xp_base: 20,
+	reward_per_km: 0,
+	xp_per_km: 0,
 	time_limit_minutes: null as number | null,
 	difficulty: "easy" as "easy" | "medium" | "hard",
 	level_required: 1,
+});
+
+// Same formula as the server's payoutRange (missions.lua): base + per-km * spawn->dropoff km.
+const payoutRangeText = computed(() => {
+	const bonus = (perKm: number, point: AdminSpawnPoint) => {
+		const km = Math.hypot(point.x - form.dropoff_x, point.y - form.dropoff_y, point.z - form.dropoff_z) / 1000;
+		return Math.floor((perKm || 0) * km + 0.5);
+	};
+	const rewards = form.spawn_points.map((p) => form.reward_base + bonus(form.reward_per_km, p));
+	const xps = form.spawn_points.map((p) => form.xp_base + bonus(form.xp_per_km, p));
+	if (!rewards.length) {
+		rewards.push(form.reward_base);
+		xps.push(form.xp_base);
+	}
+	const range = (values: number[], format: (n: number) => string) => {
+		const lo = Math.min(...values);
+		const hi = Math.max(...values);
+		return lo === hi ? format(lo) : `${format(lo)}–${format(hi)}`;
+	};
+	return t("admin.payout_range", { reward: range(rewards, formatMoney), xp: range(xps, String) });
 });
 
 function toggleTimed(event: Event) {
@@ -254,6 +289,8 @@ function startNew() {
 		dropoff_length: 10,
 		reward_base: 100,
 		xp_base: 20,
+		reward_per_km: 0,
+		xp_per_km: 0,
 		time_limit_minutes: null,
 		difficulty: "easy",
 		level_required: 1,
@@ -281,6 +318,8 @@ function selectMission(mission: AdminMission) {
 		dropoff_length: mission.dropoff_length,
 		reward_base: mission.reward_base,
 		xp_base: mission.xp_base,
+		reward_per_km: mission.reward_per_km ?? 0,
+		xp_per_km: mission.xp_per_km ?? 0,
 		time_limit_minutes: mission.time_limit_minutes,
 		difficulty: mission.difficulty,
 		level_required: mission.level_required,

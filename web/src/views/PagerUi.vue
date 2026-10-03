@@ -11,7 +11,7 @@
 							</div>
 							<div class="pager-name">{{ offer.name }}</div>
 							<div class="pager-meta">
-								{{ formatMoney(offer.reward_base) }} · +{{ offer.xp_base }} XP
+								{{ payoutText }}
 								<span v-if="offer.time_limit_minutes"> · {{ offer.time_limit_minutes }}m</span>
 								· <span class="pager-timer">{{ secondsLeft }}s</span>
 							</div>
@@ -51,6 +51,14 @@ const now = ref(Date.now());
 let tick: ReturnType<typeof setInterval> | undefined;
 onMounted(() => { tick = setInterval(() => { now.value = Date.now(); }, 1000); });
 onUnmounted(() => { if (tick) clearInterval(tick); });
+
+const payoutText = computed(() => {
+	const o = offer.value;
+	if (!o) return "";
+	const reward = o.reward_max && o.reward_max > o.reward_base ? `${formatMoney(o.reward_base)}–${formatMoney(o.reward_max)}` : formatMoney(o.reward_base);
+	const xp = o.xp_max && o.xp_max > o.xp_base ? `${o.xp_base}–${o.xp_max}` : `${o.xp_base}`;
+	return `${reward} · +${xp} XP`;
+});
 
 const secondsLeft = computed(() => {
 	if (!offer.value) return 0;

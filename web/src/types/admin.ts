@@ -30,6 +30,8 @@ export interface AdminMission {
   dropoff_length: number;
   reward_base: number;
   xp_base: number;
+  reward_per_km: number;
+  xp_per_km: number;
   time_limit_minutes: number | null;
   difficulty: AdminMissionDifficulty;
   level_required: number;

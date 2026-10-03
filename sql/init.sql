@@ -53,6 +53,8 @@ CREATE TABLE IF NOT EXISTS polarix_towjob_missions (
     dropoff_length    FLOAT     DEFAULT 10.0,
     reward_base       INT,
     xp_base           INT,
+    reward_per_km     INT       DEFAULT 0,   -- added on top of reward_base per km between the picked spawn point and the dropoff
+    xp_per_km         INT       DEFAULT 0,
     time_limit_minutes INT      DEFAULT NULL,
     difficulty        ENUM('easy','medium','hard') DEFAULT 'easy',
     level_required    INT       DEFAULT 1,
@@ -107,4 +109,6 @@ ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS reward_multiplier DECI
 ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS xp_multiplier DECIMAL(4,2) DEFAULT 1.00;
 ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS note VARCHAR(140) DEFAULT NULL;
 ALTER TABLE polarix_towjob_deliveries ADD COLUMN IF NOT EXISTS mission_name VARCHAR(100);
+ALTER TABLE polarix_towjob_missions ADD COLUMN IF NOT EXISTS reward_per_km INT DEFAULT 0;
+ALTER TABLE polarix_towjob_missions ADD COLUMN IF NOT EXISTS xp_per_km INT DEFAULT 0;
 ALTER TABLE polarix_towjob_deliveries ADD COLUMN IF NOT EXISTS is_test TINYINT(1) DEFAULT 0;
