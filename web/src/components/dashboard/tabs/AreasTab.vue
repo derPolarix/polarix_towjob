@@ -38,7 +38,7 @@
 					<div v-if="area.note" style="font-size:11px;color:#6b7280;font-style:italic;margin-top:6px;margin-left:17px">{{ area.note }}</div>
 
 					<div v-if="!area.unlocked" style="display:flex;gap:14px;margin-top:8px;margin-left:17px;font-size:11px">
-						<span style="color:#9aa1ab">{{ t("areas.cost") }} <strong style="color:#1b1f24">${{ area.unlock_cost }}</strong></span>
+						<span style="color:#9aa1ab">{{ t("areas.cost") }} <strong style="color:#1b1f24">{{ formatMoney(area.unlock_cost) }}</strong></span>
 						<span style="color:#9aa1ab">{{ t("areas.level") }} <strong style="color:#1b1f24">{{ area.level_required }}</strong></span>
 					</div>
 				</button>
@@ -70,7 +70,7 @@
 
 					<template v-else>
 						<div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;font-size:13px">
-							<div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">{{ t("areas.unlock_cost") }}</span><span style="color:var(--accent);font-weight:700">${{ selectedArea.unlock_cost }}</span></div>
+							<div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">{{ t("areas.unlock_cost") }}</span><span style="color:var(--accent);font-weight:700">{{ formatMoney(selectedArea.unlock_cost) }}</span></div>
 							<div style="display:flex;justify-content:space-between"><span style="color:#9aa1ab">{{ t("areas.level_required") }}</span><span style="color:#1b1f24;font-weight:600">{{ t("common.level_short", { level: selectedArea.level_required }) }}</span></div>
 						</div>
 
@@ -95,6 +95,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { formatMoney } from "@/lib/uiConfig";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import gtaMapUrl from "@/assets/maps/gta_map.jpg";

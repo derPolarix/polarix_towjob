@@ -28,7 +28,7 @@
 					</div>
 				</div>
 				<span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.06em;text-transform:uppercase" :style="{ color: statusColor(job.status) }">{{ t("status." + job.status) }}</span>
-				<span style="font-size:13px;font-weight:700" :style="{ color: job.status === 'failed' ? '#d24b3a' : '#1b1f24' }">${{ job.rewardPaid }}</span>
+				<span style="font-size:13px;font-weight:700" :style="{ color: job.status === 'failed' ? '#d24b3a' : '#1b1f24' }">{{ formatMoney(job.rewardPaid) }}</span>
 				<span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab">{{ formatDate(job.startedAt) }}</span>
 			</div>
 		</div>
@@ -60,6 +60,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { formatMoney } from "@/lib/uiConfig";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { DeliveryHistoryEntry, DeliveryHistoryResult, DeliveryStatus } from "@/types/dashboard";
 

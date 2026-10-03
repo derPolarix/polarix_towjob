@@ -9,7 +9,7 @@
 				</div>
 				<div>
 					<div style="font-size:14px;font-weight:700;color:#1b1f24">{{ t("vehicles.active_rental_label", { label: dashboardStore.payload?.rentalTruckLabel ?? "Rental Flatbed" }) }}</div>
-					<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:2px">{{ t("common.rental_interval", { cost: dashboardStore.payload?.rentalPricePerCharge ?? 0, minutes: dashboardStore.payload?.rentalIntervalMinutes ?? 0 }) }}</div>
+					<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:2px">{{ t("common.rental_interval", { cost: formatMoney(dashboardStore.payload?.rentalPricePerCharge), minutes: dashboardStore.payload?.rentalIntervalMinutes ?? 0 }) }}</div>
 				</div>
 			</div>
 			<button
@@ -73,7 +73,7 @@
 								:style="{ opacity: (busyVehicleId === vehicle.id || (vehicle.body_health >= 1000 && vehicle.engine_health >= 1000)) ? 0.4 : 1 }"
 								@click="repair(vehicle)"
 							>
-								{{ t("vehicles.repair_cost", { cost: estimateRepairCost(vehicle) }) }}
+								{{ t("vehicles.repair_cost", { cost: formatMoney(estimateRepairCost(vehicle)) }) }}
 							</button>
 							<button
 								v-if="vehicle.state === 'stored'"
@@ -128,7 +128,7 @@
 							<span v-if="tier.damage_resistance > 0" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#6b7280"><iconify-icon icon="tabler:shield" width="14" style="color:#aab0b8"></iconify-icon>{{ t("vehicles.damage_resist", { percent: Math.round(tier.damage_resistance * 100) }) }}</span>
 						</div>
 						<div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:8px">
-							<span style="font-size:15px;font-weight:800;color:#1b1f24">${{ tier.price }}</span>
+							<span style="font-size:15px;font-weight:800;color:#1b1f24">{{ formatMoney(tier.price) }}</span>
 							<span v-if="isTierLocked(tier)" style="font-family:'IBM Plex Mono',monospace;font-size:10px;padding:7px 11px;border-radius:9px;background:#f1f2f4;color:#9aa1ab">{{ t("common.level_short", { level: tier.level_required }) }}</span>
 							<span v-else-if="isTierOwned(tier)" style="font-family:'IBM Plex Mono',monospace;font-size:10px;padding:7px 11px;border-radius:9px;background:#eef0f2;color:#6b7280">{{ t("vehicles.owned_badge") }}</span>
 							<button v-else class="accent-btn" type="button" style="padding:8px 15px;font-size:12px" :disabled="purchasingTierId === tier.id" @click="purchase(tier)">
@@ -145,6 +145,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { formatMoney } from "@/lib/uiConfig";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { usePersistantStore } from "@/stores/persistantStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";

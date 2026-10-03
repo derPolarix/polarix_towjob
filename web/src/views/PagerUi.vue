@@ -11,7 +11,7 @@
 							</div>
 							<div class="pager-name">{{ offer.name }}</div>
 							<div class="pager-meta">
-								${{ offer.reward_base }} · +{{ offer.xp_base }} XP
+								{{ formatMoney(offer.reward_base) }} · +{{ offer.xp_base }} XP
 								<span v-if="offer.time_limit_minutes"> · {{ offer.time_limit_minutes }}m</span>
 								· <span class="pager-timer">{{ secondsLeft }}s</span>
 							</div>
@@ -39,7 +39,7 @@ import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { AcceptPageResult, DeclinePageResult } from "@/types/dashboard";
-import { keyIcon, uiConfig } from "@/lib/uiConfig";
+import { formatMoney, keyIcon, uiConfig } from "@/lib/uiConfig";
 import pagerImageUrl from "@/assets/pager.png";
 
 const { t } = useI18n();

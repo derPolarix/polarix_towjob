@@ -11,7 +11,7 @@
 			<div style="font-size:17px;font-weight:800;color:#1b1f24">{{ t("rental.prompt_title") }}</div>
 			<div style="font-size:13px;color:#6b7280;margin-top:8px;line-height:1.6">
 				<i18n-t keypath="rental.prompt_body" tag="span">
-					<template #price><strong>${{ dashboardStore.payload?.rentalPricePerCharge ?? 0 }}</strong></template>
+					<template #price><strong>{{ formatMoney(dashboardStore.payload?.rentalPricePerCharge) }}</strong></template>
 					<template #minutes><strong>{{ dashboardStore.payload?.rentalIntervalMinutes ?? 0 }}</strong></template>
 				</i18n-t>
 			</div>
@@ -41,6 +41,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { formatMoney } from "@/lib/uiConfig";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { StartStandaloneRentalResult } from "@/types/dashboard";

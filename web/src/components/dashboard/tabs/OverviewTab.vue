@@ -94,7 +94,7 @@
 						<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;margin-top:2px">#DEL-{{ job.id }}</div>
 					</div>
 					<div style="text-align:right;flex-shrink:0">
-						<div style="font-weight:700;font-size:13px" :style="{ color: job.status === 'failed' ? '#d24b3a' : '#1b1f24' }">${{ job.rewardPaid }}</div>
+						<div style="font-weight:700;font-size:13px" :style="{ color: job.status === 'failed' ? '#d24b3a' : '#1b1f24' }">{{ formatMoney(job.rewardPaid) }}</div>
 						<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;margin-top:2px;text-transform:uppercase" :style="{ color: statusMeta(job.status).color }">{{ t("status." + job.status) }}</div>
 					</div>
 				</div>
@@ -108,7 +108,7 @@ import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
-import { uiConfig } from "@/lib/uiConfig";
+import { formatMoney, uiConfig } from "@/lib/uiConfig";
 import type { DeliveryHistoryEntry, DeliveryStatus, RecentDeliveriesResult, ToggleOnCallResult } from "@/types/dashboard";
 
 const RECENT_LIMIT = 5;
@@ -176,7 +176,7 @@ function statusMeta(status: DeliveryStatus) {
 }
 
 const stats = computed(() => [
-	{ icon: "tabler:cash-banknote", value: `$${player.value?.total_earnings ?? 0}`, label: t("overview.stat_total_earnings"), color: "#b58a05", tileBg: "rgba(232,180,8,0.16)" },
+	{ icon: "tabler:cash-banknote", value: formatMoney(player.value?.total_earnings), label: t("overview.stat_total_earnings"), color: "#b58a05", tileBg: "rgba(232,180,8,0.16)" },
 	{ icon: "tabler:medal", value: `${player.value?.level ?? 1} · ${dashboardStore.levelTitle}`, label: t("overview.stat_level"), color: "#3b82f6", tileBg: "rgba(59,130,246,0.14)" },
 	{ icon: "tabler:checks", value: String(player.value?.total_deliveries ?? 0), label: t("overview.stat_deliveries"), color: "#22c55e", tileBg: "rgba(34,197,94,0.14)" },
 	{ icon: "tabler:alert-triangle", value: `${player.value?.failed_deliveries ?? 0} / ${player.value?.aborted_deliveries ?? 0}`, label: t("overview.stat_failed_aborted"), color: "#8b5cf6", tileBg: "rgba(139,92,246,0.14)" },

@@ -30,7 +30,7 @@
 						<span style="font-size:13px;font-weight:600;color:#1b1f24;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ entry.name }}</span>
 					</div>
 					<span style="font-size:13px;color:#3c424b">{{ entry.level }}</span>
-					<span style="font-size:13px;font-weight:600;color:#1b1f24">${{ entry.total_earnings }}</span>
+					<span style="font-size:13px;font-weight:600;color:#1b1f24">{{ formatMoney(entry.total_earnings) }}</span>
 				</div>
 
 				<div
@@ -43,7 +43,7 @@
 						<span style="font-size:13px;font-weight:600;color:#1b1f24;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ own.name }}</span>
 					</div>
 					<span style="font-size:13px;color:#3c424b">{{ own.level }}</span>
-					<span style="font-size:13px;font-weight:600;color:#1b1f24">${{ own.total_earnings }}</span>
+					<span style="font-size:13px;font-weight:600;color:#1b1f24">{{ formatMoney(own.total_earnings) }}</span>
 				</div>
 			</template>
 		</div>
@@ -53,6 +53,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { formatMoney } from "@/lib/uiConfig";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { LeaderboardEntry, LeaderboardResult } from "@/types/dashboard";
 

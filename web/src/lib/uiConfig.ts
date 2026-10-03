@@ -1,13 +1,23 @@
 import { reactive } from "vue";
 
-// Lua sends the resolved keybinds with every NUI message (client/nui/nui_messages.lua),
-// so prompts always show the key the player actually has bound.
+// Lua sends the resolved keybinds and currency with every NUI message
+// (client/nui/nui_messages.lua), so prompts show the key the player actually has bound
+// and every amount follows Config.Currency.
 export const uiConfig = reactive({
 	keybinds: {
 		pagerAccept: "Enter",
 		pagerDecline: "Backspace",
 	},
+	currency: {
+		symbol: "$",
+		position: "prefix" as "prefix" | "suffix",
+	},
 });
+
+type UiConfigMessage = {
+	keybinds?: Partial<typeof uiConfig.keybinds>;
+	currency?: Partial<typeof uiConfig.currency>;
+};
 
 const KEY_ICONS: Record<string, string> = {
 	Enter: "tabler:corner-down-left",
@@ -18,8 +28,14 @@ export function keyIcon(key: string): string | undefined {
 	return KEY_ICONS[key];
 }
 
-export function setUiConfig(data: { keybinds?: Partial<typeof uiConfig.keybinds> } | undefined) {
-	if (data?.keybinds) {
-		Object.assign(uiConfig.keybinds, data.keybinds);
-	}
+export function setUiConfig(data: UiConfigMessage | undefined) {
+	if (data?.keybinds) Object.assign(uiConfig.keybinds, data.keybinds);
+	if (data?.currency) Object.assign(uiConfig.currency, data.currency);
+}
+
+// Mirrors shared/currency.lua so the NUI and the notifications always read the same.
+export function formatMoney(amount: number | null | undefined): string {
+	const grouped = String(Math.floor(Number(amount) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	const { symbol, position } = uiConfig.currency;
+	return position === "suffix" ? `${grouped} ${symbol}` : `${symbol}${grouped}`;
 }
