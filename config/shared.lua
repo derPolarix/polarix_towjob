@@ -2,6 +2,7 @@
 return {
     Debug = false,
     PrintDebug = false,
+    CheckForUpdates = true, -- warn in server console when a newer GitHub release exists
 
     Framework = "qbox", -- "qbox" | "qb-core" | "esx"
 
