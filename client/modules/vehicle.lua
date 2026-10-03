@@ -55,7 +55,7 @@ end
 local function spawnTargetVehicle(mission)
     local candidates = mission.spawn_candidates or {}
     if #candidates == 0 then
-        debug.DebugPrint("Vehicle.spawnTargetVehicle: mission", mission.id, "has no spawn candidates")
+        debug.Warn("Vehicle.spawnTargetVehicle: mission", mission.id, "has no spawn candidates")
         return nil
     end
 

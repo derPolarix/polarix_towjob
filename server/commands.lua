@@ -10,7 +10,7 @@ RegisterCommand('towjobadmin', function(source)
     if source == 0 then return end -- console has no NUI to open
 
     if not Framework.IsAdmin(source) then
-        debug.DebugPrint(("towjobadmin: non-admin %s attempted /towjobadmin"):format(source))
+        debug.Warn(("towjobadmin: non-admin %s attempted /towjobadmin"):format(source))
         TriggerClientEvent("polarix_towjob:notify", source, Locale("notify.no_permission"), "error")
         return
     end
@@ -27,7 +27,7 @@ if sharedConfig.Debug then
         if source == 0 then return end -- needs a real player to page
 
         if not Framework.IsAdmin(source) then
-            debug.DebugPrint(("towjobtestpage: non-admin %s attempted /towjobtestpage"):format(source))
+            debug.Warn(("towjobtestpage: non-admin %s attempted /towjobtestpage"):format(source))
             TriggerClientEvent("polarix_towjob:notify", source, Locale("notify.no_permission"), "error")
             return
         end

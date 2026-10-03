@@ -40,7 +40,7 @@ end
 function Player.Load(source)
     local identifier = Framework.GetPlayerIdentifier(source)
     if not identifier then
-        debug.DebugPrint("Player.Load: could not resolve identifier for source", source)
+        debug.Warn("Player.Load: could not resolve identifier for source", source)
         return
     end
 

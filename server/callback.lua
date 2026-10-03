@@ -1,6 +1,7 @@
 local sharedConfig = require("config.shared")
 local serverConfig = require("config.server")
 local Locale = require("shared.locale")
+local debug = require("shared.debug")
 
 local function localizeList(keys)
     local out = {}
@@ -17,7 +18,7 @@ lib.callback.register("polarix_towjob:openDashboard", function(source)
         pcall(Player.Load, source)
         playerData = Player.GetData(source)
         if not playerData then
-            print(("^1[polarix_towjob] openDashboard: could not load player for source %s (identifier=%s)^7"):format(source, tostring(Framework.GetPlayerIdentifier(source))))
+            debug.Error(("openDashboard: could not load player for source %s (identifier=%s)"):format(source, tostring(Framework.GetPlayerIdentifier(source))))
             return nil
         end
     end
@@ -44,7 +45,7 @@ lib.callback.register("polarix_towjob:openDashboard", function(source)
     end)
 
     if not ok then
-        print(("^1[polarix_towjob] openDashboard: payload build errored for source %s: %s^7"):format(source, tostring(payload)))
+        debug.Error(("openDashboard: payload build errored for source %s: %s"):format(source, tostring(payload)))
         return nil
     end
 

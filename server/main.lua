@@ -9,7 +9,7 @@ require("server.modules.player")
 local function loadSchema()
     local sql = LoadResourceFile(GetCurrentResourceName(), "sql/init.sql")
     if not sql then
-        debug.DebugPrint("sql/init.sql not found, skipping schema creation")
+        debug.Error("sql/init.sql not found, skipping schema creation")
         return
     end
 
@@ -18,7 +18,7 @@ local function loadSchema()
         if trimmed ~= "" then
             local ok, err = pcall(MySQL.query.await, trimmed)
             if not ok then
-                debug.DebugPrint("Schema statement failed:", trimmed, err)
+                debug.Warn("Schema statement failed:", trimmed, err)
             end
         end
     end
@@ -41,7 +41,7 @@ AddEventHandler('onResourceStart', function(resourceName)
         if source then
             local ok, err = pcall(Player.Load, source)
             if not ok then
-                debug.DebugPrint("onResourceStart: Player.Load failed for", source, err)
+                debug.Warn("onResourceStart: Player.Load failed for", source, err)
             end
         end
     end

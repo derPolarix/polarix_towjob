@@ -202,7 +202,7 @@ RegisterNetEvent("polarix_towjob:vehicleFound", function(deliveryId)
     local entity = state.targetNetId and NetworkGetEntityFromNetworkId(state.targetNetId)
     if entity and entity ~= 0 and DoesEntityExist(entity) then
         if #(GetEntityCoords(GetPlayerPed(source)) - GetEntityCoords(entity)) > serverConfig.VehicleFoundMaxDistance then
-            debug.DebugPrint("Missions.vehicleFound: rejected out-of-range claim for source", source)
+            debug.Warn("Missions.vehicleFound: rejected out-of-range claim for source", source)
             return
         end
         state.bodyHealthBaseline = GetVehicleBodyHealth(entity)
@@ -274,7 +274,7 @@ RegisterNetEvent("polarix_towjob:reportVehicleDestroyed", function(deliveryId)
 
     local status = trackedEntityStatus(state, state.targetNetId, "targetSeen")
     if status == "alive" then
-        debug.DebugPrint("Missions.reportVehicleDestroyed: rejected unverified destruction claim for source", source)
+        debug.Warn("Missions.reportVehicleDestroyed: rejected unverified destruction claim for source", source)
         return
     end
 
@@ -314,7 +314,7 @@ RegisterNetEvent("polarix_towjob:reportTowTruckDestroyed", function(deliveryId)
     if not state or state.deliveryId ~= deliveryId then return end
 
     if not isTowTruckDestroyed(state) then
-        debug.DebugPrint("Missions.reportTowTruckDestroyed: rejected unverified destruction claim for source", source)
+        debug.Warn("Missions.reportTowTruckDestroyed: rejected unverified destruction claim for source", source)
         return
     end
 
