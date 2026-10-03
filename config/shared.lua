@@ -4,6 +4,14 @@ return {
     PrintDebug = false,
     CheckForUpdates = true, -- warn in server console when a newer GitHub release exists
 
+    -- Symbol used by every money value (notifications + NUI).
+    -- position "prefix" -> $680,000 | "suffix" -> 680,000 € (space added automatically)
+    -- Digits are always grouped with ",".
+    Currency = {
+        symbol   = "$",
+        position = "prefix", -- "prefix" | "suffix"
+    },
+
     Framework = "qbox", -- "qbox" | "qb-core" | "esx"
     -- When the chosen system isn't running, interactions fall back to markers/TextUI and /towrequest.
     Target = "ox_target", -- "ox_target" | "qb-target" | "sleepless_interact" | "none"

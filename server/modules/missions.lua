@@ -1,6 +1,7 @@
 local serverConfig = require("config.server")
 local debug = require("shared.debug")
 local Locale = require("shared.locale")
+local Money = require("shared.currency")
 
 Missions = {}
 
@@ -703,8 +704,8 @@ function Missions.Complete(source, deliveryId)
     Player.AddXP(source, xpPaid)
 
     local message = damagePenalty > 0
-        and Locale("notify.delivery_complete_with_damage"):format(rewardPaid, damagePenalty, xpPaid)
-        or Locale("notify.delivery_complete"):format(rewardPaid, xpPaid)
+        and Locale("notify.delivery_complete_with_damage"):format(Money(rewardPaid), Money(damagePenalty), xpPaid)
+        or Locale("notify.delivery_complete"):format(Money(rewardPaid), xpPaid)
     TriggerClientEvent("polarix_towjob:notify", source, message, "success")
     TriggerClientEvent("polarix_towjob:deliveryEnded", source, "completed")
 

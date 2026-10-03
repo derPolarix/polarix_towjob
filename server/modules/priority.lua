@@ -1,6 +1,7 @@
 local serverConfig = require("config.server")
 local debug = require("shared.debug")
 local Locale = require("shared.locale")
+local Money = require("shared.currency")
 
 Priority = {}
 
@@ -432,7 +433,7 @@ function Priority.OnDeliveryCompleted(missionId, source, rewardPaid)
         local officer = resolveSourceByIdentifier(job.markedByIdentifier, job.markedBy)
         if officer then
             Framework.AddMoney(officer, cut)
-            TriggerClientEvent("polarix_towjob:notify", officer, Locale("notify.police_cut_paid"):format(cut), "success")
+            TriggerClientEvent("polarix_towjob:notify", officer, Locale("notify.police_cut_paid"):format(Money(cut)), "success")
         end
     end
 

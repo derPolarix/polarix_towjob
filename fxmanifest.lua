@@ -14,6 +14,7 @@ shared_scripts {
     'shared/debug.lua',
     "config/shared.lua",
     'shared/locale.lua',
+    'shared/currency.lua',
     "framework/qbox/shared.lua",
     "framework/qb-core/shared.lua",
     "framework/esx/shared.lua",
