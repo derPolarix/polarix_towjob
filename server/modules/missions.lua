@@ -73,6 +73,8 @@ local function payoutRange(row)
     return minReward, maxReward, minXp, maxXp
 end
 
+local lastPagedMissionId = {} -- [source] = id of the mission paged last
+
 -- Called by the on-call scheduler (server/modules/oncall.lua) to pick one job to page.
 -- Deliberately no `distance`/exact coords here — the old Available Jobs payload already
 -- didn't send raw search/dropoff coords, and a pager offer sends even less (no client-side
@@ -81,7 +83,18 @@ function Missions.PickRandomForPager(source)
     local eligible = getEligibleMissionRows(source)
     if #eligible == 0 then return nil end
 
+    -- Never the same job twice in a row, unless it is the only one left.
+    if #eligible > 1 then
+        for i, candidate in ipairs(eligible) do
+            if candidate.id == lastPagedMissionId[source] then
+                table.remove(eligible, i)
+                break
+            end
+        end
+    end
+
     local row = eligible[math.random(1, #eligible)]
+    lastPagedMissionId[source] = row.id
     local minReward, maxReward, minXp, maxXp = payoutRange(row)
 
     return {
@@ -470,6 +483,7 @@ CreateThread(function()
 end)
 
 Framework.OnPlayerUnload(function(source)
+    lastPagedMissionId[source] = nil
     local state = activeDeliveryState[source]
     if state then releaseSpawnPoints(state.deliveryId) end
     activeDeliveryState[source] = nil
