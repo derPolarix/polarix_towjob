@@ -58,6 +58,8 @@
     "keybind.open_dashboard": "Open tow job (depot)",
     "keybind.store_truck": "Store tow truck",
     "keybind.confirm_delivery": "Confirm delivery (dropoff)",
+    "keybind.pager_accept": "Accept pager job",
+    "keybind.pager_decline": "Decline pager job",
 
     "misc.unknown_job": "Unknown Job",
 

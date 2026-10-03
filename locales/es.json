@@ -58,6 +58,8 @@
     "keybind.open_dashboard": "Abrir trabajo de grúa (depósito)",
     "keybind.store_truck": "Guardar grúa",
     "keybind.confirm_delivery": "Confirmar entrega (destino)",
+    "keybind.pager_accept": "Aceptar trabajo del buscapersonas",
+    "keybind.pager_decline": "Rechazar trabajo del buscapersonas",
 
     "misc.unknown_job": "Trabajo desconocido",
 

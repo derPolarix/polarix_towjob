@@ -17,11 +17,11 @@
 							</div>
 							<div class="pager-actions">
 								<button type="button" class="pager-hint pager-hint-accept" :disabled="busy" @click="accept">
-									<span class="pager-key"><iconify-icon icon="tabler:corner-down-left" width="8"></iconify-icon>Enter</span>
+									<span class="pager-key"><iconify-icon v-if="keyIcon(uiConfig.keybinds.pagerAccept)" :icon="keyIcon(uiConfig.keybinds.pagerAccept)" width="8"></iconify-icon>{{ uiConfig.keybinds.pagerAccept }}</span>
 									{{ t("app.accept") }}
 								</button>
 								<button type="button" class="pager-hint pager-hint-decline" :disabled="busy" @click="decline">
-									<span class="pager-key"><iconify-icon icon="tabler:backspace" width="8"></iconify-icon>Bksp</span>
+									<span class="pager-key"><iconify-icon v-if="keyIcon(uiConfig.keybinds.pagerDecline)" :icon="keyIcon(uiConfig.keybinds.pagerDecline)" width="8"></iconify-icon>{{ uiConfig.keybinds.pagerDecline }}</span>
 									{{ t("app.decline") }}
 								</button>
 							</div>
@@ -39,6 +39,7 @@ import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { AcceptPageResult, DeclinePageResult } from "@/types/dashboard";
+import { keyIcon, uiConfig } from "@/lib/uiConfig";
 import pagerImageUrl from "@/assets/pager.png";
 
 const { t } = useI18n();

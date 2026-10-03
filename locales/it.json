@@ -58,6 +58,8 @@
     "keybind.open_dashboard": "Apri il lavoro di traino (deposito)",
     "keybind.store_truck": "Riponi carro attrezzi",
     "keybind.confirm_delivery": "Conferma consegna (destinazione)",
+    "keybind.pager_accept": "Accetta lavoro del cercapersone",
+    "keybind.pager_decline": "Rifiuta lavoro del cercapersone",
 
     "misc.unknown_job": "Lavoro sconosciuto",
 

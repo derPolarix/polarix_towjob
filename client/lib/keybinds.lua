@@ -8,7 +8,11 @@ local BINDS = {
     OpenDashboard   = { name = "polarix_towjob_open_dashboard",   description = "keybind.open_dashboard" },
     StoreTruck      = { name = "polarix_towjob_store_truck",      description = "keybind.store_truck" },
     ConfirmDelivery = { name = "polarix_towjob_confirm_delivery", description = "keybind.confirm_delivery" },
+    PagerAccept     = { name = "polarix_towjob_pager_accept",     description = "keybind.pager_accept" },
+    PagerDecline    = { name = "polarix_towjob_pager_decline",    description = "keybind.pager_decline" },
 }
+
+local DISPLAY_NAMES = { RETURN = "Enter", BACK = "Backspace" }
 
 local Keybinds = {}
 local registered = {}
@@ -31,6 +35,12 @@ function Keybinds.GetKey(action)
         return clientConfig.Keybinds[action]
     end
     return key
+end
+
+-- Key label for the NUI, which has no TextUI-style "[E]" wrapper.
+function Keybinds.GetDisplayKey(action)
+    local key = Keybinds.GetKey(action)
+    return DISPLAY_NAMES[key:upper()] or key
 end
 
 -- Prompt text like "[E] Store Tow Truck".

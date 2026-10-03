@@ -35,8 +35,8 @@
 		<p v-if="onCallError" style="margin:0;font-size:12px;color:#d24b3a">{{ onCallError }}</p>
 		<p style="margin:0;font-size:12px;color:#9aa1ab">
 			<i18n-t keypath="overview.on_call_help" tag="span">
-				<template #accept><b>Enter</b></template>
-				<template #decline><b>Backspace</b></template>
+				<template #accept><b>{{ uiConfig.keybinds.pagerAccept }}</b></template>
+				<template #decline><b>{{ uiConfig.keybinds.pagerDecline }}</b></template>
 			</i18n-t>
 		</p>
 
@@ -108,6 +108,7 @@ import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
+import { uiConfig } from "@/lib/uiConfig";
 import type { DeliveryHistoryEntry, DeliveryStatus, RecentDeliveriesResult, ToggleOnCallResult } from "@/types/dashboard";
 
 const RECENT_LIMIT = 5;

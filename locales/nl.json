@@ -58,6 +58,8 @@
     "keybind.open_dashboard": "Takelklus openen (depot)",
     "keybind.store_truck": "Takelwagen opbergen",
     "keybind.confirm_delivery": "Levering bevestigen (afleverpunt)",
+    "keybind.pager_accept": "Pieperklus accepteren",
+    "keybind.pager_decline": "Pieperklus weigeren",
 
     "misc.unknown_job": "Onbekende klus",
 

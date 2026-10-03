@@ -30,6 +30,7 @@ import type { DashboardPayload, PagerOffer } from "@/types/dashboard";
 import type { ActiveDeliveryUpdate } from "@/types/delivery";
 import { isDev } from "./main";
 import { setLanguage } from "./i18n";
+import { setUiConfig } from "./lib/uiConfig";
 import Sidebar from "@/components/app/Sidebar.vue";
 import ActiveDeliveryUi from "@/views/ActiveDeliveryUi.vue";
 import PagerUi from "@/views/PagerUi.vue";
@@ -50,6 +51,7 @@ const handleMessage = (event: MessageEvent) => {
 
 	// Every Lua->NUI message carries the current Config.Language — keep vue-i18n in sync.
 	setLanguage((raw?.data as { language?: string })?.language);
+	setUiConfig(raw?.data);
 
 	switch (action) {
 		case "openDashboard":

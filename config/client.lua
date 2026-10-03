@@ -25,6 +25,8 @@ return {
         OpenDashboard   = "E", -- open the job at the depot NPC (only without a target system)
         StoreTruck      = "E", -- store the tow truck in the parking zone (only without a target system)
         ConfirmDelivery = "E", -- confirm the delivery once the towed vehicle is placed at the dropoff
+        PagerAccept     = "RETURN", -- accept an incoming pager job
+        PagerDecline    = "BACK",   -- decline an incoming pager job
     },
 
     DeliveryZoneCheckIntervalMs = 500,

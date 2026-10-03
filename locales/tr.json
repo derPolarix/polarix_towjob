@@ -58,6 +58,8 @@
     "keybind.open_dashboard": "Çekici işini aç (depo)",
     "keybind.store_truck": "Çekiciyi kaldır",
     "keybind.confirm_delivery": "Teslimatı onayla (teslim noktası)",
+    "keybind.pager_accept": "Çağrı cihazı işini kabul et",
+    "keybind.pager_decline": "Çağrı cihazı işini reddet",
 
     "misc.unknown_job": "Bilinmeyen iş",
 

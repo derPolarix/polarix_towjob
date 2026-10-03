@@ -1,10 +1,6 @@
 local debug = require("shared.debug")
 local Locale = require("shared.locale")
-
--- Pager NUI is focus-less (never grabs the cursor mid-drive), so its buttons can't be
--- clicked — accept/decline run off raw control checks instead.
-local ACCEPT_CONTROL = 191  -- INPUT_FRONTEND_ACCEPT (Enter)
-local DECLINE_CONTROL = 177 -- INPUT_FRONTEND_CANCEL (Backspace)
+local Keybinds = require("client.lib.keybinds")
 
 local offerActive = false
 local busy = false
@@ -37,17 +33,12 @@ RegisterNetEvent("polarix_towjob:pagerOfferCleared", function()
     SendMessage("pagerOfferCleared", nil)
 end)
 
-CreateThread(function()
-    while true do
-        if offerActive then
-            if IsControlJustPressed(0, ACCEPT_CONTROL) then
-                resolveOffer(true)
-            elseif IsControlJustPressed(0, DECLINE_CONTROL) then
-                resolveOffer(false)
-            end
-            Wait(0)
-        else
-            Wait(250)
-        end
-    end
+-- Pager NUI is focus-less (never grabs the cursor mid-drive), so its buttons can't be
+-- clicked — accept/decline run off keybinds instead.
+Keybinds.Register("PagerAccept", function()
+    if offerActive then resolveOffer(true) end
+end)
+
+Keybinds.Register("PagerDecline", function()
+    if offerActive then resolveOffer(false) end
 end)

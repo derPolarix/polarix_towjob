@@ -58,6 +58,8 @@
     "keybind.open_dashboard": "Ouvrir le job de dépannage (dépôt)",
     "keybind.store_truck": "Ranger la dépanneuse",
     "keybind.confirm_delivery": "Confirmer la livraison (destination)",
+    "keybind.pager_accept": "Accepter le boulot du bipeur",
+    "keybind.pager_decline": "Refuser le boulot du bipeur",
 
     "misc.unknown_job": "Boulot inconnu",
 

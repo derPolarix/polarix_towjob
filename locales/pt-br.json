@@ -58,6 +58,8 @@
     "keybind.open_dashboard": "Abrir trabalho de reboque (depósito)",
     "keybind.store_truck": "Guardar reboque",
     "keybind.confirm_delivery": "Confirmar entrega (destino)",
+    "keybind.pager_accept": "Aceitar trabalho do pager",
+    "keybind.pager_decline": "Recusar trabalho do pager",
 
     "misc.unknown_job": "Trabalho desconhecido",
 

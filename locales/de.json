@@ -58,6 +58,8 @@
     "keybind.open_dashboard": "Abschleppjob öffnen (Depot)",
     "keybind.store_truck": "Abschleppwagen einlagern",
     "keybind.confirm_delivery": "Lieferung bestätigen (Abgabe)",
+    "keybind.pager_accept": "Pager-Auftrag annehmen",
+    "keybind.pager_decline": "Pager-Auftrag ablehnen",
 
     "misc.unknown_job": "Unbekannter Auftrag",
 

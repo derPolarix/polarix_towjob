@@ -58,6 +58,8 @@
     "keybind.open_dashboard": "Otwórz pracę holownika (baza)",
     "keybind.store_truck": "Schowaj lawetę",
     "keybind.confirm_delivery": "Potwierdź dostawę (cel)",
+    "keybind.pager_accept": "Przyjmij zlecenie z pagera",
+    "keybind.pager_decline": "Odrzuć zlecenie z pagera",
 
     "misc.unknown_job": "Nieznane zlecenie",
 
