@@ -75,12 +75,12 @@
 
 				<label class="admin-label">
 					{{ t("admin.field_reward") }}
-					<input v-model.number="form.reward_base" type="number" min="0" class="admin-input" />
+					<input v-model.number="form.reward_base" type="number" min="1" class="admin-input" />
 				</label>
 
 				<label class="admin-label">
 					{{ t("admin.field_xp") }}
-					<input v-model.number="form.xp_base" type="number" min="0" class="admin-input" />
+					<input v-model.number="form.xp_base" type="number" min="1" class="admin-input" />
 				</label>
 
 				<label class="admin-label">
@@ -378,6 +378,7 @@ const reasonMessages: Record<string, string> = {
 	invalid_area: "admin.err_invalid_area",
 	invalid_vehicle_model: "admin.err_invalid_vehicle_model",
 	invalid_reward: "admin.err_invalid_reward",
+	invalid_field: "admin.err_invalid_field",
 	invalid_position: "admin.err_invalid_position_mission",
 	no_spawn_points: "admin.err_no_spawn_points",
 	too_many_spawn_points: "admin.err_too_many_spawn_points",

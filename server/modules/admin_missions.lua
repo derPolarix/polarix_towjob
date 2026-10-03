@@ -66,8 +66,26 @@ local function validateMission(mission)
     if not mission.name or mission.name == "" then return "invalid_name" end
     if not mission.area_id or not DB.AreaIdExists(mission.area_id) then return "invalid_area" end
     if not mission.vehicle_model or mission.vehicle_model == "" then return "invalid_vehicle_model" end
-    if type(mission.reward_base) ~= "number" or type(mission.xp_base) ~= "number" then return "invalid_reward" end
-    if mission.dropoff_x == nil then return "invalid_position" end
+    if type(mission.reward_base) ~= "number" or mission.reward_base <= 0
+        or type(mission.xp_base) ~= "number" or mission.xp_base <= 0 then
+        return "invalid_reward"
+    end
+
+    for _, key in ipairs({ "dropoff_x", "dropoff_y", "dropoff_z", "dropoff_heading" }) do
+        if type(mission[key]) ~= "number" then return "invalid_position" end
+    end
+
+    if type(mission.dropoff_width) ~= "number" or mission.dropoff_width <= 0
+        or type(mission.dropoff_length) ~= "number" or mission.dropoff_length <= 0 then
+        return "invalid_field"
+    end
+    if type(mission.level_required) ~= "number" or mission.level_required < 1 then return "invalid_field" end
+    if mission.time_limit_minutes ~= nil and (type(mission.time_limit_minutes) ~= "number" or mission.time_limit_minutes < 1) then
+        return "invalid_field"
+    end
+    if mission.difficulty ~= "easy" and mission.difficulty ~= "medium" and mission.difficulty ~= "hard" then
+        return "invalid_field"
+    end
 
     local spawnPointsReason = validateSpawnPoints(mission.spawn_points)
     if spawnPointsReason then return spawnPointsReason end
