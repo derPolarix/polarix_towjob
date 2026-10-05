@@ -15,6 +15,7 @@
 					<template #minutes><strong>{{ dashboardStore.payload?.rentalIntervalMinutes ?? 0 }}</strong></template>
 				</i18n-t>
 			</div>
+			<p v-if="errorMessage" style="margin:14px 0 0;font-size:12px;color:#d24b3a">{{ errorMessage }}</p>
 			<div style="display:flex;gap:10px;margin-top:20px">
 				<button
 					class="accent-btn"
@@ -39,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { formatMoney } from "@/lib/uiConfig";
 import { useDashboardStore } from "@/stores/dashboardStore";
@@ -49,6 +50,21 @@ import type { StartStandaloneRentalResult } from "@/types/dashboard";
 const { t } = useI18n();
 const dashboardStore = useDashboardStore();
 const isRenting = ref(false);
+const errorMessage = ref("");
+
+const reasonMessages: Record<string, string> = {
+	insufficient_funds: "error.rental_insufficient_funds",
+	active_delivery_exists: "error.finish_delivery_before_on_call",
+	no_missions_configured: "error.no_missions_configured",
+	no_player: "error.no_player",
+};
+
+watch(
+	() => dashboardStore.rentalPromptOpen,
+	() => {
+		errorMessage.value = "";
+	},
+);
 
 function closeModal() {
 	dashboardStore.closeRentalPrompt();
@@ -56,18 +72,22 @@ function closeModal() {
 
 async function confirmRent() {
 	isRenting.value = true;
+	errorMessage.value = "";
 
 	try {
 		const result = await nuiCallbackAsync<StartStandaloneRentalResult>("startStandaloneRental");
 		if (result?.ok) {
 			dashboardStore.setRentalActive(true);
 			dashboardStore.setOnCall(result.onCall ?? true);
+			closeModal();
+		} else {
+			errorMessage.value = t(reasonMessages[result?.reason ?? ""] ?? "error.on_call_update_failed");
 		}
 	} catch (error) {
 		console.error("startStandaloneRental failed:", error);
+		errorMessage.value = t("error.on_call_update_failed");
 	} finally {
 		isRenting.value = false;
-		closeModal();
 	}
 }
 </script>
