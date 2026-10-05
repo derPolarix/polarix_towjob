@@ -16,6 +16,11 @@ local lastMarkAt = {} -- [identifier] = os.time()
 
 local ID_PREFIX = "prio_"
 
+-- A plate that was just towed for a payout can't be marked again for this long, so the same car
+-- can't be marked, towed and marked again in a loop. In-memory like the pool.
+local PLATE_COOLDOWN_SECONDS = 3600
+local plateCooldownUntil = {} -- [plate] = os.time()
+
 local MAX_LABEL_LENGTH = 40
 local MAX_COLOR_ID = 255
 
@@ -223,6 +228,7 @@ local MARK_REFUSALS = {
     no_missions_configured = "notify.mark_no_missions",
     already_claimed = "notify.mark_already_claimed",
     cooldown = "notify.mark_cooldown",
+    plate_cooldown = "notify.mark_plate_cooldown",
 }
 
 local function refuse(source, reason, ...)
@@ -287,6 +293,11 @@ function Priority.Mark(source, netId, label, colors)
     local plate = trim(GetVehicleNumberPlateText(vehicle))
     local owner = plate ~= "" and Framework.GetVehicleOwner and Framework.GetVehicleOwner(plate) or nil
     if not owner then return refuse(source, "not_player_owned") end
+
+    local plateReadyAt = plateCooldownUntil[plate]
+    if plateReadyAt and plateReadyAt > now then
+        return refuse(source, "plate_cooldown", math.ceil((plateReadyAt - now) / 60))
+    end
 
     if #pool >= (serverConfig.MaxPriorityJobs or 5) then return refuse(source, "pool_full") end
 
@@ -441,6 +452,12 @@ function Priority.OnDeliveryCompleted(missionId, source, rewardPaid)
     if not job then return end
 
     local mode = serverConfig.ImpoundMode or "event"
+
+    local now = os.time()
+    plateCooldownUntil[job.plate] = now + PLATE_COOLDOWN_SECONDS
+    for plate, readyAt in pairs(plateCooldownUntil) do
+        if readyAt <= now then plateCooldownUntil[plate] = nil end
+    end
 
     if mode == "framework" and Framework.ImpoundVehicle then
         Framework.ImpoundVehicle(job.plate)

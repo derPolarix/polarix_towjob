@@ -40,6 +40,7 @@
     "notify.mark_no_missions": "Na tym serwerze nie skonfigurowano punktu odbioru.",
     "notify.mark_already_claimed": "Do tego pojazdu już jedzie laweta.",
     "notify.mark_cooldown": "Odczekaj %d sekund przed kolejnym zleceniem.",
+    "notify.mark_plate_cooldown": "Ten pojazd został niedawno odholowany. Spróbuj ponownie za %d min.",
     "notify.tow_request_registered": "Zlecenie odholowania %s przyjęte — dyspozytornia wezwie lawetę.",
     "notify.tow_request_cancelled": "Zlecenie odholowania %s anulowane.",
     "notify.tow_request_expired": "Twoje zlecenie odholowania %s wygasło.",

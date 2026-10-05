@@ -40,6 +40,7 @@
     "notify.mark_no_missions": "Aucun point de dépôt n'est configuré sur ce serveur.",
     "notify.mark_already_claimed": "Un opérateur est déjà en route pour ce véhicule.",
     "notify.mark_cooldown": "Attendez %d secondes avant une nouvelle demande.",
+    "notify.mark_plate_cooldown": "Ce véhicule a été remorqué récemment. Réessayez dans %d minutes.",
     "notify.tow_request_registered": "Demande de remorquage enregistrée pour %s — le central va appeler un opérateur.",
     "notify.tow_request_cancelled": "Demande de remorquage pour %s annulée.",
     "notify.tow_request_expired": "Votre demande de remorquage pour %s a expiré.",

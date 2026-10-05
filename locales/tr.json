@@ -40,6 +40,7 @@
     "notify.mark_no_missions": "Bu sunucuda teslim noktası tanımlı değil.",
     "notify.mark_already_claimed": "O araç için bir operatör zaten yolda.",
     "notify.mark_cooldown": "Yeni talep için %d saniye bekle.",
+    "notify.mark_plate_cooldown": "Bu araç kısa süre önce çekildi. %d dakika sonra tekrar dene.",
     "notify.tow_request_registered": "%s için çekici talebi alındı — merkez bir operatör çağıracak.",
     "notify.tow_request_cancelled": "%s için çekici talebi iptal edildi.",
     "notify.tow_request_expired": "%s için çekici talebinin süresi doldu.",

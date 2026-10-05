@@ -40,6 +40,7 @@
     "notify.mark_no_missions": "No hay punto de entrega configurado en este servidor.",
     "notify.mark_already_claimed": "Ya hay un operador en camino para ese vehículo.",
     "notify.mark_cooldown": "Espera %d segundos antes de solicitar otra grúa.",
+    "notify.mark_plate_cooldown": "Este vehículo se remolcó hace poco. Inténtalo de nuevo en %d minutos.",
     "notify.tow_request_registered": "Solicitud de grúa registrada para %s — la central avisará a un operador.",
     "notify.tow_request_cancelled": "Solicitud de grúa para %s cancelada.",
     "notify.tow_request_expired": "Tu solicitud de grúa para %s ha caducado.",

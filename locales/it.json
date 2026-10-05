@@ -40,6 +40,7 @@
     "notify.mark_no_missions": "Nessun punto di consegna configurato su questo server.",
     "notify.mark_already_claimed": "Un operatore è già in arrivo per quel veicolo.",
     "notify.mark_cooldown": "Attendi %d secondi prima di un'altra richiesta.",
+    "notify.mark_plate_cooldown": "Questo veicolo è stato rimorchiato da poco. Riprova tra %d minuti.",
     "notify.tow_request_registered": "Richiesta di traino registrata per %s — la centrale chiamerà un operatore.",
     "notify.tow_request_cancelled": "Richiesta di traino per %s annullata.",
     "notify.tow_request_expired": "La tua richiesta di traino per %s è scaduta.",

@@ -40,6 +40,7 @@
     "notify.mark_no_missions": "Er is geen afleverpunt ingesteld op deze server.",
     "notify.mark_already_claimed": "Er is al een berger op weg naar dat voertuig.",
     "notify.mark_cooldown": "Wacht %d seconden voor een nieuwe aanvraag.",
+    "notify.mark_plate_cooldown": "Dit voertuig is onlangs weggesleept. Probeer het over %d minuten opnieuw.",
     "notify.tow_request_registered": "Sleepopdracht voor %s geregistreerd — de centrale piept een berger op.",
     "notify.tow_request_cancelled": "Sleepopdracht voor %s geannuleerd.",
     "notify.tow_request_expired": "Je sleepopdracht voor %s is verlopen.",

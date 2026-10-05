@@ -40,6 +40,7 @@
     "notify.mark_no_missions": "Auf diesem Server ist keine Abgabestelle konfiguriert.",
     "notify.mark_already_claimed": "Für dieses Fahrzeug ist bereits ein Fahrer unterwegs.",
     "notify.mark_cooldown": "Warte %d Sekunden bis zum nächsten Auftrag.",
+    "notify.mark_plate_cooldown": "Dieses Fahrzeug wurde kürzlich abgeschleppt. Versuche es in %d Minuten erneut.",
     "notify.tow_request_registered": "Abschleppauftrag für %s erfasst — die Leitstelle ruft einen Fahrer.",
     "notify.tow_request_cancelled": "Abschleppauftrag für %s storniert.",
     "notify.tow_request_expired": "Dein Abschleppauftrag für %s ist abgelaufen.",

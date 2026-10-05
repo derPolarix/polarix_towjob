@@ -40,6 +40,7 @@
     "notify.mark_no_missions": "Nenhum ponto de entrega configurado neste servidor.",
     "notify.mark_already_claimed": "Já há um operador a caminho desse veículo.",
     "notify.mark_cooldown": "Aguarde %d segundos antes de solicitar outro reboque.",
+    "notify.mark_plate_cooldown": "Este veículo foi rebocado recentemente. Tente novamente em %d minutos.",
     "notify.tow_request_registered": "Solicitação de reboque registrada para %s — a central vai chamar um operador.",
     "notify.tow_request_cancelled": "Solicitação de reboque para %s cancelada.",
     "notify.tow_request_expired": "Sua solicitação de reboque para %s expirou.",

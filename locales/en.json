@@ -40,6 +40,7 @@
     "notify.mark_no_missions": "No tow drop-off is configured on this server.",
     "notify.mark_already_claimed": "An operator is already on the way for that vehicle.",
     "notify.mark_cooldown": "Wait %d seconds before requesting another tow.",
+    "notify.mark_plate_cooldown": "This vehicle was towed recently. Try again in %d minutes.",
     "notify.tow_request_registered": "Tow request registered for %s — dispatch will page an operator.",
     "notify.tow_request_cancelled": "Tow request for %s cancelled.",
     "notify.tow_request_expired": "Your tow request for %s expired.",
