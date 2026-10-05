@@ -15,10 +15,10 @@
 						:key="s.key"
 						type="button"
 						class="relative inline-flex items-center gap-[7px] bg-transparent border-none cursor-pointer font-[inherit] text-[13px] py-[10px] px-[14px] rounded-[9px]"
-						:style="{ background: adminStore.section === s.key ? 'rgba(34,197,94,0.14)' : 'transparent', color: adminStore.section === s.key ? '#ffffff' : '#9aa1ab', fontWeight: adminStore.section === s.key ? '600' : '500' }"
+						:style="{ background: adminStore.section === s.key ? 'rgba(34,197,94,0.14)' : 'transparent', color: adminStore.section === s.key ? '#ffffff' : 'var(--faint)', fontWeight: adminStore.section === s.key ? '600' : '500' }"
 						@click="adminStore.setSection(s.key)"
 					>
-						<iconify-icon :icon="s.icon" width="16" :style="{ color: adminStore.section === s.key ? '#22c55e' : '#7a818c' }"></iconify-icon>{{ s.label }}
+						<iconify-icon :icon="s.icon" width="16" :style="{ color: adminStore.section === s.key ? 'var(--accent)' : 'var(--sidebar-muted)' }"></iconify-icon>{{ s.label }}
 					</button>
 				</nav>
 				<button type="button" class="w-[32px] h-[32px] rounded-[9px] border-none bg-[rgba(255,255,255,0.08)] text-[#c9ced6] flex items-center justify-center cursor-pointer shrink-0" @click="close">

@@ -11,10 +11,10 @@
 					:key="area.id"
 					type="button"
 					class="w-full text-left rounded-[10px] py-[10px] px-[12px] border border-transparent cursor-pointer font-[inherit]"
-					:style="editingId === area.id ? 'background:#22262d;border-color:#22262d' : 'background:#fff;border-color:#dfe2e6'"
+					:style="editingId === area.id ? 'background:var(--sidebar);border-color:var(--sidebar)' : 'background:#fff;border-color:var(--border)'"
 					@click="selectArea(area)"
 				>
-					<div class="text-[13px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :style="{ color: editingId === area.id ? '#fff' : '#1b1f24' }">{{ area.name }}</div>
+					<div class="text-[13px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :style="{ color: editingId === area.id ? '#fff' : 'var(--ink)' }">{{ area.name }}</div>
 					<div class="font-mono text-[9px] mt-[3px] text-faint">{{ area.is_active ? t("admin.active") : t("admin.inactive") }}{{ area.is_default ? " · " + t("admin.default") : "" }}</div>
 				</button>
 			</template>

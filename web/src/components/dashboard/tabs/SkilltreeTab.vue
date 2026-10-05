@@ -113,8 +113,8 @@ function skillState(skill: SkillNode): SkillState {
 }
 
 function nodeStyle(state: SkillState): Record<string, string> {
-	if (state === "unlocked") return { background: "#22c55e", borderColor: "#22c55e" };
-	if (state === "unlockable") return { background: "#ffffff", borderColor: "#22c55e" };
+	if (state === "unlocked") return { background: "var(--accent)", borderColor: "var(--accent)" };
+	if (state === "unlockable") return { background: "#ffffff", borderColor: "var(--accent)" };
 	return { background: "#e9ebee", borderColor: "#cdd2d8" };
 }
 
@@ -126,7 +126,7 @@ function nodeIcon(state: SkillState) {
 
 function nodeIconColor(state: SkillState) {
 	if (state === "unlocked") return "#0f2417";
-	if (state === "unlockable") return "#22c55e";
+	if (state === "unlockable") return "var(--accent)";
 	return "#aab0b8";
 }
 
@@ -143,7 +143,7 @@ function tagStyle(state: SkillState): Record<string, string> {
 }
 
 function lineColor(skills: SkillNode[], i: number): string {
-	return skills[i + 1] && skillState(skills[i + 1]) === "unlocked" ? "#22c55e" : "#cdd2d8";
+	return skills[i + 1] && skillState(skills[i + 1]) === "unlocked" ? "var(--accent)" : "#cdd2d8";
 }
 
 const effectLabelKeys: Record<keyof SkillEffects, string> = {

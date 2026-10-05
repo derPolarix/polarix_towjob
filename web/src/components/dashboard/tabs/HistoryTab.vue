@@ -28,7 +28,7 @@
 					</div>
 				</div>
 				<span class="font-mono text-[10px] tracking-[0.06em] uppercase" :style="{ color: statusColor(job.status) }">{{ t("status." + job.status) }}</span>
-				<span class="text-[13px] font-bold" :style="{ color: job.status === 'failed' ? '#d24b3a' : '#1b1f24' }">{{ formatMoney(job.rewardPaid) }}</span>
+				<span class="text-[13px] font-bold" :style="{ color: job.status === 'failed' ? 'var(--danger-text)' : 'var(--ink)' }">{{ formatMoney(job.rewardPaid) }}</span>
 				<span class="font-mono text-[11px] text-faint">{{ formatDate(job.startedAt) }}</span>
 			</div>
 		</div>
@@ -74,9 +74,9 @@ const loading = ref(true);
 
 const statusColors: Record<DeliveryStatus, string> = {
 	active: "#3b82f6",
-	completed: "#22c55e",
-	failed: "#d24b3a",
-	aborted: "#9aa1ab",
+	completed: "var(--accent)",
+	failed: "var(--danger-text)",
+	aborted: "var(--faint)",
 };
 
 const statusIcons: Record<DeliveryStatus, string> = {
@@ -87,7 +87,7 @@ const statusIcons: Record<DeliveryStatus, string> = {
 };
 
 function statusColor(status: DeliveryStatus): string {
-	return statusColors[status] ?? "#9aa1ab";
+	return statusColors[status] ?? "var(--faint)";
 }
 
 function statusIcon(status: DeliveryStatus): string {

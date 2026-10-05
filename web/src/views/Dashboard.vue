@@ -22,11 +22,11 @@
 						:key="item.key"
 						type="button"
 						class="relative flex items-center gap-[12px] w-full py-[10px] px-[13px] border-none rounded-[10px] cursor-pointer font-[inherit] text-[14px] text-left"
-						:style="{ background: dashboardStore.activeTab === item.key ? 'rgba(34,197,94,0.12)' : 'transparent', color: dashboardStore.activeTab === item.key ? '#ffffff' : '#9aa1ab' }"
+						:style="{ background: dashboardStore.activeTab === item.key ? 'rgba(34,197,94,0.12)' : 'transparent', color: dashboardStore.activeTab === item.key ? '#ffffff' : 'var(--faint)' }"
 						@click="dashboardStore.setActiveTab(item.key)"
 					>
 						<span class="absolute left-[-12px] top-[9px] bottom-[9px] w-[3px] rounded-[0_3px_3px_0] bg-accent" :style="{ opacity: dashboardStore.activeTab === item.key ? '1' : '0' }"></span>
-						<iconify-icon :icon="item.icon" width="19" :style="{ color: dashboardStore.activeTab === item.key ? '#22c55e' : '#7a818c', flexShrink: '0' }"></iconify-icon>
+						<iconify-icon :icon="item.icon" width="19" :style="{ color: dashboardStore.activeTab === item.key ? 'var(--accent)' : 'var(--sidebar-muted)', flexShrink: '0' }"></iconify-icon>
 						<span class="flex-1" :style="{ fontWeight: dashboardStore.activeTab === item.key ? '600' : '500' }">{{ item.label }}</span>
 						<span v-if="item.badge" class="font-mono text-[10px] font-semibold min-w-[18px] text-center py-[1px] px-[6px] rounded-[8px] bg-accent text-sidebar">{{ item.badge }}</span>
 					</button>

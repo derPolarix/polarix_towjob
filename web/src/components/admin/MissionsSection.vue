@@ -11,11 +11,11 @@
 					:key="mission.id"
 					type="button"
 					class="w-full text-left rounded-[10px] py-[10px] px-[12px] border border-transparent cursor-pointer font-[inherit]"
-					:style="editingId === mission.id ? 'background:#22262d;border-color:#22262d' : 'background:#fff;border-color:#dfe2e6'"
+					:style="editingId === mission.id ? 'background:var(--sidebar);border-color:var(--sidebar)' : 'background:#fff;border-color:var(--border)'"
 					@click="selectMission(mission)"
 				>
-					<div class="text-[13px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :style="{ color: editingId === mission.id ? '#fff' : '#1b1f24' }">{{ mission.name }}</div>
-					<div class="font-mono text-[9px] mt-[3px]" :style="{ color: editingId === mission.id ? '#9aa1ab' : '#9aa1ab' }">{{ mission.area_name ?? t("admin.no_area") }} · {{ mission.is_active ? t("admin.active") : t("admin.inactive") }}</div>
+					<div class="text-[13px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :style="{ color: editingId === mission.id ? '#fff' : 'var(--ink)' }">{{ mission.name }}</div>
+					<div class="font-mono text-[9px] mt-[3px]" :style="{ color: editingId === mission.id ? 'var(--faint)' : 'var(--faint)' }">{{ mission.area_name ?? t("admin.no_area") }} · {{ mission.is_active ? t("admin.active") : t("admin.inactive") }}</div>
 				</button>
 			</template>
 

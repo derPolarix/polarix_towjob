@@ -45,7 +45,7 @@
 							:style="{ backgroundImage: `url(${vehicleImage(vehicle.model)})` }"
 						/>
 						<iconify-icon v-else icon="tabler:truck" width="48" class="text-[#aab0b8]"></iconify-icon>
-						<span class="absolute top-[12px] right-[12px] font-mono text-[9px] tracking-[0.06em] py-[3px] px-[8px] rounded-[6px] uppercase" :style="vehicle.state === 'deployed' ? 'background:rgba(34,197,94,0.16);color:#15803d' : 'background:#eef0f2;color:#6b7280'">{{ t("vehicle_state." + vehicle.state) }}</span>
+						<span class="absolute top-[12px] right-[12px] font-mono text-[9px] tracking-[0.06em] py-[3px] px-[8px] rounded-[6px] uppercase" :style="vehicle.state === 'deployed' ? 'background:rgba(34,197,94,0.16);color:#15803d' : 'background:#eef0f2;color:var(--muted)'">{{ t("vehicle_state." + vehicle.state) }}</span>
 					</div>
 					<div class="py-[15px] px-[16px]">
 						<div class="text-[15px] font-bold text-ink leading-[1.2]">{{ vehicle.label }}</div>

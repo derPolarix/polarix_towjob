@@ -9,7 +9,7 @@
 				class="w-[52px] h-[52px] rounded-[14px] flex items-center justify-center mb-[16px]"
 				:style="{ background: danger ? 'rgba(239,68,68,0.12)' : 'rgba(34,197,94,0.14)' }"
 			>
-				<iconify-icon :icon="danger ? 'tabler:alert-triangle' : 'tabler:help-circle'" width="26" :style="{ color: danger ? '#dc2626' : '#22c55e' }"></iconify-icon>
+				<iconify-icon :icon="danger ? 'tabler:alert-triangle' : 'tabler:help-circle'" width="26" :style="{ color: danger ? 'var(--danger)' : 'var(--accent)' }"></iconify-icon>
 			</div>
 			<div class="text-[17px] font-extrabold text-ink">{{ confirmStore.options.title }}</div>
 			<div class="text-[13px] text-muted mt-[8px] leading-[1.6]">{{ confirmStore.options.body }}</div>
@@ -18,7 +18,7 @@
 					type="button"
 					:class="{ 'accent-btn': !danger }"
 					:style="danger
-						? 'flex:1;background:#dc2626;color:#fff;border:none;border-radius:11px;padding:12px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer'
+						? 'flex:1;background:var(--danger);color:#fff;border:none;border-radius:11px;padding:12px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer'
 						: 'flex:1;padding:12px;font-size:13px;justify-content:center'"
 					@click="confirmStore.answer(true)"
 				>

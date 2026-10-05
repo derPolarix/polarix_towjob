@@ -10,12 +10,12 @@
 					<span>{{ t("common.level_short", { level: player?.level ?? 1 }) }}</span>
 					<span class="text-[#454c56]">·</span>
 					<span class="inline-flex items-center gap-[6px]">
-						<span :style="{ width: '7px', height: '7px', borderRadius: '50%', background: dashboardStore.onCall ? '#22c55e' : '#6b7280' }"></span>
+						<span :style="{ width: '7px', height: '7px', borderRadius: '50%', background: dashboardStore.onCall ? 'var(--accent)' : 'var(--muted)' }"></span>
 						{{ dashboardStore.onCall ? t("overview.status_on_call") : t("overview.status_off_call") }}
 					</span>
 					<span class="text-[#454c56]">·</span>
 					<span class="inline-flex items-center gap-[6px]">
-						<span :style="{ width: '7px', height: '7px', borderRadius: '50%', background: dashboardStore.activeDelivery ? '#22c55e' : '#6b7280' }"></span>
+						<span :style="{ width: '7px', height: '7px', borderRadius: '50%', background: dashboardStore.activeDelivery ? 'var(--accent)' : 'var(--muted)' }"></span>
 						{{ dashboardStore.activeDelivery ? t("overview.status_towing", { name: dashboardStore.activeDelivery.missionName }) : t("overview.status_no_delivery") }}
 					</span>
 				</div>
@@ -24,7 +24,7 @@
 				class="accent-btn"
 				type="button"
 				:disabled="togglingOnCall"
-				:style="dashboardStore.onCall ? 'padding:13px 20px;font-size:14px;background:#dc2626;color:#fff' : 'padding:13px 20px;font-size:14px'"
+				:style="dashboardStore.onCall ? 'padding:13px 20px;font-size:14px;background:var(--danger);color:#fff' : 'padding:13px 20px;font-size:14px'"
 				@click="toggleOnCall"
 			>
 				{{ togglingOnCall ? t("overview.working") : dashboardStore.onCall ? t("overview.go_off_call") : t("overview.go_on_call") }}
@@ -94,7 +94,7 @@
 						<div class="font-mono text-[10px] text-faint mt-[2px]">#DEL-{{ job.id }}</div>
 					</div>
 					<div class="text-right shrink-0">
-						<div class="font-bold text-[13px]" :style="{ color: job.status === 'failed' ? '#d24b3a' : '#1b1f24' }">{{ formatMoney(job.rewardPaid) }}</div>
+						<div class="font-bold text-[13px]" :style="{ color: job.status === 'failed' ? 'var(--danger-text)' : 'var(--ink)' }">{{ formatMoney(job.rewardPaid) }}</div>
 						<div class="font-mono text-[9px] tracking-[0.08em] mt-[2px] uppercase" :style="{ color: statusMeta(job.status).color }">{{ t("status." + job.status) }}</div>
 					</div>
 				</div>
@@ -163,22 +163,22 @@ const statusIcons: Record<DeliveryStatus, string> = {
 
 const statusColors: Record<DeliveryStatus, string> = {
 	active: "#3b82f6",
-	completed: "#22c55e",
-	failed: "#d24b3a",
-	aborted: "#9aa1ab",
+	completed: "var(--accent)",
+	failed: "var(--danger-text)",
+	aborted: "var(--faint)",
 };
 
 function statusMeta(status: DeliveryStatus) {
 	return {
 		icon: statusIcons[status] ?? "tabler:circle-check",
-		color: statusColors[status] ?? "#9aa1ab",
+		color: statusColors[status] ?? "var(--faint)",
 	};
 }
 
 const stats = computed(() => [
 	{ icon: "tabler:cash-banknote", value: formatMoney(player.value?.total_earnings), label: t("overview.stat_total_earnings"), color: "#b58a05", tileBg: "rgba(232,180,8,0.16)" },
 	{ icon: "tabler:medal", value: `${player.value?.level ?? 1} · ${dashboardStore.levelTitle}`, label: t("overview.stat_level"), color: "#3b82f6", tileBg: "rgba(59,130,246,0.14)" },
-	{ icon: "tabler:checks", value: String(player.value?.total_deliveries ?? 0), label: t("overview.stat_deliveries"), color: "#22c55e", tileBg: "rgba(34,197,94,0.14)" },
+	{ icon: "tabler:checks", value: String(player.value?.total_deliveries ?? 0), label: t("overview.stat_deliveries"), color: "var(--accent)", tileBg: "rgba(34,197,94,0.14)" },
 	{ icon: "tabler:alert-triangle", value: `${player.value?.failed_deliveries ?? 0} / ${player.value?.aborted_deliveries ?? 0}`, label: t("overview.stat_failed_aborted"), color: "#8b5cf6", tileBg: "rgba(139,92,246,0.14)" },
 ]);
 

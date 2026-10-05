@@ -23,7 +23,7 @@
 				>
 					<div class="flex items-center justify-between gap-[8px]">
 						<span class="flex items-center gap-[8px] text-[14px] font-bold text-ink">
-							<span class="w-[9px] h-[9px] rounded-[50%] shrink-0" :style="{ background: area.unlocked ? 'var(--accent)' : '#9aa1ab' }"></span>
+							<span class="w-[9px] h-[9px] rounded-[50%] shrink-0" :style="{ background: area.unlocked ? 'var(--accent)' : 'var(--faint)' }"></span>
 							{{ area.name }}
 						</span>
 						<span v-if="area.unlocked" class="font-mono text-[10px] text-accent font-bold">{{ t("areas.unlocked_badge") }}</span>

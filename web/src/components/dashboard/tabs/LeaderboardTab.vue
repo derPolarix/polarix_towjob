@@ -69,8 +69,8 @@ function isOwnRow(entry: LeaderboardEntry): boolean {
 }
 
 function rankColor(rank: number) {
-	if (rank === 1) return "#22c55e";
-	if (rank === 2) return "#9aa1ab";
+	if (rank === 1) return "var(--accent)";
+	if (rank === 2) return "var(--faint)";
 	if (rank === 3) return "#b5651d";
 	return "#c9cdd3";
 }
