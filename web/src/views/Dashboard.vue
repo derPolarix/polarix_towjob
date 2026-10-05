@@ -188,26 +188,6 @@ async function closeNui() {
 <style>
 iconify-icon { display: inline-flex; }
 
-.accent-btn {
-	background: var(--accent);
-	color: #0f2417;
-	border: none;
-	border-radius: 11px;
-	font-family: inherit;
-	font-weight: 700;
-	cursor: pointer;
-	display: inline-flex;
-	align-items: center;
-	gap: 9px;
-}
-.accent-btn:hover {
-	filter: brightness(0.92);
-}
-.accent-btn:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-}
-
 .px-main ::-webkit-scrollbar { width: 9px; height: 9px; }
 .px-main ::-webkit-scrollbar-thumb { background: #c9cdd3; border-radius: 8px; }
 .px-main ::-webkit-scrollbar-track { background: transparent; }

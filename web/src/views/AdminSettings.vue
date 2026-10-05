@@ -87,26 +87,6 @@ onMounted(() => {
 <style>
 iconify-icon { display: inline-flex; }
 
-.accent-btn {
-	background: var(--accent);
-	color: #0f2417;
-	border: none;
-	border-radius: 10px;
-	font-family: inherit;
-	font-weight: 700;
-	cursor: pointer;
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-}
-.accent-btn:hover {
-	filter: brightness(0.92);
-}
-.accent-btn:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-}
-
 .admin-label {
 	display: flex;
 	flex-direction: column;
