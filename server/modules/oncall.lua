@@ -8,6 +8,10 @@ OnCall = {}
 -- session concept, not something that needs to survive a resource restart or reconnect.
 local state = {}
 
+-- Survives going off-call, so toggling on-call can't reset the decline streak or skip the wait
+-- a decline earned. [source] = { declineStreak, nextPageAt }
+local carried = {}
+
 function OnCall.IsOnCall(source)
     local s = state[source]
     return s ~= nil and s.onCall == true
@@ -38,6 +42,21 @@ local function scheduleNextPage(source, opts)
     debug.DebugPrint(("OnCall.scheduleNextPage: %s next page in %ds (fast=%s)"):format(source, s.nextPageAt - os.time(), tostring(opts.fast == true)))
 end
 
+local function stashCooldown(source)
+    local s = state[source]
+    if s then carried[source] = { declineStreak = s.declineStreak, nextPageAt = s.nextPageAt } end
+end
+
+local function startOnCall(source)
+    local previous = carried[source]
+    state[source] = { onCall = true, pendingOffer = nil, declineStreak = previous and previous.declineStreak or 0 }
+    scheduleNextPage(source, { fast = true })
+
+    if previous and previous.nextPageAt and previous.nextPageAt > state[source].nextPageAt then
+        state[source].nextPageAt = previous.nextPageAt
+    end
+end
+
 -- Player-initiated toggle (Dashboard Overview tab). On-call is decoupled from having a
 -- truck deployed — the pager accept path (Missions.Accept) parks a stored truck out or
 -- spawns a rental when a job is taken. Only requirement: a way to tow at all, i.e. owning
@@ -47,8 +66,20 @@ function OnCall.SetOnCall(source, wantOn)
     if not player then return { ok = false, reason = "no_player" } end
 
     if not wantOn then
+        local s = state[source]
+        -- An unanswered offer counts as a decline, otherwise going off-call would be a free re-roll.
+        if s and s.pendingOffer then
+            TriggerClientEvent("polarix_towjob:pagerOfferCleared", source)
+            OnCall.DeclineOffer(source)
+        end
+
+        stashCooldown(source)
         state[source] = nil
         return { ok = true, onCall = false }
+    end
+
+    if state[source] and state[source].onCall then
+        return { ok = true, onCall = true }
     end
 
     if DB.GetActiveDelivery(player.identifier) then
@@ -65,8 +96,7 @@ function OnCall.SetOnCall(source, wantOn)
         return { ok = false, reason = "needs_rental" }
     end
 
-    state[source] = { onCall = true, pendingOffer = nil, declineStreak = 0 }
-    scheduleNextPage(source, { fast = true })
+    startOnCall(source)
 
     return { ok = true, onCall = true }
 end
@@ -75,8 +105,7 @@ end
 -- deployed at that point, so this skips SetOnCall's own gate checks rather than re-running
 -- a second round-trip of the same checks against state we just established ourselves.
 function OnCall.ForceOnAfterRentalSpawn(source)
-    state[source] = { onCall = true, pendingOffer = nil, declineStreak = 0 }
-    scheduleNextPage(source, { fast = true })
+    startOnCall(source)
 end
 
 -- Confirmed with user: a zero-owned-vehicle player going on-call gets prompted (client-side
@@ -126,6 +155,7 @@ end
 
 function OnCall.HandleRentalRepossessed(source)
     if not state[source] then return end
+    stashCooldown(source)
     state[source] = nil
     TriggerClientEvent("polarix_towjob:onCallStateUpdate", source, { onCall = false })
 end
@@ -261,4 +291,5 @@ Framework.OnPlayerUnload(function(source)
     end
 
     state[source] = nil
+    carried[source] = nil
 end)
