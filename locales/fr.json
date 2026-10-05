@@ -268,6 +268,7 @@
     "error.vehicle_full_health": "Ce véhicule est déjà en parfait état.",
     "error.vehicle_unreachable": "Impossible d'atteindre ce camion. Approchez-vous ou rentrez-le d'abord.",
     "error.vehicle_mismatch": "Le camion présent ne correspond pas à ce véhicule. Approchez-vous et réessayez.",
+    "error.not_in_parking_zone": "Amenez d'abord le camion dans la zone de stationnement.",
     "error.skill_gone": "Cette compétence n'existe plus.",
     "error.skill_already_unlocked": "Tu as déjà débloqué cette compétence.",
     "error.skill_prerequisite_missing": "Débloque d'abord la compétence prérequise.",

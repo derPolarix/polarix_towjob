@@ -209,6 +209,7 @@ const reasonMessages: Record<string, string> = {
 	truck_unreachable: "error.vehicle_unreachable",
 	invalid_vehicle: "error.vehicle_mismatch",
 	plate_mismatch: "error.vehicle_mismatch",
+	not_in_zone: "error.not_in_parking_zone",
 	no_player: "error.no_player",
 };
 

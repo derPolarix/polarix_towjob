@@ -268,6 +268,7 @@
     "error.vehicle_full_health": "Dit voertuig is al in perfecte staat.",
     "error.vehicle_unreachable": "Deze truck is niet bereikbaar. Ga erheen of parkeer hem eerst in.",
     "error.vehicle_mismatch": "De truck in de wereld komt niet overeen met dit voertuig. Ga ernaast staan en probeer het opnieuw.",
+    "error.not_in_parking_zone": "Breng de truck eerst naar de parkeerzone.",
     "error.skill_gone": "Die vaardigheid bestaat niet meer.",
     "error.skill_already_unlocked": "Je hebt deze vaardigheid al ontgrendeld.",
     "error.skill_prerequisite_missing": "Ontgrendel eerst de vereiste vaardigheid.",

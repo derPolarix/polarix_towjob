@@ -268,6 +268,7 @@
     "error.vehicle_full_health": "This vehicle is already at full health.",
     "error.vehicle_unreachable": "Can't reach this truck. Get near it or park it in first.",
     "error.vehicle_mismatch": "The truck in the world doesn't match this vehicle. Get next to it and try again.",
+    "error.not_in_parking_zone": "Bring the truck into the parking zone first.",
     "error.skill_gone": "That skill no longer exists.",
     "error.skill_already_unlocked": "You already unlocked this skill.",
     "error.skill_prerequisite_missing": "Unlock the prerequisite skill first.",

@@ -268,6 +268,7 @@
     "error.vehicle_full_health": "Dieses Fahrzeug ist bereits voll instand.",
     "error.vehicle_unreachable": "Der Truck ist nicht erreichbar. Geh in seine Nähe oder parke ihn zuerst ein.",
     "error.vehicle_mismatch": "Der Truck in der Welt passt nicht zu diesem Fahrzeug. Geh direkt zu ihm und versuche es erneut.",
+    "error.not_in_parking_zone": "Bring den Truck zuerst in die Parkzone.",
     "error.skill_gone": "Diesen Skill gibt es nicht mehr.",
     "error.skill_already_unlocked": "Du hast diesen Skill bereits freigeschaltet.",
     "error.skill_prerequisite_missing": "Schalte zuerst den vorausgesetzten Skill frei.",

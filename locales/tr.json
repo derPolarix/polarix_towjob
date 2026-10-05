@@ -268,6 +268,7 @@
     "error.vehicle_full_health": "Bu araç zaten tam sağlıkta.",
     "error.vehicle_unreachable": "Bu kamyona ulaşılamıyor. Yaklaş veya önce garaja park et.",
     "error.vehicle_mismatch": "Dünyadaki kamyon bu araçla eşleşmiyor. Yanına gidip tekrar dene.",
+    "error.not_in_parking_zone": "Önce kamyonu park bölgesine getir.",
     "error.skill_gone": "O yetenek artık mevcut değil.",
     "error.skill_already_unlocked": "Bu yeteneği zaten açtın.",
     "error.skill_prerequisite_missing": "Önce ön koşul yeteneği aç.",

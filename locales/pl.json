@@ -268,6 +268,7 @@
     "error.vehicle_full_health": "Ten pojazd jest już w pełni sprawny.",
     "error.vehicle_unreachable": "Nie można dotrzeć do tej lawety. Podejdź bliżej lub najpierw ją zaparkuj.",
     "error.vehicle_mismatch": "Laweta w świecie nie pasuje do tego pojazdu. Podejdź do niej i spróbuj ponownie.",
+    "error.not_in_parking_zone": "Najpierw podjedź lawetą do strefy parkowania.",
     "error.skill_gone": "Ta umiejętność już nie istnieje.",
     "error.skill_already_unlocked": "Ta umiejętność jest już odblokowana.",
     "error.skill_prerequisite_missing": "Najpierw odblokuj wymaganą umiejętność.",

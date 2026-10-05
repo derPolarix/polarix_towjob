@@ -268,6 +268,7 @@
     "error.vehicle_full_health": "Este veículo já está com a saúde cheia.",
     "error.vehicle_unreachable": "Não foi possível alcançar este caminhão. Chegue perto ou guarde-o primeiro.",
     "error.vehicle_mismatch": "O caminhão no mundo não corresponde a este veículo. Chegue perto dele e tente de novo.",
+    "error.not_in_parking_zone": "Leve primeiro o caminhão para a zona de estacionamento.",
     "error.skill_gone": "Essa habilidade não existe mais.",
     "error.skill_already_unlocked": "Você já desbloqueou esta habilidade.",
     "error.skill_prerequisite_missing": "Desbloqueie primeiro a habilidade pré-requisito.",
