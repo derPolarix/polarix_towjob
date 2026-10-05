@@ -57,10 +57,6 @@
 			<!-- MAIN -->
 			<main class="px-main" style="flex:1;display:flex;flex-direction:column;min-width:0;background:#e7e9ec">
 				<header style="height:62px;flex-shrink:0;display:flex;align-items:center;gap:14px;padding:0 22px;background:#fff;border-bottom:1px solid #dfe2e6">
-					<div style="display:flex;align-items:center;gap:10px;height:38px;width:380px;max-width:42%;padding:9px 14px;border-radius:11px;background:#f1f2f4;border:1px solid #e4e6e9">
-						<iconify-icon icon="tabler:search" width="17" style="color:#9aa1ab"></iconify-icon>
-						<input :placeholder="t('dashboard.search_placeholder')" style="flex:1;border:none;background:transparent;outline:none;font-size:13px;color:#1b1f24;font-family:inherit" />
-					</div>
 					<div style="flex:1"></div>
 					<div style="display:flex;align-items:center;gap:7px;padding:6px 8px 6px 12px;border-radius:20px;background:#f1f2f4;border:1px solid #e4e6e9">
 						<iconify-icon icon="tabler:bolt" width="15" style="color:var(--accent)"></iconify-icon>
