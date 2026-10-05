@@ -255,6 +255,7 @@
     "error.vehicle_not_stored": "Questo veicolo non è riposto.",
     "error.vehicle_not_deployed": "Questo veicolo non è in uso.",
     "error.vehicle_full_health": "Questo veicolo è già in perfette condizioni.",
+    "error.vehicle_unreachable": "Impossibile raggiungere questo camion. Avvicinati o riponilo prima.",
     "error.skill_gone": "Quell'abilità non esiste più.",
     "error.skill_already_unlocked": "Hai già sbloccato questa abilità.",
     "error.skill_prerequisite_missing": "Sblocca prima l'abilità prerequisito.",

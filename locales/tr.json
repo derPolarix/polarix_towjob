@@ -255,6 +255,7 @@
     "error.vehicle_not_stored": "Bu araç kaldırılmamış.",
     "error.vehicle_not_deployed": "Bu araç sahada değil.",
     "error.vehicle_full_health": "Bu araç zaten tam sağlıkta.",
+    "error.vehicle_unreachable": "Bu kamyona ulaşılamıyor. Yaklaş veya önce garaja park et.",
     "error.skill_gone": "O yetenek artık mevcut değil.",
     "error.skill_already_unlocked": "Bu yeteneği zaten açtın.",
     "error.skill_prerequisite_missing": "Önce ön koşul yeteneği aç.",

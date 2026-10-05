@@ -255,6 +255,7 @@
     "error.vehicle_not_stored": "Ten pojazd nie jest schowany.",
     "error.vehicle_not_deployed": "Ten pojazd nie jest wyprowadzony.",
     "error.vehicle_full_health": "Ten pojazd jest już w pełni sprawny.",
+    "error.vehicle_unreachable": "Nie można dotrzeć do tej lawety. Podejdź bliżej lub najpierw ją zaparkuj.",
     "error.skill_gone": "Ta umiejętność już nie istnieje.",
     "error.skill_already_unlocked": "Ta umiejętność jest już odblokowana.",
     "error.skill_prerequisite_missing": "Najpierw odblokuj wymaganą umiejętność.",

@@ -255,6 +255,7 @@
     "error.vehicle_not_stored": "This vehicle isn't stored.",
     "error.vehicle_not_deployed": "This vehicle isn't deployed.",
     "error.vehicle_full_health": "This vehicle is already at full health.",
+    "error.vehicle_unreachable": "Can't reach this truck. Get near it or park it in first.",
     "error.skill_gone": "That skill no longer exists.",
     "error.skill_already_unlocked": "You already unlocked this skill.",
     "error.skill_prerequisite_missing": "Unlock the prerequisite skill first.",

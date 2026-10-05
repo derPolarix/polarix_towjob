@@ -255,6 +255,7 @@
     "error.vehicle_not_stored": "Ce véhicule n'est pas rangé.",
     "error.vehicle_not_deployed": "Ce véhicule n'est pas sorti.",
     "error.vehicle_full_health": "Ce véhicule est déjà en parfait état.",
+    "error.vehicle_unreachable": "Impossible d'atteindre ce camion. Approchez-vous ou rentrez-le d'abord.",
     "error.skill_gone": "Cette compétence n'existe plus.",
     "error.skill_already_unlocked": "Tu as déjà débloqué cette compétence.",
     "error.skill_prerequisite_missing": "Débloque d'abord la compétence prérequise.",

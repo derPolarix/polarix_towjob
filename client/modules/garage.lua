@@ -237,16 +237,45 @@ RegisterNetEvent("polarix_towjob:truckParkedIn", function(data)
     deployedVehicles[data.plate] = nil
 end)
 
-RegisterNetEvent("polarix_towjob:vehicleHealthRestored", function(plate)
+-- The deployed truck's live entity, wherever it stands (only trucks this client tracks), so a
+-- repair paid for in the Dashboard also reaches a truck the player is not sitting in.
+local function findDeployedEntity(plate)
     local tracked = deployedVehicles[plate]
-    if not tracked then return end
+    if not tracked then return nil end
 
-    local ped = PlayerPedId()
-    local vehicle = GetVehiclePedIsIn(ped, false)
-    if vehicle == 0 then return end
+    if tracked.entity and DoesEntityExist(tracked.entity) then return tracked.entity end
 
-    if GetVehicleNumberPlateText(vehicle):gsub("%s+$", "") == plate then
-        applyHealth(vehicle, 1000.0, 1000.0)
+    for _, veh in ipairs(GetGamePool("CVehicle")) do
+        if stripPlate(GetVehicleNumberPlateText(veh)) == plate then
+            tracked.entity = veh
+            return veh
+        end
+    end
+
+    return nil
+end
+
+local function takeControl(entity)
+    if NetworkHasControlOfEntity(entity) then return true end
+
+    NetworkRequestControlOfEntity(entity)
+    for _ = 1, 10 do
+        Wait(100)
+        if NetworkHasControlOfEntity(entity) then return true end
+    end
+
+    return false
+end
+
+lib.callback.register("polarix_towjob:canRepairLiveTruck", function(plate)
+    local entity = findDeployedEntity(plate)
+    return entity ~= nil and takeControl(entity)
+end)
+
+RegisterNetEvent("polarix_towjob:vehicleHealthRestored", function(plate)
+    local entity = findDeployedEntity(plate)
+    if entity and takeControl(entity) then
+        applyHealth(entity, 1000.0, 1000.0)
     end
 end)
 

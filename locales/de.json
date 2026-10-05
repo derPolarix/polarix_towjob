@@ -255,6 +255,7 @@
     "error.vehicle_not_stored": "Dieses Fahrzeug ist nicht eingelagert.",
     "error.vehicle_not_deployed": "Dieses Fahrzeug ist nicht ausgeparkt.",
     "error.vehicle_full_health": "Dieses Fahrzeug ist bereits voll instand.",
+    "error.vehicle_unreachable": "Der Truck ist nicht erreichbar. Geh in seine Nähe oder parke ihn zuerst ein.",
     "error.skill_gone": "Diesen Skill gibt es nicht mehr.",
     "error.skill_already_unlocked": "Du hast diesen Skill bereits freigeschaltet.",
     "error.skill_prerequisite_missing": "Schalte zuerst den vorausgesetzten Skill frei.",

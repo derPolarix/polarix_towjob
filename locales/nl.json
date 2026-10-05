@@ -255,6 +255,7 @@
     "error.vehicle_not_stored": "Dit voertuig is niet opgeborgen.",
     "error.vehicle_not_deployed": "Dit voertuig is niet uitgereden.",
     "error.vehicle_full_health": "Dit voertuig is al in perfecte staat.",
+    "error.vehicle_unreachable": "Deze truck is niet bereikbaar. Ga erheen of parkeer hem eerst in.",
     "error.skill_gone": "Die vaardigheid bestaat niet meer.",
     "error.skill_already_unlocked": "Je hebt deze vaardigheid al ontgrendeld.",
     "error.skill_prerequisite_missing": "Ontgrendel eerst de vereiste vaardigheid.",

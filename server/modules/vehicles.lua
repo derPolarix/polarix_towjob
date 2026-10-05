@@ -163,7 +163,11 @@ function Vehicles.Purchase(source, tierId)
 end
 
 -- Same Economy-branch discount as Purchase above, via Skills.GetRepairDiscount.
-function Vehicles.Repair(source, vehicleId)
+-- Repair yields (DB, and the client round-trip for a deployed truck) between working out the cost
+-- and taking it, so concurrent calls from one player would each be charged against stale health.
+local repairing = {}
+
+local function repair(source, vehicleId)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
 
@@ -179,6 +183,16 @@ function Vehicles.Repair(source, vehicleId)
 
     local cost = math.floor(missing * Settings.GetRepairCostPerHealthPoint() * (1 - Skills.GetRepairDiscount(source)) + 0.5)
 
+    -- A deployed truck's health lives on its entity (Store/ParkIn read it back from there), so the
+    -- repair only counts if the client can reach and control that entity. Asked before any money
+    -- is taken, so nobody pays for a repair that would not stick.
+    if vehicle.state == "deployed" then
+        local ok, reachable = pcall(lib.callback.await, "polarix_towjob:canRepairLiveTruck", source, vehicle.plate)
+        if not ok or reachable ~= true then
+            return { ok = false, reason = "truck_unreachable" }
+        end
+    end
+
     if Framework.GetMoney(source) < cost then
         return { ok = false, reason = "insufficient_funds" }
     end
@@ -193,6 +207,17 @@ function Vehicles.Repair(source, vehicleId)
     debug.DebugPrint(("Vehicles.Repair: %s repaired vehicle %d for %d"):format(player.identifier, vehicleId, cost))
 
     return { ok = true, cost = cost, vehicles = Vehicles.GetOwnedForPlayer(source) }
+end
+
+function Vehicles.Repair(source, vehicleId)
+    if repairing[source] then return { ok = false, reason = "busy" } end
+
+    repairing[source] = true
+    local ok, result = pcall(repair, source, vehicleId)
+    repairing[source] = nil
+
+    if not ok then error(result, 0) end
+    return result
 end
 
 function Vehicles.ParkOut(source, vehicleId)

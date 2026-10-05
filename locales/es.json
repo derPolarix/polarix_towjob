@@ -255,6 +255,7 @@
     "error.vehicle_not_stored": "Este vehículo no está guardado.",
     "error.vehicle_not_deployed": "Este vehículo no está desplegado.",
     "error.vehicle_full_health": "Este vehículo ya está en perfecto estado.",
+    "error.vehicle_unreachable": "No se puede acceder a este camión. Acércate o guárdalo primero.",
     "error.skill_gone": "Esa habilidad ya no existe.",
     "error.skill_already_unlocked": "Ya has desbloqueado esta habilidad.",
     "error.skill_prerequisite_missing": "Desbloquea primero la habilidad requisito.",

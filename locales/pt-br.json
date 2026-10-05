@@ -255,6 +255,7 @@
     "error.vehicle_not_stored": "Este veículo não está guardado.",
     "error.vehicle_not_deployed": "Este veículo não está em uso.",
     "error.vehicle_full_health": "Este veículo já está com a saúde cheia.",
+    "error.vehicle_unreachable": "Não foi possível alcançar este caminhão. Chegue perto ou guarde-o primeiro.",
     "error.skill_gone": "Essa habilidade não existe mais.",
     "error.skill_already_unlocked": "Você já desbloqueou esta habilidade.",
     "error.skill_prerequisite_missing": "Desbloqueie primeiro a habilidade pré-requisito.",
