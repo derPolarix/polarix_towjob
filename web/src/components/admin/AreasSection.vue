@@ -1,7 +1,7 @@
 <template>
-	<div style="height:100%;display:flex">
-		<aside style="width:230px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px;background:var(--surface-subtle)">
-			<button type="button" class="accent-btn" style="width:100%;padding:10px;font-size:12px;justify-content:center;margin-bottom:4px" @click="startNew">
+	<div class="h-full flex">
+		<aside class="w-[230px] shrink-0 border-r border-r-line overflow-y-auto p-[12px] flex flex-col gap-[6px] bg-surface-subtle">
+			<button type="button" class="accent-btn w-full p-[10px] text-[12px] justify-center mb-[4px]" @click="startNew">
 				<iconify-icon icon="tabler:plus" width="15"></iconify-icon> {{ t("admin.new_area") }}
 			</button>
 
@@ -10,29 +10,29 @@
 					v-for="area in adminStore.areas"
 					:key="area.id"
 					type="button"
-					style="width:100%;text-align:left;border-radius:10px;padding:10px 12px;border:1px solid transparent;cursor:pointer;font-family:inherit"
+					class="w-full text-left rounded-[10px] py-[10px] px-[12px] border border-transparent cursor-pointer font-[inherit]"
 					:style="editingId === area.id ? 'background:#22262d;border-color:#22262d' : 'background:#fff;border-color:#dfe2e6'"
 					@click="selectArea(area)"
 				>
-					<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" :style="{ color: editingId === area.id ? '#fff' : '#1b1f24' }">{{ area.name }}</div>
-					<div style="font-family:var(--font-mono);font-size:9px;margin-top:3px;color:var(--faint)">{{ area.is_active ? t("admin.active") : t("admin.inactive") }}{{ area.is_default ? " · " + t("admin.default") : "" }}</div>
+					<div class="text-[13px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :style="{ color: editingId === area.id ? '#fff' : '#1b1f24' }">{{ area.name }}</div>
+					<div class="font-mono text-[9px] mt-[3px] text-faint">{{ area.is_active ? t("admin.active") : t("admin.inactive") }}{{ area.is_default ? " · " + t("admin.default") : "" }}</div>
 				</button>
 			</template>
 
-			<div v-else style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px 8px;text-align:center">
-				<iconify-icon icon="tabler:package-import" width="26" style="color:var(--faint)"></iconify-icon>
-				<p style="margin:0;font-size:11px;line-height:1.5;color:var(--muted)">{{ t("admin.no_areas_hint") }}</p>
-				<button type="button" class="accent-btn" style="padding:9px 12px;font-size:11px;justify-content:center" :disabled="importing" :style="{ opacity: importing ? 0.4 : 1 }" @click="importSeed">
+			<div v-else class="flex-1 flex flex-col items-center justify-center gap-[10px] py-[16px] px-[8px] text-center">
+				<iconify-icon icon="tabler:package-import" width="26" class="text-faint"></iconify-icon>
+				<p class="m-0 text-[11px] leading-[1.5] text-muted">{{ t("admin.no_areas_hint") }}</p>
+				<button type="button" class="accent-btn py-[9px] px-[12px] text-[11px] justify-center" :disabled="importing" :style="{ opacity: importing ? 0.4 : 1 }" @click="importSeed">
 					{{ importing ? t("admin.importing") : t("admin.import_seed_missions") }}
 				</button>
 			</div>
 		</aside>
 
-		<div style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px">
-			<p v-if="errorMessage" style="margin:0;font-size:12px;color:var(--danger-text)">{{ errorMessage }}</p>
+		<div class="flex-1 overflow-y-auto p-[20px] flex flex-col gap-[14px]">
+			<p v-if="errorMessage" class="m-0 text-[12px] text-danger-text">{{ errorMessage }}</p>
 
-			<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
-				<label style="grid-column:span 2" class="admin-label">
+			<div class="bg-white border border-line rounded-[14px] p-[18px] grid grid-cols-[1fr_1fr] gap-[14px]">
+				<label class="admin-label col-span-2">
 					{{ t("admin.field_name") }}
 					<input v-model="form.name" type="text" class="admin-input" />
 				</label>
@@ -62,43 +62,43 @@
 					<input v-model.number="form.xp_multiplier" type="number" min="0" max="10" step="0.1" class="admin-input" />
 				</label>
 
-				<label style="grid-column:span 2" class="admin-label">
+				<label class="admin-label col-span-2">
 					{{ t("admin.field_note") }}
 					<input v-model="form.note" type="text" maxlength="140" class="admin-input" />
 				</label>
 
-				<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--ink-soft);margin-top:18px">
+				<label class="flex items-center gap-[8px] text-[13px] font-medium text-ink-soft mt-[18px]">
 					<input v-model="form.is_default" type="checkbox" />
 					{{ t("admin.field_default_area") }}
 				</label>
 			</div>
 
-			<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
-				<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-					<div style="font-size:13px;font-weight:700;color:var(--ink)">
+			<div class="bg-white border border-line rounded-[14px] p-[16px] flex flex-col gap-[10px]">
+				<div class="flex items-center justify-between gap-[12px] flex-wrap">
+					<div class="text-[13px] font-bold text-ink">
 						{{ t("admin.area_shape_hint", { count: form.points.length }) }}
 					</div>
-					<div style="display:flex;gap:6px">
-						<button type="button" style="border-radius:8px;background:#fff;border:1px solid var(--border);color:var(--ink-soft);font-family:inherit;font-weight:600;font-size:12px;padding:6px 10px;cursor:pointer" :disabled="form.points.length === 0" @click="undoPoint">
+					<div class="flex gap-[6px]">
+						<button type="button" class="rounded-[8px] bg-white border border-line text-ink-soft font-[inherit] font-semibold text-[12px] py-[6px] px-[10px] cursor-pointer" :disabled="form.points.length === 0" @click="undoPoint">
 							{{ t("admin.undo_point") }}
 						</button>
-						<button type="button" style="border-radius:8px;background:#fff;border:1px solid var(--border);color:var(--ink-soft);font-family:inherit;font-weight:600;font-size:12px;padding:6px 10px;cursor:pointer" :disabled="form.points.length === 0" @click="clearPoints">
+						<button type="button" class="rounded-[8px] bg-white border border-line text-ink-soft font-[inherit] font-semibold text-[12px] py-[6px] px-[10px] cursor-pointer" :disabled="form.points.length === 0" @click="clearPoints">
 							{{ t("admin.clear") }}
 						</button>
 					</div>
 				</div>
-				<div ref="mapContainer" style="width:100%;height:260px;border-radius:11px;overflow:hidden;border:1px solid var(--border)" />
+				<div ref="mapContainer" class="w-full h-[260px] rounded-[11px] overflow-hidden border border-line" />
 			</div>
 
-			<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
-				<button type="button" class="accent-btn" style="padding:10px 18px;font-size:13px" :disabled="saving" @click="save">
+			<div class="flex flex-wrap items-center gap-[8px]">
+				<button type="button" class="accent-btn py-[10px] px-[18px] text-[13px]" :disabled="saving" @click="save">
 					{{ saving ? t("common.saving") : editingId ? t("admin.save_changes") : t("admin.create_area") }}
 				</button>
 
 				<button
 					v-if="editingId"
 					type="button"
-					style="border-radius:10px;background:#fff;border:1px solid var(--border);color:var(--ink-soft);font-family:inherit;font-weight:600;font-size:13px;padding:10px 16px;cursor:pointer"
+					class="rounded-[10px] bg-white border border-line text-ink-soft font-[inherit] font-semibold text-[13px] py-[10px] px-[16px] cursor-pointer"
 					:disabled="togglingActive"
 					:style="{ opacity: togglingActive ? 0.5 : 1 }"
 					@click="toggleActive"

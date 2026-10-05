@@ -1,19 +1,19 @@
 <template>
 	<div
 		v-if="confirmStore.options"
-		style="position:fixed;inset:0;background:rgba(15,17,21,0.55);display:flex;align-items:center;justify-content:center;z-index:9999;font-family:var(--font-sans)"
+		class="fixed inset-0 bg-[rgba(15,17,21,0.55)] flex items-center justify-center z-[9999] font-ui"
 		@click.self="confirmStore.answer(false)"
 	>
-		<div style="background:#fff;border-radius:16px;padding:26px 28px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.25)">
+		<div class="bg-white rounded-[16px] py-[26px] px-[28px] max-w-[420px] w-[90%] [box-shadow:0_20px_60px_rgba(0,0,0,0.25)]">
 			<div
-				style="width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:16px"
+				class="w-[52px] h-[52px] rounded-[14px] flex items-center justify-center mb-[16px]"
 				:style="{ background: danger ? 'rgba(239,68,68,0.12)' : 'rgba(34,197,94,0.14)' }"
 			>
 				<iconify-icon :icon="danger ? 'tabler:alert-triangle' : 'tabler:help-circle'" width="26" :style="{ color: danger ? '#dc2626' : '#22c55e' }"></iconify-icon>
 			</div>
-			<div style="font-size:17px;font-weight:800;color:var(--ink)">{{ confirmStore.options.title }}</div>
-			<div style="font-size:13px;color:var(--muted);margin-top:8px;line-height:1.6">{{ confirmStore.options.body }}</div>
-			<div style="display:flex;gap:10px;margin-top:20px">
+			<div class="text-[17px] font-extrabold text-ink">{{ confirmStore.options.title }}</div>
+			<div class="text-[13px] text-muted mt-[8px] leading-[1.6]">{{ confirmStore.options.body }}</div>
+			<div class="flex gap-[10px] mt-[20px]">
 				<button
 					type="button"
 					:class="{ 'accent-btn': !danger }"
@@ -26,7 +26,7 @@
 				</button>
 				<button
 					type="button"
-					style="flex:1;background:#fff;color:var(--muted);border:1px solid var(--border-soft);border-radius:11px;padding:12px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer"
+					class="flex-1 bg-white text-muted border border-line-soft rounded-[11px] p-[12px] font-[inherit] font-semibold text-[13px] cursor-pointer"
 					@click="confirmStore.answer(false)"
 				>
 					{{ t("app.cancel") }}

@@ -1,7 +1,7 @@
 <template>
-	<div style="height:100%;display:flex">
-		<aside style="width:230px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px;background:var(--surface-subtle)">
-			<button type="button" class="accent-btn" style="width:100%;padding:10px;font-size:12px;justify-content:center;margin-bottom:4px" @click="startNew">
+	<div class="h-full flex">
+		<aside class="w-[230px] shrink-0 border-r border-r-line overflow-y-auto p-[12px] flex flex-col gap-[6px] bg-surface-subtle">
+			<button type="button" class="accent-btn w-full p-[10px] text-[12px] justify-center mb-[4px]" @click="startNew">
 				<iconify-icon icon="tabler:plus" width="15"></iconify-icon> {{ t("admin.new_mission") }}
 			</button>
 
@@ -10,29 +10,29 @@
 					v-for="mission in adminStore.missions"
 					:key="mission.id"
 					type="button"
-					style="width:100%;text-align:left;border-radius:10px;padding:10px 12px;border:1px solid transparent;cursor:pointer;font-family:inherit"
+					class="w-full text-left rounded-[10px] py-[10px] px-[12px] border border-transparent cursor-pointer font-[inherit]"
 					:style="editingId === mission.id ? 'background:#22262d;border-color:#22262d' : 'background:#fff;border-color:#dfe2e6'"
 					@click="selectMission(mission)"
 				>
-					<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" :style="{ color: editingId === mission.id ? '#fff' : '#1b1f24' }">{{ mission.name }}</div>
-					<div style="font-family:var(--font-mono);font-size:9px;margin-top:3px" :style="{ color: editingId === mission.id ? '#9aa1ab' : '#9aa1ab' }">{{ mission.area_name ?? t("admin.no_area") }} · {{ mission.is_active ? t("admin.active") : t("admin.inactive") }}</div>
+					<div class="text-[13px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :style="{ color: editingId === mission.id ? '#fff' : '#1b1f24' }">{{ mission.name }}</div>
+					<div class="font-mono text-[9px] mt-[3px]" :style="{ color: editingId === mission.id ? '#9aa1ab' : '#9aa1ab' }">{{ mission.area_name ?? t("admin.no_area") }} · {{ mission.is_active ? t("admin.active") : t("admin.inactive") }}</div>
 				</button>
 			</template>
 
-			<div v-else style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px 8px;text-align:center">
-				<iconify-icon icon="tabler:package-import" width="26" style="color:var(--faint)"></iconify-icon>
-				<p style="margin:0;font-size:11px;line-height:1.5;color:var(--muted)">{{ t("admin.no_missions_hint") }}</p>
-				<button type="button" class="accent-btn" style="padding:9px 12px;font-size:11px;justify-content:center" :disabled="importing" :style="{ opacity: importing ? 0.4 : 1 }" @click="importSeed">
+			<div v-else class="flex-1 flex flex-col items-center justify-center gap-[10px] py-[16px] px-[8px] text-center">
+				<iconify-icon icon="tabler:package-import" width="26" class="text-faint"></iconify-icon>
+				<p class="m-0 text-[11px] leading-[1.5] text-muted">{{ t("admin.no_missions_hint") }}</p>
+				<button type="button" class="accent-btn py-[9px] px-[12px] text-[11px] justify-center" :disabled="importing" :style="{ opacity: importing ? 0.4 : 1 }" @click="importSeed">
 					{{ importing ? t("admin.importing") : t("admin.import_seed_missions") }}
 				</button>
 			</div>
 		</aside>
 
-		<div style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px">
-			<p v-if="errorMessage" style="margin:0;font-size:12px;color:var(--danger-text)">{{ errorMessage }}</p>
+		<div class="flex-1 overflow-y-auto p-[20px] flex flex-col gap-[16px]">
+			<p v-if="errorMessage" class="m-0 text-[12px] text-danger-text">{{ errorMessage }}</p>
 
-			<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
-				<label style="grid-column:span 2;display:flex;flex-direction:column;gap:6px;font-family:var(--font-mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--faint)">
+			<div class="bg-white border border-line rounded-[14px] p-[18px] grid grid-cols-[1fr_1fr] gap-[14px]">
+				<label class="[grid-column:span_2] flex flex-col gap-[6px] font-mono text-[9px] tracking-[0.08em] uppercase text-faint">
 					{{ t("admin.field_name") }}
 					<input v-model="form.name" type="text" class="admin-input" />
 				</label>
@@ -93,14 +93,14 @@
 					<input v-model.number="form.xp_per_km" type="number" min="0" class="admin-input" :title="t('admin.payout_per_km_hint')" />
 				</label>
 
-				<div style="grid-column:span 2;font-size:11px;color:var(--muted)">{{ payoutRangeText }}</div>
+				<div class="[grid-column:span_2] text-[11px] text-muted">{{ payoutRangeText }}</div>
 
 				<label class="admin-label">
 					{{ t("admin.field_level_required") }}
 					<input v-model.number="form.level_required" type="number" min="1" class="admin-input" />
 				</label>
 
-				<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--ink-soft);margin-top:18px">
+				<label class="flex items-center gap-[8px] text-[13px] font-medium text-ink-soft mt-[18px]">
 					<input type="checkbox" :checked="form.time_limit_minutes !== null" @change="toggleTimed" />
 					{{ t("admin.field_timed_mission") }}
 				</label>
@@ -111,18 +111,18 @@
 				</label>
 			</div>
 
-			<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
-				<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-					<span style="font-size:13px;font-weight:700;color:var(--ink)">{{ t("admin.spawn_points_heading") }}</span>
+			<div class="bg-white border border-line rounded-[14px] p-[16px] flex flex-col gap-[10px]">
+				<div class="flex items-center justify-between gap-[8px]">
+					<span class="text-[13px] font-bold text-ink">{{ t("admin.spawn_points_heading") }}</span>
 					<button type="button" class="spawn-btn" :disabled="form.spawn_points.length >= MAX_SPAWN_POINTS" @click="addSpawnPoint">
 						<iconify-icon icon="tabler:plus" width="13"></iconify-icon> {{ t("admin.spawn_point_add") }}
 					</button>
 				</div>
 
-				<div style="font-size:11px;font-weight:600;color:var(--muted)">{{ t("admin.spawn_points_count", { count: form.spawn_points.length }) }}</div>
+				<div class="text-[11px] font-semibold text-muted">{{ t("admin.spawn_points_count", { count: form.spawn_points.length }) }}</div>
 
-				<div v-for="(point, index) in form.spawn_points" :key="index" style="display:flex;align-items:center;gap:8px">
-					<div style="flex:1;font-size:11px;color:var(--ink-soft);background:var(--surface-subtle);border:1px solid var(--surface-sunken);border-radius:7px;padding:6px 9px">
+				<div v-for="(point, index) in form.spawn_points" :key="index" class="flex items-center gap-[8px]">
+					<div class="flex-1 text-[11px] text-ink-soft bg-surface-subtle border border-surface-sunken rounded-[7px] py-[6px] px-[9px]">
 						#{{ index + 1 }} — {{ point.x.toFixed(1) }}, {{ point.y.toFixed(1) }}, {{ point.z.toFixed(1) }} ({{ point.heading.toFixed(0) }}°)
 					</div>
 					<button type="button" class="spawn-icon-btn" :title="t('admin.spawn_point_capture')" @click="captureSpawnPoint(index)">
@@ -134,17 +134,17 @@
 					<button type="button" class="spawn-btn danger" :title="t('admin.spawn_point_remove')" @click="removeSpawnPoint(index)">✕</button>
 				</div>
 
-				<div style="font-size:11px;color:var(--faint)">{{ t("admin.spawn_points_hint") }}</div>
+				<div class="text-[11px] text-faint">{{ t("admin.spawn_points_hint") }}</div>
 			</div>
 
-			<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
-				<div style="display:flex;align-items:center;justify-content:space-between">
-					<span style="font-size:13px;font-weight:700;color:var(--ink)">{{ t("admin.dropoff_zone_heading") }}</span>
-					<button type="button" style="font-size:11px;font-weight:600;border-radius:8px;background:var(--surface-muted);border:1px solid var(--border);color:var(--ink-soft);padding:6px 10px;cursor:pointer" @click="useCurrentPosition()">
+			<div class="bg-white border border-line rounded-[14px] p-[16px] flex flex-col gap-[10px]">
+				<div class="flex items-center justify-between">
+					<span class="text-[13px] font-bold text-ink">{{ t("admin.dropoff_zone_heading") }}</span>
+					<button type="button" class="text-[11px] font-semibold rounded-[8px] bg-surface-muted border border-line text-ink-soft py-[6px] px-[10px] cursor-pointer" @click="useCurrentPosition()">
 						{{ t("admin.use_current_position") }}
 					</button>
 				</div>
-				<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+				<div class="grid grid-cols-[repeat(3,1fr)] gap-[10px]">
 					<label class="admin-label">{{ t("admin.axis_x") }} <input v-model.number="form.dropoff_x" type="number" step="any" class="admin-input" /></label>
 					<label class="admin-label">{{ t("admin.axis_y") }} <input v-model.number="form.dropoff_y" type="number" step="any" class="admin-input" /></label>
 					<label class="admin-label">{{ t("admin.axis_z") }} <input v-model.number="form.dropoff_z" type="number" step="any" class="admin-input" /></label>
@@ -152,25 +152,25 @@
 					<label class="admin-label">{{ t("admin.axis_width") }} <input v-model.number="form.dropoff_width" type="number" step="any" class="admin-input" /></label>
 					<label class="admin-label">{{ t("admin.axis_length") }} <input v-model.number="form.dropoff_length" type="number" step="any" class="admin-input" /></label>
 				</div>
-				<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)">
+				<label class="flex items-center gap-[8px] text-[12px] text-muted">
 					<input v-model="dropoffPreviewOn" type="checkbox" @change="pushDropoffPreview" />
 					{{ t("admin.dropoff_preview_toggle") }}
 				</label>
 			</div>
 
-			<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
-				<button type="button" class="accent-btn" style="padding:10px 18px;font-size:13px" :disabled="saving" @click="save">
+			<div class="flex flex-wrap items-center gap-[8px]">
+				<button type="button" class="accent-btn py-[10px] px-[18px] text-[13px]" :disabled="saving" @click="save">
 					{{ saving ? t("common.saving") : editingId ? t("admin.save_changes") : t("admin.create_mission") }}
 				</button>
 
 				<template v-if="editingId">
-					<button type="button" style="border-radius:10px;background:#fff;border:1px solid var(--border);color:var(--ink-soft);font-family:inherit;font-weight:600;font-size:13px;padding:10px 16px;cursor:pointer" :disabled="togglingActive" :style="{ opacity: togglingActive ? 0.5 : 1 }" @click="toggleActive">
+					<button type="button" class="rounded-[10px] bg-white border border-line text-ink-soft font-[inherit] font-semibold text-[13px] py-[10px] px-[16px] cursor-pointer" :disabled="togglingActive" :style="{ opacity: togglingActive ? 0.5 : 1 }" @click="toggleActive">
 						{{ selectedIsActive ? t("admin.deactivate") : t("admin.activate") }}
 					</button>
 
 					<button
 						type="button"
-						style="border-radius:10px;background:#fff;border:1px solid #f3c8c2;color:var(--danger);font-family:inherit;font-weight:600;font-size:13px;padding:10px 16px;cursor:pointer"
+						class="rounded-[10px] bg-white border border-[#f3c8c2] text-danger font-[inherit] font-semibold text-[13px] py-[10px] px-[16px] cursor-pointer"
 						:disabled="deleting || selectedDeliveryCount > 0"
 						:title="selectedDeliveryCount > 0 ? t('admin.delete_blocked_history') : ''"
 						:style="{ opacity: (deleting || selectedDeliveryCount > 0) ? 0.4 : 1 }"
@@ -181,7 +181,7 @@
 
 					<button
 						type="button"
-						style="margin-left:auto;border-radius:10px;background:#3b82f6;border:none;color:#fff;font-family:inherit;font-weight:600;font-size:13px;padding:10px 16px;cursor:pointer"
+						class="ml-[auto] rounded-[10px] bg-[#3b82f6] border-none text-white font-[inherit] font-semibold text-[13px] py-[10px] px-[16px] cursor-pointer"
 						:disabled="testing || (!adminStore.testActive && !selectedIsActive)"
 						:title="adminStore.testActive ? '' : (!selectedIsActive ? t('admin.test_needs_active') : t('admin.test_qa_hint'))"
 						:style="{ opacity: (testing || (!adminStore.testActive && !selectedIsActive)) ? 0.4 : 1 }"

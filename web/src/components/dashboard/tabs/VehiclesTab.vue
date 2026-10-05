@@ -1,20 +1,20 @@
 <template>
-	<div style="display:flex;flex-direction:column;gap:20px">
-		<p v-if="actionError" style="font-size:12px;color:var(--danger-text);margin:0">{{ actionError }}</p>
+	<div class="flex flex-col gap-[20px]">
+		<p v-if="actionError" class="text-[12px] text-danger-text m-0">{{ actionError }}</p>
 
-		<div v-if="dashboardStore.payload?.rentalActive" style="background:#fff;border:1px solid var(--border);border-radius:15px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px">
-			<div style="display:flex;align-items:center;gap:12px">
-				<div style="width:40px;height:40px;border-radius:11px;background:rgba(34,197,94,0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-					<iconify-icon icon="tabler:truck" width="20" style="color:var(--accent)"></iconify-icon>
+		<div v-if="dashboardStore.payload?.rentalActive" class="bg-white border border-line rounded-[15px] py-[16px] px-[18px] flex items-center justify-between gap-[16px]">
+			<div class="flex items-center gap-[12px]">
+				<div class="w-[40px] h-[40px] rounded-[11px] bg-[rgba(34,197,94,0.14)] flex items-center justify-center shrink-0">
+					<iconify-icon icon="tabler:truck" width="20" class="text-accent"></iconify-icon>
 				</div>
 				<div>
-					<div style="font-size:14px;font-weight:700;color:var(--ink)">{{ t("vehicles.active_rental_label", { label: dashboardStore.payload?.rentalTruckLabel ?? "Rental Flatbed" }) }}</div>
-					<div style="font-family:var(--font-mono);font-size:11px;color:var(--faint);margin-top:2px">{{ t("common.rental_interval", { cost: formatMoney(dashboardStore.payload?.rentalPricePerCharge), minutes: dashboardStore.payload?.rentalIntervalMinutes ?? 0 }) }}</div>
+					<div class="text-[14px] font-bold text-ink">{{ t("vehicles.active_rental_label", { label: dashboardStore.payload?.rentalTruckLabel ?? "Rental Flatbed" }) }}</div>
+					<div class="font-mono text-[11px] text-faint mt-[2px]">{{ t("common.rental_interval", { cost: formatMoney(dashboardStore.payload?.rentalPricePerCharge), minutes: dashboardStore.payload?.rentalIntervalMinutes ?? 0 }) }}</div>
 				</div>
 			</div>
 			<button
 				type="button"
-				style="padding:10px 18px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--danger);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer"
+				class="py-[10px] px-[18px] rounded-[10px] border border-line bg-white text-danger font-[inherit] font-semibold text-[13px] cursor-pointer"
 				:disabled="returningRental || !!dashboardStore.activeDelivery"
 				:title="dashboardStore.activeDelivery ? t('vehicles.finish_delivery_first') : ''"
 				@click="returnRental"
@@ -25,50 +25,49 @@
 
 		<!-- Garage -->
 		<div>
-			<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+			<div class="flex items-center justify-between mb-[14px]">
 				<div>
-					<div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:var(--ink)">{{ t("vehicles.your_trucks") }}</div>
-					<div style="font-family:var(--font-mono);font-size:11px;color:var(--faint);margin-top:4px">{{ t("vehicles.owned_count", { count: vehicles.length }) }}</div>
+					<div class="text-[20px] font-extrabold tracking-[-0.01em] text-ink">{{ t("vehicles.your_trucks") }}</div>
+					<div class="font-mono text-[11px] text-faint mt-[4px]">{{ t("vehicles.owned_count", { count: vehicles.length }) }}</div>
 				</div>
 			</div>
 
-			<div v-if="vehicles.length === 0" style="background:#fff;border:1px solid var(--border);border-radius:15px;padding:32px;text-align:center;color:var(--faint);font-size:13px">
+			<div v-if="vehicles.length === 0" class="bg-white border border-line rounded-[15px] p-[32px] text-center text-faint text-[13px]">
 				{{ t("vehicles.no_trucks") }}
 			</div>
 
-			<div v-else style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
-				<div v-for="vehicle in vehicles" :key="vehicle.id" style="background:#fff;border:1px solid var(--border);border-radius:15px;overflow:hidden;display:flex;flex-direction:column">
-					<div style="width:100%;height:150px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;position:relative">
+			<div v-else class="grid grid-cols-[repeat(3,1fr)] gap-[14px]">
+				<div v-for="vehicle in vehicles" :key="vehicle.id" class="bg-white border border-line rounded-[15px] overflow-hidden flex flex-col">
+					<div class="w-full h-[150px] bg-[#f3f4f6] flex items-center justify-center relative">
 						<div
 							v-if="vehicleImage(vehicle.model)"
-							style="position:absolute;inset:0;background-size:cover;background-position:center"
+							class="absolute inset-0 bg-cover bg-center"
 							:style="{ backgroundImage: `url(${vehicleImage(vehicle.model)})` }"
 						/>
-						<iconify-icon v-else icon="tabler:truck" width="48" style="color:#aab0b8"></iconify-icon>
-						<span style="position:absolute;top:12px;right:12px;font-family:var(--font-mono);font-size:9px;letter-spacing:0.06em;padding:3px 8px;border-radius:6px;text-transform:uppercase" :style="vehicle.state === 'deployed' ? 'background:rgba(34,197,94,0.16);color:#15803d' : 'background:#eef0f2;color:#6b7280'">{{ t("vehicle_state." + vehicle.state) }}</span>
+						<iconify-icon v-else icon="tabler:truck" width="48" class="text-[#aab0b8]"></iconify-icon>
+						<span class="absolute top-[12px] right-[12px] font-mono text-[9px] tracking-[0.06em] py-[3px] px-[8px] rounded-[6px] uppercase" :style="vehicle.state === 'deployed' ? 'background:rgba(34,197,94,0.16);color:#15803d' : 'background:#eef0f2;color:#6b7280'">{{ t("vehicle_state." + vehicle.state) }}</span>
 					</div>
-					<div style="padding:15px 16px">
-						<div style="font-size:15px;font-weight:700;color:var(--ink);line-height:1.2">{{ vehicle.label }}</div>
-						<div style="font-family:var(--font-mono);font-size:10px;color:var(--faint);margin-top:5px">{{ t("vehicles.plate", { plate: vehicle.plate }) }}</div>
+					<div class="py-[15px] px-[16px]">
+						<div class="text-[15px] font-bold text-ink leading-[1.2]">{{ vehicle.label }}</div>
+						<div class="font-mono text-[10px] text-faint mt-[5px]">{{ t("vehicles.plate", { plate: vehicle.plate }) }}</div>
 
-						<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--surface-sunken)">
-							<div style="text-align:center">
-								<iconify-icon icon="tabler:car" width="16" style="color:var(--faint)"></iconify-icon>
-								<div style="font-size:13px;font-weight:700;color:var(--ink);margin-top:4px">{{ Math.round(vehicle.body_health / 10) }}%</div>
-								<div style="font-family:var(--font-mono);font-size:8px;letter-spacing:0.06em;text-transform:uppercase;color:var(--faint)">{{ t("vehicles.body") }}</div>
+						<div class="grid grid-cols-[repeat(2,1fr)] gap-[8px] mt-[14px] pt-[14px] border-t border-t-surface-sunken">
+							<div class="text-center">
+								<iconify-icon icon="tabler:car" width="16" class="text-faint"></iconify-icon>
+								<div class="text-[13px] font-bold text-ink mt-[4px]">{{ Math.round(vehicle.body_health / 10) }}%</div>
+								<div class="font-mono text-[8px] tracking-[0.06em] uppercase text-faint">{{ t("vehicles.body") }}</div>
 							</div>
-							<div style="text-align:center">
-								<iconify-icon icon="tabler:engine" width="16" style="color:var(--faint)"></iconify-icon>
-								<div style="font-size:13px;font-weight:700;color:var(--ink);margin-top:4px">{{ Math.round(vehicle.engine_health / 10) }}%</div>
-								<div style="font-family:var(--font-mono);font-size:8px;letter-spacing:0.06em;text-transform:uppercase;color:var(--faint)">{{ t("vehicles.engine") }}</div>
+							<div class="text-center">
+								<iconify-icon icon="tabler:engine" width="16" class="text-faint"></iconify-icon>
+								<div class="text-[13px] font-bold text-ink mt-[4px]">{{ Math.round(vehicle.engine_health / 10) }}%</div>
+								<div class="font-mono text-[8px] tracking-[0.06em] uppercase text-faint">{{ t("vehicles.engine") }}</div>
 							</div>
 						</div>
 
-						<div style="display:flex;gap:8px;margin-top:14px">
+						<div class="flex gap-[8px] mt-[14px]">
 							<button
 								class="ghost-btn"
 								type="button"
-								style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--ink-soft);font-family:inherit;font-weight:600;font-size:12px;cursor:pointer"
 								:disabled="busyVehicleId === vehicle.id || (vehicle.body_health >= 1000 && vehicle.engine_health >= 1000)"
 								:style="{ opacity: (busyVehicleId === vehicle.id || (vehicle.body_health >= 1000 && vehicle.engine_health >= 1000)) ? 0.4 : 1 }"
 								@click="repair(vehicle)"
@@ -77,9 +76,8 @@
 							</button>
 							<button
 								v-if="vehicle.state === 'stored'"
-								class="accent-btn"
+								class="accent-btn shrink-0 py-[10px] px-[16px] text-[12px]"
 								type="button"
-								style="flex-shrink:0;padding:10px 16px;font-size:12px"
 								:disabled="busyVehicleId === vehicle.id"
 								@click="parkOut(vehicle)"
 							>
@@ -87,9 +85,8 @@
 							</button>
 							<button
 								v-else-if="vehicle.state === 'deployed'"
-								class="accent-btn"
+								class="accent-btn shrink-0 py-[10px] px-[16px] text-[12px]"
 								type="button"
-								style="flex-shrink:0;padding:10px 16px;font-size:12px"
 								:disabled="busyVehicleId === vehicle.id || !!dashboardStore.activeDelivery"
 								:title="dashboardStore.activeDelivery ? t('vehicles.finish_delivery_first') : ''"
 								@click="parkIn(vehicle)"
@@ -104,34 +101,34 @@
 
 		<!-- Shop -->
 		<div>
-			<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+			<div class="flex items-center justify-between mb-[14px]">
 				<div>
-					<div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:var(--ink)">{{ t("vehicles.purchase_heading") }}</div>
-					<div style="font-family:var(--font-mono);font-size:11px;color:var(--faint);margin-top:4px">{{ t("vehicles.purchase_sub") }}</div>
+					<div class="text-[20px] font-extrabold tracking-[-0.01em] text-ink">{{ t("vehicles.purchase_heading") }}</div>
+					<div class="font-mono text-[11px] text-faint mt-[4px]">{{ t("vehicles.purchase_sub") }}</div>
 				</div>
 			</div>
-			<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
-				<div v-for="tier in vehicleTiers" :key="tier.id" style="background:#fff;border:1px solid var(--border);border-radius:15px;overflow:hidden;display:flex;flex-direction:column">
-					<div style="position:relative">
-						<div style="width:100%;height:128px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center" :style="vehicleImage(tier.model) ? { backgroundImage: `url(${vehicleImage(tier.model)})` } : {}">
-							<iconify-icon v-if="!vehicleImage(tier.model)" icon="tabler:truck" width="40" style="color:#aab0b8"></iconify-icon>
+			<div class="grid grid-cols-[repeat(4,1fr)] gap-[14px]">
+				<div v-for="tier in vehicleTiers" :key="tier.id" class="bg-white border border-line rounded-[15px] overflow-hidden flex flex-col">
+					<div class="relative">
+						<div class="w-full h-[128px] bg-[#f3f4f6] flex items-center justify-center bg-cover bg-center" :style="vehicleImage(tier.model) ? { backgroundImage: `url(${vehicleImage(tier.model)})` } : {}">
+							<iconify-icon v-if="!vehicleImage(tier.model)" icon="tabler:truck" width="40" class="text-[#aab0b8]"></iconify-icon>
 						</div>
-						<div v-if="isTierLocked(tier)" style="position:absolute;inset:0;background:rgba(34,38,45,0.55);display:flex;align-items:center;justify-content:center">
-							<iconify-icon icon="tabler:lock" width="26" style="color:#fff"></iconify-icon>
+						<div v-if="isTierLocked(tier)" class="absolute inset-0 bg-[rgba(34,38,45,0.55)] flex items-center justify-center">
+							<iconify-icon icon="tabler:lock" width="26" class="text-white"></iconify-icon>
 						</div>
-						<span v-else-if="isTierOwned(tier)" style="position:absolute;top:12px;right:12px;font-family:var(--font-mono);font-size:9px;letter-spacing:0.06em;padding:3px 8px;border-radius:6px;text-transform:uppercase;background:rgba(34,197,94,0.16);color:#15803d">{{ t("vehicles.owned_badge") }}</span>
+						<span v-else-if="isTierOwned(tier)" class="absolute top-[12px] right-[12px] font-mono text-[9px] tracking-[0.06em] py-[3px] px-[8px] rounded-[6px] uppercase bg-[rgba(34,197,94,0.16)] text-[#15803d]">{{ t("vehicles.owned_badge") }}</span>
 					</div>
-					<div style="padding:14px;display:flex;flex-direction:column;flex:1">
-						<div style="font-size:14px;font-weight:700;color:var(--ink);line-height:1.2">{{ tier.label }}</div>
-						<div style="display:flex;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--surface-sunken)">
-							<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--muted)"><iconify-icon icon="tabler:star" width="14" style="color:#aab0b8"></iconify-icon>{{ t("vehicles.level_plus", { level: tier.level_required }) }}</span>
-							<span v-if="tier.damage_resistance > 0" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--muted)"><iconify-icon icon="tabler:shield" width="14" style="color:#aab0b8"></iconify-icon>{{ t("vehicles.damage_resist", { percent: Math.round(tier.damage_resistance * 100) }) }}</span>
+					<div class="p-[14px] flex flex-col flex-1">
+						<div class="text-[14px] font-bold text-ink leading-[1.2]">{{ tier.label }}</div>
+						<div class="flex gap-[12px] mt-[12px] pt-[12px] border-t border-t-surface-sunken">
+							<span class="inline-flex items-center gap-[4px] text-[11px] text-muted"><iconify-icon icon="tabler:star" width="14" class="text-[#aab0b8]"></iconify-icon>{{ t("vehicles.level_plus", { level: tier.level_required }) }}</span>
+							<span v-if="tier.damage_resistance > 0" class="inline-flex items-center gap-[4px] text-[11px] text-muted"><iconify-icon icon="tabler:shield" width="14" class="text-[#aab0b8]"></iconify-icon>{{ t("vehicles.damage_resist", { percent: Math.round(tier.damage_resistance * 100) }) }}</span>
 						</div>
-						<div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:8px">
-							<span style="font-size:15px;font-weight:800;color:var(--ink)">{{ formatMoney(tier.price) }}</span>
-							<span v-if="isTierLocked(tier)" style="font-family:var(--font-mono);font-size:10px;padding:7px 11px;border-radius:9px;background:var(--surface-muted);color:var(--faint)">{{ t("common.level_short", { level: tier.level_required }) }}</span>
-							<span v-else-if="isTierOwned(tier)" style="font-family:var(--font-mono);font-size:10px;padding:7px 11px;border-radius:9px;background:var(--surface-sunken);color:var(--muted)">{{ t("vehicles.owned_badge") }}</span>
-							<button v-else class="accent-btn" type="button" style="padding:8px 15px;font-size:12px" :disabled="purchasingTierId === tier.id" @click="purchase(tier)">
+						<div class="mt-[14px] flex items-center justify-between gap-[8px]">
+							<span class="text-[15px] font-extrabold text-ink">{{ formatMoney(tier.price) }}</span>
+							<span v-if="isTierLocked(tier)" class="font-mono text-[10px] py-[7px] px-[11px] rounded-[9px] bg-surface-muted text-faint">{{ t("common.level_short", { level: tier.level_required }) }}</span>
+							<span v-else-if="isTierOwned(tier)" class="font-mono text-[10px] py-[7px] px-[11px] rounded-[9px] bg-surface-sunken text-muted">{{ t("vehicles.owned_badge") }}</span>
+							<button v-else class="accent-btn py-[8px] px-[15px] text-[12px]" type="button" :disabled="purchasingTierId === tier.id" @click="purchase(tier)">
 								{{ purchasingTierId === tier.id ? t("vehicles.buying") : t("app.buy") }}
 							</button>
 						</div>
@@ -335,7 +332,19 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.ghost-btn {
+	flex: 1;
+	padding: 10px;
+	border-radius: 10px;
+	border: 1px solid var(--border);
+	background: #fff;
+	color: var(--ink-soft);
+	font-family: inherit;
+	font-weight: 600;
+	font-size: 12px;
+	cursor: pointer;
+}
 .ghost-btn:hover:not(:disabled) {
-	border-color: var(--accent) !important;
+	border-color: var(--accent);
 }
 </style>

@@ -11,6 +11,24 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ['Chakra Petch', ...defaultTheme.fontFamily.sans],
+        ui: ['var(--font-sans)'],
+        mono: ['var(--font-mono)'],
+      },
+      colors: {
+        accent: 'var(--accent)',
+        ink: 'var(--ink)',
+        'ink-soft': 'var(--ink-soft)',
+        muted: 'var(--muted)',
+        faint: 'var(--faint)',
+        line: 'var(--border)',
+        'line-soft': 'var(--border-soft)',
+        'surface-muted': 'var(--surface-muted)',
+        'surface-sunken': 'var(--surface-sunken)',
+        'surface-subtle': 'var(--surface-subtle)',
+        sidebar: 'var(--sidebar)',
+        'sidebar-muted': 'var(--sidebar-muted)',
+        danger: 'var(--danger)',
+        'danger-text': 'var(--danger-text)',
       },
       textShadow: {
         'sm': '0 0px 2px rgba(255, 255, 255, 0.1)',

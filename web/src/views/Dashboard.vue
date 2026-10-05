@@ -1,93 +1,93 @@
 <template>
-	<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:var(--font-sans)">
-		<div style="width:1366px;height:1024px;display:flex;background:#e7e9ec;border-radius:22px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,0.55),0 0 0 1px rgba(255,255,255,0.04);font-size:14px;color:var(--ink)">
+	<div class="min-h-screen flex items-center justify-center p-[24px] font-ui">
+		<div class="w-[1366px] h-[1024px] flex bg-[#e7e9ec] rounded-[22px] overflow-hidden [box-shadow:0_40px_120px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.04)] text-[14px] text-ink">
 
 			<!-- SIDEBAR -->
-			<aside style="width:242px;flex-shrink:0;background:var(--sidebar);display:flex;flex-direction:column;color:#c9ced6">
-				<div style="padding:18px 18px 13px;display:flex;align-items:center;gap:12px">
-					<div style="width:40px;height:40px;border-radius:12px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-						<iconify-icon icon="tabler:truck" width="23" style="color:var(--sidebar)"></iconify-icon>
+			<aside class="w-[242px] shrink-0 bg-sidebar flex flex-col text-[#c9ced6]">
+				<div class="pt-[18px] px-[18px] pb-[13px] flex items-center gap-[12px]">
+					<div class="w-[40px] h-[40px] rounded-[12px] bg-accent flex items-center justify-center shrink-0">
+						<iconify-icon icon="tabler:truck" width="23" class="text-sidebar"></iconify-icon>
 					</div>
-					<div style="flex:1;min-width:0">
-						<div style="font-weight:700;font-size:16px;color:#fff;line-height:1.05">Polarix</div>
-						<div style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--sidebar-muted);margin-top:2px">{{ t("dashboard.tow_ops") }}</div>
+					<div class="flex-1 min-w-0">
+						<div class="font-bold text-[16px] text-white leading-[1.05]">Polarix</div>
+						<div class="font-mono text-[9px] tracking-[0.16em] uppercase text-sidebar-muted mt-[2px]">{{ t("dashboard.tow_ops") }}</div>
 					</div>
 				</div>
-				<div style="height:3px;margin:2px 18px 0;border-radius:2px;background:repeating-linear-gradient(45deg,var(--accent) 0 8px,#2e333b 8px 16px);opacity:0.55"></div>
+				<div class="h-[3px] mt-[2px] mx-[18px] mb-0 rounded-[2px] bg-[repeating-linear-gradient(45deg,var(--accent)_0_8px,#2e333b_8px_16px)] opacity-[0.55]"></div>
 
-				<nav style="flex:1;overflow-y:auto;padding:16px 12px;display:flex;flex-direction:column;gap:3px">
-					<div style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#5b626c;padding:0 10px 8px">{{ t("dashboard.menu") }}</div>
+				<nav class="flex-1 overflow-y-auto py-[16px] px-[12px] flex flex-col gap-[3px]">
+					<div class="font-mono text-[9px] tracking-[0.16em] uppercase text-[#5b626c] pt-0 px-[10px] pb-[8px]">{{ t("dashboard.menu") }}</div>
 					<button
 						v-for="item in navItems"
 						:key="item.key"
 						type="button"
-						style="position:relative;display:flex;align-items:center;gap:12px;width:100%;padding:10px 13px;border:none;border-radius:10px;cursor:pointer;font-family:inherit;font-size:14px;text-align:left"
+						class="relative flex items-center gap-[12px] w-full py-[10px] px-[13px] border-none rounded-[10px] cursor-pointer font-[inherit] text-[14px] text-left"
 						:style="{ background: dashboardStore.activeTab === item.key ? 'rgba(34,197,94,0.12)' : 'transparent', color: dashboardStore.activeTab === item.key ? '#ffffff' : '#9aa1ab' }"
 						@click="dashboardStore.setActiveTab(item.key)"
 					>
-						<span style="position:absolute;left:-12px;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)" :style="{ opacity: dashboardStore.activeTab === item.key ? '1' : '0' }"></span>
+						<span class="absolute left-[-12px] top-[9px] bottom-[9px] w-[3px] rounded-[0_3px_3px_0] bg-accent" :style="{ opacity: dashboardStore.activeTab === item.key ? '1' : '0' }"></span>
 						<iconify-icon :icon="item.icon" width="19" :style="{ color: dashboardStore.activeTab === item.key ? '#22c55e' : '#7a818c', flexShrink: '0' }"></iconify-icon>
-						<span style="flex:1" :style="{ fontWeight: dashboardStore.activeTab === item.key ? '600' : '500' }">{{ item.label }}</span>
-						<span v-if="item.badge" style="font-family:var(--font-mono);font-size:10px;font-weight:600;min-width:18px;text-align:center;padding:1px 6px;border-radius:8px;background:var(--accent);color:var(--sidebar)">{{ item.badge }}</span>
+						<span class="flex-1" :style="{ fontWeight: dashboardStore.activeTab === item.key ? '600' : '500' }">{{ item.label }}</span>
+						<span v-if="item.badge" class="font-mono text-[10px] font-semibold min-w-[18px] text-center py-[1px] px-[6px] rounded-[8px] bg-accent text-sidebar">{{ item.badge }}</span>
 					</button>
 				</nav>
 
-				<div style="padding:0 12px 6px">
-					<div style="padding:12px;border-radius:14px;background:#2b3039;border:1px solid #353b45">
-						<div style="display:flex;align-items:center;gap:10px">
-							<div style="width:38px;height:38px;border-radius:11px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:var(--sidebar);flex-shrink:0">{{ initial }}</div>
-							<div style="flex:1;min-width:0">
-								<div style="font-weight:600;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ player?.name ?? '—' }}</div>
-								<div style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--sidebar-muted);margin-top:1px">{{ dashboardStore.levelTitle }} · {{ t("common.level_short", { level: player?.level ?? 1 }) }}</div>
+				<div class="pt-0 px-[12px] pb-[6px]">
+					<div class="p-[12px] rounded-[14px] bg-[#2b3039] border border-[#353b45]">
+						<div class="flex items-center gap-[10px]">
+							<div class="w-[38px] h-[38px] rounded-[11px] bg-accent flex items-center justify-center font-bold text-[16px] text-sidebar shrink-0">{{ initial }}</div>
+							<div class="flex-1 min-w-0">
+								<div class="font-semibold text-[13px] text-white whitespace-nowrap overflow-hidden text-ellipsis">{{ player?.name ?? '—' }}</div>
+								<div class="font-mono text-[9px] tracking-[0.1em] uppercase text-sidebar-muted mt-[1px]">{{ dashboardStore.levelTitle }} · {{ t("common.level_short", { level: player?.level ?? 1 }) }}</div>
 							</div>
 						</div>
-						<div style="margin-top:11px;display:flex;align-items:center;gap:8px">
-							<div style="flex:1;height:5px;border-radius:3px;background:#3a414b;overflow:hidden">
-								<div style="height:100%;background:var(--accent)" :style="{ width: dashboardStore.xpProgress.percent + '%' }"></div>
+						<div class="mt-[11px] flex items-center gap-[8px]">
+							<div class="flex-1 h-[5px] rounded-[3px] bg-[#3a414b] overflow-hidden">
+								<div class="h-full bg-accent" :style="{ width: dashboardStore.xpProgress.percent + '%' }"></div>
 							</div>
-							<span style="font-family:var(--font-mono);font-size:10px;color:var(--sidebar-muted)">{{ player?.xp ?? 0 }} XP</span>
+							<span class="font-mono text-[10px] text-sidebar-muted">{{ player?.xp ?? 0 }} XP</span>
 						</div>
 					</div>
 				</div>
-				<button style="margin:6px 12px 14px;display:flex;align-items:center;gap:10px;padding:10px 13px;border:none;background:transparent;color:var(--sidebar-muted);font-family:inherit;font-size:13px;cursor:pointer;border-radius:10px" @click="closeNui">
+				<button class="mt-[6px] mx-[12px] mb-[14px] flex items-center gap-[10px] py-[10px] px-[13px] border-none bg-transparent text-sidebar-muted font-[inherit] text-[13px] cursor-pointer rounded-[10px]" @click="closeNui">
 					<iconify-icon icon="tabler:logout" width="18"></iconify-icon> {{ t("dashboard.exit") }}
 				</button>
 			</aside>
 
 			<!-- MAIN -->
-			<main class="px-main" style="flex:1;display:flex;flex-direction:column;min-width:0;background:#e7e9ec">
-				<header style="height:62px;flex-shrink:0;display:flex;align-items:center;gap:14px;padding:0 22px;background:#fff;border-bottom:1px solid var(--border)">
-					<div style="flex:1"></div>
-					<div style="display:flex;align-items:center;gap:7px;padding:6px 8px 6px 12px;border-radius:20px;background:var(--surface-muted);border:1px solid var(--border-soft)">
-						<iconify-icon icon="tabler:bolt" width="15" style="color:var(--accent)"></iconify-icon>
-						<span style="font-size:12px;color:var(--muted);font-weight:500">{{ t("dashboard.skill_points") }}</span>
-						<span style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--ink);background:#fff;border:1px solid var(--border-soft);border-radius:10px;padding:1px 8px">{{ player?.skill_points ?? 0 }}</span>
+			<main class="px-main flex flex-1 flex-col min-w-0 bg-[#e7e9ec]">
+				<header class="h-[62px] shrink-0 flex items-center gap-[14px] py-0 px-[22px] bg-white border-b border-b-line">
+					<div class="flex-1"></div>
+					<div class="flex items-center gap-[7px] pt-[6px] pr-[8px] pb-[6px] pl-[12px] rounded-[20px] bg-surface-muted border border-line-soft">
+						<iconify-icon icon="tabler:bolt" width="15" class="text-accent"></iconify-icon>
+						<span class="text-[12px] text-muted font-medium">{{ t("dashboard.skill_points") }}</span>
+						<span class="font-mono text-[12px] font-semibold text-ink bg-white border border-line-soft rounded-[10px] py-[1px] px-[8px]">{{ player?.skill_points ?? 0 }}</span>
 					</div>
-					<div style="text-align:right;line-height:1.15;padding:0 4px">
-						<div style="font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--ink)">{{ time }}</div>
-						<div style="font-size:10px;color:var(--faint)">{{ date }}</div>
+					<div class="text-right leading-[1.15] py-0 px-[4px]">
+						<div class="font-mono text-[13px] font-semibold text-ink">{{ time }}</div>
+						<div class="text-[10px] text-faint">{{ date }}</div>
 					</div>
-					<button style="width:36px;height:36px;border-radius:10px;border:1px solid var(--border-soft);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted)" @click="closeNui"><iconify-icon icon="tabler:x" width="18"></iconify-icon></button>
+					<button class="w-[36px] h-[36px] rounded-[10px] border border-line-soft bg-white flex items-center justify-center cursor-pointer text-muted" @click="closeNui"><iconify-icon icon="tabler:x" width="18"></iconify-icon></button>
 				</header>
 
-				<div style="flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px">
+				<div class="flex-1 overflow-y-auto p-[24px] flex flex-col gap-[16px]">
 					<div
 						v-if="dashboardStore.activeDelivery"
-						style="display:flex;align-items:center;justify-content:space-between;gap:16px;border-radius:14px;background:#fff;border:1px solid #fecaca;padding:14px 18px"
+						class="flex items-center justify-between gap-[16px] rounded-[14px] bg-white border border-[#fecaca] py-[14px] px-[18px]"
 					>
-						<div style="display:flex;align-items:center;gap:12px">
-							<div style="width:36px;height:36px;border-radius:10px;background:rgba(239,68,68,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-								<iconify-icon icon="tabler:truck" width="18" style="color:var(--danger)"></iconify-icon>
+						<div class="flex items-center gap-[12px]">
+							<div class="w-[36px] h-[36px] rounded-[10px] bg-[rgba(239,68,68,0.12)] flex items-center justify-center shrink-0">
+								<iconify-icon icon="tabler:truck" width="18" class="text-danger"></iconify-icon>
 							</div>
 							<div>
-								<div style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--danger)">{{ t("dashboard.active_delivery") }}</div>
-								<div style="font-size:14px;font-weight:700;color:var(--ink);margin-top:2px">{{ dashboardStore.activeDelivery.missionName }}</div>
+								<div class="font-mono text-[9px] tracking-[0.1em] uppercase text-danger">{{ t("dashboard.active_delivery") }}</div>
+								<div class="text-[14px] font-bold text-ink mt-[2px]">{{ dashboardStore.activeDelivery.missionName }}</div>
 							</div>
 						</div>
 						<button
 							type="button"
 							:disabled="abortingDelivery"
-							style="background:var(--danger);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-family:inherit;font-weight:600;font-size:12px;cursor:pointer"
+							class="bg-danger text-white border-none rounded-[10px] py-[9px] px-[16px] font-[inherit] font-semibold text-[12px] cursor-pointer"
 							:style="{ opacity: abortingDelivery ? 0.5 : 1, cursor: abortingDelivery ? 'not-allowed' : 'pointer' }"
 							@click="abortDelivery"
 						>

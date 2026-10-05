@@ -1,86 +1,85 @@
 <template>
-	<div style="display:flex;flex-direction:column;gap:14px;height:100%">
-		<div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+	<div class="flex flex-col gap-[14px] h-full">
+		<div class="flex items-center justify-between gap-[16px]">
 			<div>
-				<div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:var(--ink)">{{ t("areas.title") }}</div>
-				<div style="font-family:var(--font-mono);font-size:11px;color:var(--faint);margin-top:4px">{{ t("areas.subtitle") }}</div>
+				<div class="text-[20px] font-extrabold tracking-[-0.01em] text-ink">{{ t("areas.title") }}</div>
+				<div class="font-mono text-[11px] text-faint mt-[4px]">{{ t("areas.subtitle") }}</div>
 			</div>
-			<div style="display:flex;align-items:center;gap:16px">
-				<div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)"><span style="width:11px;height:11px;border-radius:50%;background:var(--accent)"></span>{{ t("areas.unlocked") }}</div>
-				<div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)"><span style="width:11px;height:11px;border-radius:50%;background:var(--faint)"></span>{{ t("areas.locked") }}</div>
+			<div class="flex items-center gap-[16px]">
+				<div class="inline-flex items-center gap-[7px] text-[12px] text-muted"><span class="w-[11px] h-[11px] rounded-[50%] bg-accent"></span>{{ t("areas.unlocked") }}</div>
+				<div class="inline-flex items-center gap-[7px] text-[12px] text-muted"><span class="w-[11px] h-[11px] rounded-[50%] bg-faint"></span>{{ t("areas.locked") }}</div>
 			</div>
 		</div>
 
-		<div style="display:flex;flex:1;gap:14px;min-height:0">
-			<aside style="width:40%;flex-shrink:0;border-radius:16px;border:1px solid var(--border);background:#fff;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px">
+		<div class="flex flex-1 gap-[14px] min-h-0">
+			<aside class="w-[40%] shrink-0 rounded-[16px] border border-line bg-white overflow-y-auto p-[12px] flex flex-col gap-[6px]">
 				<button
 					v-for="area in sortedAreas"
 					:key="area.id"
 					type="button"
-					style="width:100%;text-align:left;border-radius:12px;padding:12px 14px;border:1px solid transparent;cursor:pointer;font-family:inherit;background:var(--surface-subtle)"
+					class="w-full text-left rounded-[12px] py-[12px] px-[14px] border border-transparent cursor-pointer font-[inherit] bg-surface-subtle"
 					:style="selectedArea?.id === area.id ? 'background:rgba(34,197,94,0.1);border-color:var(--accent)' : ''"
 					@click="selectAreaRow(area)"
 				>
-					<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-						<span style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--ink)">
-							<span style="width:9px;height:9px;border-radius:50%;flex-shrink:0" :style="{ background: area.unlocked ? 'var(--accent)' : '#9aa1ab' }"></span>
+					<div class="flex items-center justify-between gap-[8px]">
+						<span class="flex items-center gap-[8px] text-[14px] font-bold text-ink">
+							<span class="w-[9px] h-[9px] rounded-[50%] shrink-0" :style="{ background: area.unlocked ? 'var(--accent)' : '#9aa1ab' }"></span>
 							{{ area.name }}
 						</span>
-						<span v-if="area.unlocked" style="font-family:var(--font-mono);font-size:10px;color:var(--accent);font-weight:700">{{ t("areas.unlocked_badge") }}</span>
+						<span v-if="area.unlocked" class="font-mono text-[10px] text-accent font-bold">{{ t("areas.unlocked_badge") }}</span>
 					</div>
-					<div style="font-size:11px;color:var(--faint);margin-top:2px;margin-left:17px">{{ area.region }}</div>
+					<div class="text-[11px] text-faint mt-[2px] ml-[17px]">{{ area.region }}</div>
 
-					<div v-if="area.reward_multiplier !== 1 || area.xp_multiplier !== 1" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;margin-left:17px">
-						<span v-if="area.reward_multiplier !== 1" style="display:inline-flex;align-items:center;gap:3px;font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--accent);background:rgba(34,197,94,0.12);border-radius:6px;padding:2px 6px"><iconify-icon icon="tabler:coin" width="11"></iconify-icon>{{ t("areas.reward_mult", { mult: area.reward_multiplier }) }}</span>
-						<span v-if="area.xp_multiplier !== 1" style="display:inline-flex;align-items:center;gap:3px;font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--muted);background:var(--surface-sunken);border-radius:6px;padding:2px 6px"><iconify-icon icon="tabler:bolt" width="11"></iconify-icon>{{ t("areas.xp_mult", { mult: area.xp_multiplier }) }}</span>
+					<div v-if="area.reward_multiplier !== 1 || area.xp_multiplier !== 1" class="flex flex-wrap gap-[6px] mt-[8px] ml-[17px]">
+						<span v-if="area.reward_multiplier !== 1" class="inline-flex items-center gap-[3px] font-mono text-[10px] font-bold text-accent bg-[rgba(34,197,94,0.12)] rounded-[6px] py-[2px] px-[6px]"><iconify-icon icon="tabler:coin" width="11"></iconify-icon>{{ t("areas.reward_mult", { mult: area.reward_multiplier }) }}</span>
+						<span v-if="area.xp_multiplier !== 1" class="inline-flex items-center gap-[3px] font-mono text-[10px] font-bold text-muted bg-surface-sunken rounded-[6px] py-[2px] px-[6px]"><iconify-icon icon="tabler:bolt" width="11"></iconify-icon>{{ t("areas.xp_mult", { mult: area.xp_multiplier }) }}</span>
 					</div>
 
-					<div v-if="area.note" style="font-size:11px;color:var(--muted);font-style:italic;margin-top:6px;margin-left:17px">{{ area.note }}</div>
+					<div v-if="area.note" class="text-[11px] text-muted italic mt-[6px] ml-[17px]">{{ area.note }}</div>
 
-					<div v-if="!area.unlocked" style="display:flex;gap:14px;margin-top:8px;margin-left:17px;font-size:11px">
-						<span style="color:var(--faint)">{{ t("areas.cost") }} <strong style="color:var(--ink)">{{ formatMoney(area.unlock_cost) }}</strong></span>
-						<span style="color:var(--faint)">{{ t("areas.level") }} <strong style="color:var(--ink)">{{ area.level_required }}</strong></span>
+					<div v-if="!area.unlocked" class="flex gap-[14px] mt-[8px] ml-[17px] text-[11px]">
+						<span class="text-faint">{{ t("areas.cost") }} <strong class="text-ink">{{ formatMoney(area.unlock_cost) }}</strong></span>
+						<span class="text-faint">{{ t("areas.level") }} <strong class="text-ink">{{ area.level_required }}</strong></span>
 					</div>
 				</button>
 			</aside>
 
-			<div style="position:relative;flex:1;border-radius:16px;overflow:hidden;border:1px solid var(--border)">
-				<div ref="mapContainer" style="width:100%;height:100%" />
+			<div class="relative flex-1 rounded-[16px] overflow-hidden border border-line">
+				<div ref="mapContainer" class="w-full h-full" />
 
 				<div
 					v-if="selectedArea"
-					style="position:absolute;top:16px;right:16px;z-index:1100;width:280px;border-radius:14px;background:#fff;border:1px solid var(--border);box-shadow:0 14px 34px rgba(0,0,0,0.18);padding:16px"
+					class="absolute top-[16px] right-[16px] z-[1100] w-[280px] rounded-[14px] bg-white border border-line [box-shadow:0_14px_34px_rgba(0,0,0,0.18)] p-[16px]"
 				>
-					<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-						<span style="font-size:15px;font-weight:700;color:var(--ink)">{{ selectedArea.name }}</span>
-						<button type="button" style="background:transparent;border:none;cursor:pointer;color:var(--faint);font-size:16px;line-height:1;padding:0" @click="selectedArea = null">✕</button>
+					<div class="flex items-center justify-between gap-[8px]">
+						<span class="text-[15px] font-bold text-ink">{{ selectedArea.name }}</span>
+						<button type="button" class="bg-transparent border-none cursor-pointer text-faint text-[16px] leading-[1] p-0" @click="selectedArea = null">✕</button>
 					</div>
-					<div style="font-size:12px;color:var(--faint);margin-top:2px">{{ selectedArea.region }}</div>
+					<div class="text-[12px] text-faint mt-[2px]">{{ selectedArea.region }}</div>
 
-					<div v-if="selectedArea.reward_multiplier !== 1 || selectedArea.xp_multiplier !== 1" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
-						<span v-if="selectedArea.reward_multiplier !== 1" style="display:inline-flex;align-items:center;gap:3px;font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--accent);background:rgba(34,197,94,0.12);border-radius:6px;padding:2px 6px"><iconify-icon icon="tabler:coin" width="11"></iconify-icon>{{ t("areas.reward_mult", { mult: selectedArea.reward_multiplier }) }}</span>
-						<span v-if="selectedArea.xp_multiplier !== 1" style="display:inline-flex;align-items:center;gap:3px;font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--muted);background:var(--surface-sunken);border-radius:6px;padding:2px 6px"><iconify-icon icon="tabler:bolt" width="11"></iconify-icon>{{ t("areas.xp_mult", { mult: selectedArea.xp_multiplier }) }}</span>
+					<div v-if="selectedArea.reward_multiplier !== 1 || selectedArea.xp_multiplier !== 1" class="flex flex-wrap gap-[6px] mt-[12px]">
+						<span v-if="selectedArea.reward_multiplier !== 1" class="inline-flex items-center gap-[3px] font-mono text-[10px] font-bold text-accent bg-[rgba(34,197,94,0.12)] rounded-[6px] py-[2px] px-[6px]"><iconify-icon icon="tabler:coin" width="11"></iconify-icon>{{ t("areas.reward_mult", { mult: selectedArea.reward_multiplier }) }}</span>
+						<span v-if="selectedArea.xp_multiplier !== 1" class="inline-flex items-center gap-[3px] font-mono text-[10px] font-bold text-muted bg-surface-sunken rounded-[6px] py-[2px] px-[6px]"><iconify-icon icon="tabler:bolt" width="11"></iconify-icon>{{ t("areas.xp_mult", { mult: selectedArea.xp_multiplier }) }}</span>
 					</div>
 
-					<div v-if="selectedArea.note" style="font-size:12px;color:var(--muted);font-style:italic;margin-top:10px">{{ selectedArea.note }}</div>
+					<div v-if="selectedArea.note" class="text-[12px] text-muted italic mt-[10px]">{{ selectedArea.note }}</div>
 
-					<div v-if="selectedArea.unlocked" style="margin-top:14px;display:inline-flex;align-items:center;gap:7px;font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--accent)">
-						<span style="width:9px;height:9px;border-radius:50%;background:var(--accent)"></span>{{ t("areas.unlocked_badge") }}
+					<div v-if="selectedArea.unlocked" class="mt-[14px] inline-flex items-center gap-[7px] font-mono text-[11px] font-bold text-accent">
+						<span class="w-[9px] h-[9px] rounded-[50%] bg-accent"></span>{{ t("areas.unlocked_badge") }}
 					</div>
 
 					<template v-else>
-						<div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;font-size:13px">
-							<div style="display:flex;justify-content:space-between"><span style="color:var(--faint)">{{ t("areas.unlock_cost") }}</span><span style="color:var(--accent);font-weight:700">{{ formatMoney(selectedArea.unlock_cost) }}</span></div>
-							<div style="display:flex;justify-content:space-between"><span style="color:var(--faint)">{{ t("areas.level_required") }}</span><span style="color:var(--ink);font-weight:600">{{ t("common.level_short", { level: selectedArea.level_required }) }}</span></div>
+						<div class="mt-[14px] flex flex-col gap-[8px] text-[13px]">
+							<div class="flex justify-between"><span class="text-faint">{{ t("areas.unlock_cost") }}</span><span class="text-accent font-bold">{{ formatMoney(selectedArea.unlock_cost) }}</span></div>
+							<div class="flex justify-between"><span class="text-faint">{{ t("areas.level_required") }}</span><span class="text-ink font-semibold">{{ t("common.level_short", { level: selectedArea.level_required }) }}</span></div>
 						</div>
 
-						<p v-if="unlockError" style="margin:10px 0 0;font-size:12px;color:var(--danger-text)">{{ unlockError }}</p>
+						<p v-if="unlockError" class="mt-[10px] mx-0 mb-0 text-[12px] text-danger-text">{{ unlockError }}</p>
 
 						<button
-							class="accent-btn"
+							class="accent-btn mt-[14px] w-full p-[11px] text-[13px] justify-center"
 							type="button"
 							:disabled="unlocking"
-							style="margin-top:14px;width:100%;padding:11px;font-size:13px;justify-content:center"
 							@click="confirmUnlock"
 						>
 							{{ unlocking ? t("areas.unlocking") : t("areas.unlock_area") }}

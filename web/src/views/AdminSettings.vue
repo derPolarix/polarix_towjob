@@ -1,34 +1,34 @@
 <template>
-	<div style="width:100%;height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:var(--font-sans)">
-		<div style="width:1100px;height:760px;max-width:100%;max-height:100%;display:flex;flex-direction:column;background:#e7e9ec;border-radius:22px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,0.55),0 0 0 1px rgba(255,255,255,0.04);font-size:14px;color:var(--ink)">
-			<header style="flex-shrink:0;background:var(--sidebar);padding:18px 22px;display:flex;align-items:center;gap:16px">
-				<div style="width:36px;height:36px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-					<iconify-icon icon="tabler:truck" width="19" style="color:var(--sidebar)"></iconify-icon>
+	<div class="w-full h-screen flex items-center justify-center p-[24px] font-ui">
+		<div class="w-[1100px] h-[760px] max-w-full max-h-full flex flex-col bg-[#e7e9ec] rounded-[22px] overflow-hidden [box-shadow:0_40px_120px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.04)] text-[14px] text-ink">
+			<header class="shrink-0 bg-sidebar py-[18px] px-[22px] flex items-center gap-[16px]">
+				<div class="w-[36px] h-[36px] rounded-[10px] bg-accent flex items-center justify-center shrink-0">
+					<iconify-icon icon="tabler:truck" width="19" class="text-sidebar"></iconify-icon>
 				</div>
-				<div style="flex:1;min-width:0">
-					<div style="font-weight:700;font-size:15px;color:#fff">{{ t("admin.header_title") }}</div>
-					<div style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--sidebar-muted);margin-top:2px">{{ t("admin.header_subtitle") }}</div>
+				<div class="flex-1 min-w-0">
+					<div class="font-bold text-[15px] text-white">{{ t("admin.header_title") }}</div>
+					<div class="font-mono text-[9px] tracking-[0.12em] uppercase text-sidebar-muted mt-[2px]">{{ t("admin.header_subtitle") }}</div>
 				</div>
-				<nav style="display:flex;gap:4px">
+				<nav class="flex gap-[4px]">
 					<button
 						v-for="s in sections"
 						:key="s.key"
 						type="button"
-						style="position:relative;display:inline-flex;align-items:center;gap:7px;background:transparent;border:none;cursor:pointer;font-family:inherit;font-size:13px;padding:10px 14px;border-radius:9px"
+						class="relative inline-flex items-center gap-[7px] bg-transparent border-none cursor-pointer font-[inherit] text-[13px] py-[10px] px-[14px] rounded-[9px]"
 						:style="{ background: adminStore.section === s.key ? 'rgba(34,197,94,0.14)' : 'transparent', color: adminStore.section === s.key ? '#ffffff' : '#9aa1ab', fontWeight: adminStore.section === s.key ? '600' : '500' }"
 						@click="adminStore.setSection(s.key)"
 					>
 						<iconify-icon :icon="s.icon" width="16" :style="{ color: adminStore.section === s.key ? '#22c55e' : '#7a818c' }"></iconify-icon>{{ s.label }}
 					</button>
 				</nav>
-				<button type="button" style="width:32px;height:32px;border-radius:9px;border:none;background:rgba(255,255,255,0.08);color:#c9ced6;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0" @click="close">
+				<button type="button" class="w-[32px] h-[32px] rounded-[9px] border-none bg-[rgba(255,255,255,0.08)] text-[#c9ced6] flex items-center justify-center cursor-pointer shrink-0" @click="close">
 					<iconify-icon icon="tabler:x" width="17"></iconify-icon>
 				</button>
 			</header>
 
-			<p v-if="adminStore.error" style="flex-shrink:0;margin:0;padding:10px 22px;font-size:12px;color:var(--danger-text);background:#fff;border-bottom:1px solid var(--border)">{{ adminStore.error }}</p>
+			<p v-if="adminStore.error" class="shrink-0 m-0 py-[10px] px-[22px] text-[12px] text-danger-text bg-white border-b border-b-line">{{ adminStore.error }}</p>
 
-			<main style="flex:1;overflow:hidden;background:#e7e9ec">
+			<main class="flex-1 overflow-hidden bg-[#e7e9ec]">
 				<component :is="activeSectionComponent" />
 			</main>
 		</div>
