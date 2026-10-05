@@ -284,6 +284,25 @@ RegisterNetEvent("polarix_towjob:registerDeployedTruck", function(vehicleId, net
     deployedTruckNetIds[source][vehicleId] = netId
 end)
 
+-- The tow truck this player may hold keys for: one of their deployed trucks, or (while a rental
+-- is active) a rental-model vehicle the client itself created. Rentals have no plate on record,
+-- hence the owner check.
+function Vehicles.AwaitOwnTruck(source, netId)
+    local player = Player.GetData(source)
+    if not player then return nil end
+
+    local rows = DB.GetDeployedVehicles(player.identifier) or {}
+    local rentalModel = Vehicles.IsRentalActive(source) and GetHashKey(serverConfig.RentalTruck.model) or nil
+
+    return awaitVehicleEntity(netId, function(entity)
+        for _, row in ipairs(rows) do
+            if isDeployedRowEntity(row, entity) then return true end
+        end
+
+        return rentalModel ~= nil and GetEntityModel(entity) == rentalModel and NetworkGetEntityOwner(entity) == source
+    end)
+end
+
 local function resolveDeployedTruckEntity(source, vehicleId)
     local byId = deployedTruckNetIds[source]
     local netId = byId and byId[vehicleId]
