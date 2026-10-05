@@ -59,6 +59,9 @@ return {
     -- movement/latency.
     VehicleFoundMaxDistance = 25.0,
 
+    -- How far a spawned target vehicle may sit from the spawn point it was reported at.
+    SpawnPointVerifyDistance = 10.0,
+
     -- Default for the runtime-editable `search_hint_radius` setting: the circle drawn on the
     -- player's map while searching. The circle's center is offset server-side so the spawn
     -- point never sits dead-center, which is what keeps the search phase a search.

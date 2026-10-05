@@ -254,6 +254,8 @@ local function awaitVehicleEntity(netId, matches)
     return nil
 end
 
+Vehicles.AwaitEntity = awaitVehicleEntity
+
 local function isDeployedRowEntity(row, entity)
     local tier = findTier(row.tier_id)
 

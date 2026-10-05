@@ -227,34 +227,54 @@ local function exclusive(fn)
     end
 end
 
+-- The target is trusted only once the entity behind the reported netId is the mission's vehicle
+-- model standing at the spawn point it names; anything else ends the delivery without penalty.
+-- Registered once, and never for a priority job (its target is fixed server-side at accept).
 RegisterNetEvent("polarix_towjob:setTargetVehicle", function(deliveryId, netId, pointIndex)
     local source = source
     local player = Player.GetData(source)
     if not player then return end
 
-    local delivery = DB.GetActiveDelivery(player.identifier)
-    if not delivery or delivery.id ~= deliveryId then return end
-
     local state = activeDeliveryState[source]
-    if not state or state.deliveryId ~= deliveryId then
-        state = { deliveryId = deliveryId }
-        activeDeliveryState[source] = state
+    if not state or state.deliveryId ~= deliveryId then return end
+    if state.isPriority or state.targetNetId or state.targetPending then return end
+
+    state.targetPending = true
+
+    local delivery = DB.GetActiveDelivery(player.identifier)
+    if not delivery or delivery.id ~= deliveryId then
+        state.targetPending = nil
+        return
     end
-    state.targetNetId = netId
+
+    local mission = getMissionRow(state.missionId)
+    local reserved = reservedSpawnPoints[deliveryId]
+    local spawnPoint = type(pointIndex) == "number" and reserved and reserved[pointIndex] or nil
+
+    local entity = mission and spawnPoint and Vehicles.AwaitEntity(netId, function(candidate)
+        return GetEntityModel(candidate) == GetHashKey(mission.vehicle_model)
+            and #(GetEntityCoords(candidate) - spawnPoint) <= serverConfig.SpawnPointVerifyDistance
+    end)
+
+    if activeDeliveryState[source] ~= state then return end
+    state.targetPending = nil
+
+    if not entity then
+        debug.Warn(("Missions.setTargetVehicle: rejected target for delivery %s from source %s"):format(tostring(deliveryId), source))
+        Missions.Cancel(source, deliveryId, "target_invalid")
+        return
+    end
 
     -- The client reports which candidate it actually spawned at (it skips blocked spots), so
-    -- the ones it didn't use are freed for other players. A spoofed index only ever frees a
-    -- spot that is in fact occupied, whose worst case is a doubled spawn.
-    local reserved = reservedSpawnPoints[deliveryId]
-    if reserved and pointIndex and reserved[pointIndex] then
-        reservedSpawnPoints[deliveryId] = { reserved[pointIndex] }
-        state.spawnCoords = reserved[pointIndex]
-    end
+    -- the ones it didn't use are freed for other players.
+    state.targetNetId = netId
+    state.spawnCoords = spawnPoint
+    reservedSpawnPoints[deliveryId] = { spawnPoint }
 end)
 
 -- Client reports reaching the target; server re-checks the distance against the tracked
--- entity before trusting it (ground rule 4). An unresolvable entity still sets `found` —
--- Missions.Complete then falls back to a full-health damage baseline rather than stalling.
+-- entity before trusting it (ground rule 4). The target is only set once verified, so a claim
+-- that arrives while that is still pending waits for it.
 RegisterNetEvent("polarix_towjob:vehicleFound", function(deliveryId)
     local source = source
     local player = Player.GetData(source)
@@ -266,16 +286,23 @@ RegisterNetEvent("polarix_towjob:vehicleFound", function(deliveryId)
     local state = activeDeliveryState[source]
     if not state or state.deliveryId ~= deliveryId or state.found then return end
 
-    local entity = state.targetNetId and NetworkGetEntityFromNetworkId(state.targetNetId)
-    if entity and entity ~= 0 and DoesEntityExist(entity) then
-        if #(GetEntityCoords(GetPlayerPed(source)) - GetEntityCoords(entity)) > serverConfig.VehicleFoundMaxDistance then
-            debug.Warn("Missions.vehicleFound: rejected out-of-range claim for source", source)
-            return
-        end
-        state.bodyHealthBaseline = GetVehicleBodyHealth(entity)
-        state.engineHealthBaseline = GetVehicleEngineHealth(entity)
+    for _ = 1, 20 do
+        if state.targetNetId or activeDeliveryState[source] ~= state then break end
+        Wait(200)
     end
 
+    if state.found or activeDeliveryState[source] ~= state or not state.targetNetId then return end
+
+    local entity = NetworkGetEntityFromNetworkId(state.targetNetId)
+    if not entity or entity == 0 or not DoesEntityExist(entity) then return end
+
+    if #(GetEntityCoords(GetPlayerPed(source)) - GetEntityCoords(entity)) > serverConfig.VehicleFoundMaxDistance then
+        debug.Warn("Missions.vehicleFound: rejected out-of-range claim for source", source)
+        return
+    end
+
+    state.bodyHealthBaseline = GetVehicleBodyHealth(entity)
+    state.engineHealthBaseline = GetVehicleEngineHealth(entity)
     state.found = true
 
     debug.DebugPrint(("Missions.vehicleFound: delivery %d found for %s"):format(deliveryId, player.identifier))
@@ -346,7 +373,7 @@ RegisterNetEvent("polarix_towjob:reportVehicleDestroyed", function(deliveryId)
     end
 
     if status == "gone" and state.isPriority then
-        Missions.CancelPriority(source, deliveryId, "target_gone")
+        Missions.Cancel(source, deliveryId, "target_gone")
         return
     end
 
@@ -388,17 +415,22 @@ RegisterNetEvent("polarix_towjob:reportTowTruckDestroyed", function(deliveryId)
     Missions.Fail(source, deliveryId, "truck_destroyed")
 end)
 
--- No-penalty end for a priority job whose target stopped being towable through no fault
--- of the operator: the real player vehicle got cleaned up, or its owner drove it off. Uses
--- the delivery row's `aborted` status (there is no separate enum value) but deliberately
--- records a "cancelled" outcome, which Player.RecordDeliveryOutcome counts against nothing.
-function Missions.CancelPriority(source, deliveryId, reason)
+-- No-penalty end for a delivery whose target stopped being towable through no fault of the
+-- operator: a priority job's real player vehicle got cleaned up or driven off, or a spawned
+-- target could not be verified. Uses the delivery row's `aborted` status (there is no separate
+-- enum value) but deliberately records a "cancelled" outcome, which
+-- Player.RecordDeliveryOutcome counts against nothing.
+function Missions.Cancel(source, deliveryId, reason)
     if busy[source] then return end
 
     local state = activeDeliveryState[source]
     if not state or state.deliveryId ~= deliveryId then return end
 
-    DB.CancelDelivery(deliveryId)
+    if state.isTest then
+        DB.DeleteDelivery(deliveryId)
+    else
+        DB.CancelDelivery(deliveryId)
+    end
     Vehicles.OnDeliveryEnded(source)
 
     local missionId = state.missionId
@@ -413,11 +445,12 @@ function Missions.CancelPriority(source, deliveryId, reason)
     local messageKeys = {
         target_moved = "notify.cancel_target_left_scene",
         target_gone = "notify.cancel_target_gone",
+        target_invalid = "notify.spawn_failed",
     }
     TriggerClientEvent("polarix_towjob:notify", source, Locale(messageKeys[reason] or "notify.cancel_target_gone"), "error")
     TriggerClientEvent("polarix_towjob:deliveryEnded", source, "cancelled")
 
-    debug.DebugPrint(("Missions.CancelPriority: delivery %d cancelled for source %s (%s)"):format(deliveryId, source, reason))
+    debug.DebugPrint(("Missions.Cancel: delivery %d cancelled for source %s (%s)"):format(deliveryId, source, reason))
 end
 
 -- Shared fail path — called for timed-mission expiry (Step 9.3), vehicle destruction
@@ -490,12 +523,12 @@ CreateThread(function()
                 -- by its owner with the operator nowhere near it, so that ends the job without
                 -- a failure on their record.
                 if state.isPriority then
-                    Missions.CancelPriority(source, state.deliveryId, "target_gone")
+                    Missions.Cancel(source, state.deliveryId, "target_gone")
                 else
                     Missions.Fail(source, state.deliveryId, "vehicle_destroyed")
                 end
             elseif state.isPriority and (Priority.GetTargetDrift(state.missionId) or 0) > (serverConfig.PriorityAbandonDistance or 150.0) then
-                Missions.CancelPriority(source, state.deliveryId, "target_moved")
+                Missions.Cancel(source, state.deliveryId, "target_moved")
             elseif isTowTruckDestroyed(state) then
                 Missions.Fail(source, state.deliveryId, "truck_destroyed")
             end
