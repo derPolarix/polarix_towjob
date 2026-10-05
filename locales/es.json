@@ -247,6 +247,7 @@
     "error.finish_delivery_before_return_rental": "Termina tu entrega actual antes de devolver el alquiler.",
     "error.finish_delivery_before_park_in": "Termina tu entrega actual antes de guardar esta grúa.",
     "error.insufficient_funds": "No puedes permitírtelo ahora mismo.",
+    "error.rental_insufficient_funds": "No puedes pagar el primer pago del alquiler.",
     "error.tier_gone": "Ese nivel ya no existe.",
     "error.tier_level_too_low": "No cumples el requisito de nivel para este nivel.",
     "error.truck_already_owned": "Ya tienes esta grúa.",

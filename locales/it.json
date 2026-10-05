@@ -247,6 +247,7 @@
     "error.finish_delivery_before_return_rental": "Completa la consegna in corso prima di restituire il noleggio.",
     "error.finish_delivery_before_park_in": "Completa la consegna in corso prima di riporre questo carro attrezzi.",
     "error.insufficient_funds": "Non puoi permettertelo al momento.",
+    "error.rental_insufficient_funds": "Non puoi permetterti il primo pagamento del noleggio.",
     "error.tier_gone": "Quel livello non esiste più.",
     "error.tier_level_too_low": "Non soddisfi il requisito di livello per questo livello.",
     "error.truck_already_owned": "Possiedi già questo carro attrezzi.",

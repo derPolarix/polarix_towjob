@@ -247,6 +247,7 @@
     "error.finish_delivery_before_return_rental": "Beende deine aktuelle Lieferung, bevor du die Miete zurückgibst.",
     "error.finish_delivery_before_park_in": "Beende deine aktuelle Lieferung, bevor du diesen Wagen einparkst.",
     "error.insufficient_funds": "Das kannst du dir gerade nicht leisten.",
+    "error.rental_insufficient_funds": "Du kannst die erste Mietzahlung nicht bezahlen.",
     "error.tier_gone": "Diese Stufe existiert nicht mehr.",
     "error.tier_level_too_low": "Du erfüllst die Level-Anforderung für diese Stufe nicht.",
     "error.truck_already_owned": "Du besitzt diesen Abschleppwagen bereits.",

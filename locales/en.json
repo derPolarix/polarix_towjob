@@ -247,6 +247,7 @@
     "error.finish_delivery_before_return_rental": "Finish your current delivery before returning the rental.",
     "error.finish_delivery_before_park_in": "Finish your current delivery before parking this truck in.",
     "error.insufficient_funds": "You cannot afford this right now.",
+    "error.rental_insufficient_funds": "You can't afford the first rental payment.",
     "error.tier_gone": "That tier no longer exists.",
     "error.tier_level_too_low": "You do not meet the level requirement for this tier.",
     "error.truck_already_owned": "You already own this tow truck.",

@@ -626,6 +626,13 @@ local function accept(source, missionId, isTest)
     end
 
     local rentalActive = Vehicles.IsRentalActive(source)
+
+    -- Checked before anything is created: no truck of their own means a rental, and its first
+    -- payment is taken up front.
+    if not rentalActive and deployedCount == 0 and #owned == 0 and not isTest and not Vehicles.CanAffordRental(source) then
+        return { ok = false, reason = "insufficient_funds" }
+    end
+
     local mission = buildMissionPayload(row)
     mission.is_test = isTest == true
 
@@ -664,6 +671,17 @@ local function accept(source, missionId, isTest)
 
     if isPriority then Priority.OnClaimed(missionId, source, deliveryId) end
 
+    -- Undoes everything above when the vehicle for the job can't be provided; a claimed priority
+    -- request goes back to the queue instead of staying claimed by a delivery that never started.
+    local function rollback(reason)
+        if isTest then DB.DeleteDelivery(deliveryId) else DB.FailDelivery(deliveryId) end
+        activeDeliveryState[source] = nil
+        releaseSpawnPoints(deliveryId)
+        if isPriority then Priority.OnDeliveryEnded(missionId, source, "accept_failed") end
+
+        return { ok = false, reason = reason }
+    end
+
     -- Time left rather than the timestamp: the client's own clock need not match the server's.
     local response = { ok = true, deliveryId = deliveryId, mission = mission, secondsRemaining = mission.time_limit_minutes and mission.time_limit_minutes * 60 or nil }
 
@@ -676,15 +694,11 @@ local function accept(source, missionId, isTest)
     elseif #owned == 0 then
         response.usedRental = true
         response.rental = serverConfig.RentalTruck
-        Vehicles.StartRental(source, deliveryId, false, isTest)
+        local started, rentalReason = Vehicles.StartRental(source, deliveryId, false, isTest)
+        if not started then return rollback(rentalReason) end
     elseif storedCount == 1 then
         local parkResult = Vehicles.ParkOut(source, firstStored.id)
-        if not parkResult.ok then
-            if isTest then DB.DeleteDelivery(deliveryId) else DB.FailDelivery(deliveryId) end
-            activeDeliveryState[source] = nil
-            releaseSpawnPoints(deliveryId)
-            return { ok = false, reason = parkResult.reason }
-        end
+        if not parkResult.ok then return rollback(parkResult.reason) end
         response.vehicle = parkResult.vehicle
     else
         response.needsParkOut = true

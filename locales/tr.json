@@ -247,6 +247,7 @@
     "error.finish_delivery_before_return_rental": "Kiralamayı iade etmeden önce mevcut teslimatını bitir.",
     "error.finish_delivery_before_park_in": "Bu çekiciyi kaldırmadan önce mevcut teslimatını bitir.",
     "error.insufficient_funds": "Şu anda buna gücün yetmiyor.",
+    "error.rental_insufficient_funds": "İlk kiralama ödemesini karşılayamıyorsun.",
     "error.tier_gone": "O kademe artık mevcut değil.",
     "error.tier_level_too_low": "Bu kademe için seviye gereksinimini karşılamıyorsun.",
     "error.truck_already_owned": "Bu çekiciye zaten sahipsin.",

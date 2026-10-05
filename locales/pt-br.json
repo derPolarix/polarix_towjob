@@ -247,6 +247,7 @@
     "error.finish_delivery_before_return_rental": "Termine sua entrega atual antes de devolver o aluguel.",
     "error.finish_delivery_before_park_in": "Termine sua entrega atual antes de guardar este reboque.",
     "error.insufficient_funds": "Você não pode pagar por isso agora.",
+    "error.rental_insufficient_funds": "Você não pode pagar o primeiro pagamento do aluguel.",
     "error.tier_gone": "Esse nível não existe mais.",
     "error.tier_level_too_low": "Você não atende ao requisito de nível para este nível.",
     "error.truck_already_owned": "Você já possui este reboque.",

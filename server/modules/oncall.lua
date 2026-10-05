@@ -129,7 +129,9 @@ function OnCall.StartStandaloneRental(source)
         return { ok = false, reason = "owned_vehicle_exists" }
     end
 
-    Vehicles.StartRental(source, nil, true)
+    local started, reason = Vehicles.StartRental(source, nil, true)
+    if not started then return { ok = false, reason = reason } end
+
     OnCall.ForceOnAfterRentalSpawn(source)
 
     debug.DebugPrint(("OnCall.StartStandaloneRental: %s started a standalone rental"):format(player.identifier))

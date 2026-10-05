@@ -247,6 +247,7 @@
     "error.finish_delivery_before_return_rental": "Dokończ bieżącą dostawę, zanim zwrócisz wynajem.",
     "error.finish_delivery_before_park_in": "Dokończ bieżącą dostawę, zanim schowasz tę lawetę.",
     "error.insufficient_funds": "Nie stać Cię na to w tej chwili.",
+    "error.rental_insufficient_funds": "Nie stać Cię na pierwszą opłatę za wynajem.",
     "error.tier_gone": "Ten poziom już nie istnieje.",
     "error.tier_level_too_low": "Nie spełniasz wymogu poziomu dla tego poziomu.",
     "error.truck_already_owned": "Już posiadasz tę lawetę.",

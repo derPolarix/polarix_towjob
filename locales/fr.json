@@ -247,6 +247,7 @@
     "error.finish_delivery_before_return_rental": "Termine ta livraison en cours avant de rendre la location.",
     "error.finish_delivery_before_park_in": "Termine ta livraison en cours avant de rentrer cette dépanneuse.",
     "error.insufficient_funds": "Tu ne peux pas te le permettre pour l'instant.",
+    "error.rental_insufficient_funds": "Vous ne pouvez pas payer le premier paiement de la location.",
     "error.tier_gone": "Ce palier n'existe plus.",
     "error.tier_level_too_low": "Tu ne remplis pas le niveau requis pour ce palier.",
     "error.truck_already_owned": "Tu possèdes déjà cette dépanneuse.",

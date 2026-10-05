@@ -454,8 +454,25 @@ end
 -- its one delivery ends; see Vehicles.OnDeliveryEnded below.
 local rentalState = {} -- [source] = { lastCharge, warned5, warned1, deliveryId, standalone, free }
 
+function Vehicles.CanAffordRental(source)
+    return Framework.GetMoney(source) >= Settings.GetRentalPricePerCharge()
+end
+
+-- The first interval is charged up front: with a free first window, returning the rental and
+-- renting again would run a truck without ever paying. Admin test runs are free.
 function Vehicles.StartRental(source, deliveryId, standalone, free)
+    if rentalState[source] then return false, "already_renting" end
+
+    if not free then
+        local price = Settings.GetRentalPricePerCharge()
+        if Framework.GetMoney(source) < price then return false, "insufficient_funds" end
+
+        Framework.RemoveMoney(source, price)
+        TriggerClientEvent("polarix_towjob:notify", source, Locale("notify.rental_payment_charged"), "info")
+    end
+
     rentalState[source] = { lastCharge = os.time(), warned5 = false, warned1 = false, deliveryId = deliveryId, standalone = standalone or false, free = free or false }
+    return true
 end
 
 function Vehicles.StopRental(source)
