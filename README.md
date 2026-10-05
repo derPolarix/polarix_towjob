@@ -9,7 +9,7 @@ Works with **qbox**, **qb-core**, and **ESX** out of the box.
 - **On-call pager** — go on call and get paged with a random job. Each page shows its payout range. Declining repeatedly makes the next page take longer.
 - **Real tow gameplay** — find the vehicle inside a search circle, tow it with GTA's native tow rig and place it in the drop-off outline. Crashes during the tow cut into your payout.
 - **Distance-based payout** — each mission pays a flat base plus an optional per-km bonus from the spawn point to the drop-off.
-- **Police tow requests** — officers mark a player's vehicle for towing and it becomes a priority job for on-call operators, with an optional impound hook.
+- **Police tow requests** — officers mark a player's vehicle for towing and it becomes a priority job for on-call operators, with an optional impound hook. A vehicle that was just towed can't be marked again for an hour.
 - **Skill tree** — perks that reduce damage penalties, boost payouts and XP, and open up jobs earlier.
 - **Map areas** — unlock regions of the map with money and level. Each area has its own reward and XP multiplier.
 - **Vehicles** — buy tow trucks with their own damage resistance, or rent one on the spot. Optional livery, extras, colours and mods per truck.
