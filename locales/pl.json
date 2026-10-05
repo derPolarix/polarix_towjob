@@ -1,5 +1,6 @@
 {
     "notify.dashboard_load_failed": "Nie udało się wczytać danych panelu. Spróbuj ponownie.",
+    "notify.title": "Zlecenie holowania",
     "notify.delivery_not_confirmable": "Nie można jeszcze ukończyć dostawy — sprawdź, czy pojazd jest w całości wewnątrz obrysu.",
     "notify.not_in_your_tow_truck": "Nie jesteś w żadnej ze swoich lawet.",
     "notify.must_be_driver_seat": "Musisz być na siedzeniu kierowcy.",

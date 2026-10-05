@@ -1,5 +1,6 @@
 {
     "notify.dashboard_load_failed": "Kon je dashboardgegevens niet laden. Probeer opnieuw.",
+    "notify.title": "Takelklus",
     "notify.delivery_not_confirmable": "Levering nog niet af te ronden — controleer of het voertuig volledig binnen de omlijning staat.",
     "notify.not_in_your_tow_truck": "Je zit niet in een van je takelwagens.",
     "notify.must_be_driver_seat": "Je moet op de bestuurdersstoel zitten.",

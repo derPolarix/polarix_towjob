@@ -1,5 +1,6 @@
 {
     "notify.dashboard_load_failed": "Não foi possível carregar os dados do painel. Tente novamente.",
+    "notify.title": "Trabalho de reboque",
     "notify.delivery_not_confirmable": "Ainda não é possível concluir a entrega — verifique se o veículo está totalmente dentro do contorno.",
     "notify.not_in_your_tow_truck": "Você não está em um dos seus reboques.",
     "notify.must_be_driver_seat": "Você precisa estar no banco do motorista.",

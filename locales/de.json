@@ -1,5 +1,6 @@
 {
     "notify.dashboard_load_failed": "Dashboard-Daten konnten nicht geladen werden. Bitte erneut versuchen.",
+    "notify.title": "Abschleppjob",
     "notify.delivery_not_confirmable": "Lieferung noch nicht abschließbar — prüfe, ob das Fahrzeug vollständig in der Markierung steht.",
     "notify.not_in_your_tow_truck": "Du sitzt in keinem deiner Abschleppwagen.",
     "notify.must_be_driver_seat": "Du musst auf dem Fahrersitz sitzen.",

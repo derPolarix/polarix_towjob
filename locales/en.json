@@ -1,5 +1,6 @@
 {
     "notify.dashboard_load_failed": "Could not load your dashboard data. Try again.",
+    "notify.title": "Tow Job",
     "notify.delivery_not_confirmable": "Could not complete the delivery yet — check the vehicle is fully inside the outline.",
     "notify.not_in_your_tow_truck": "You're not in one of your tow trucks.",
     "notify.must_be_driver_seat": "You must be in the driver seat.",

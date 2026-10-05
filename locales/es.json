@@ -1,5 +1,6 @@
 {
     "notify.dashboard_load_failed": "No se pudieron cargar los datos del panel. Inténtalo de nuevo.",
+    "notify.title": "Trabajo de grúa",
     "notify.delivery_not_confirmable": "Aún no se puede completar la entrega: comprueba que el vehículo esté totalmente dentro del contorno.",
     "notify.not_in_your_tow_truck": "No estás en una de tus grúas.",
     "notify.must_be_driver_seat": "Debes estar en el asiento del conductor.",

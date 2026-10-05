@@ -1,5 +1,6 @@
 {
     "notify.dashboard_load_failed": "Panel verilerin yüklenemedi. Tekrar dene.",
+    "notify.title": "Çekici İşi",
     "notify.delivery_not_confirmable": "Teslimat henüz tamamlanamıyor — aracın tamamen çerçevenin içinde olduğunu kontrol et.",
     "notify.not_in_your_tow_truck": "Çekicilerinden birinde değilsin.",
     "notify.must_be_driver_seat": "Sürücü koltuğunda olmalısın.",

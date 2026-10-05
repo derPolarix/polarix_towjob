@@ -1,5 +1,6 @@
 {
     "notify.dashboard_load_failed": "Impossibile caricare i dati della dashboard. Riprova.",
+    "notify.title": "Lavoro di traino",
     "notify.delivery_not_confirmable": "Consegna non ancora completabile — verifica che il veicolo sia completamente dentro il contorno.",
     "notify.not_in_your_tow_truck": "Non sei in uno dei tuoi carri attrezzi.",
     "notify.must_be_driver_seat": "Devi essere al posto di guida.",

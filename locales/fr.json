@@ -1,5 +1,6 @@
 {
     "notify.dashboard_load_failed": "Impossible de charger les données du tableau de bord. Réessaie.",
+    "notify.title": "Boulot de dépannage",
     "notify.delivery_not_confirmable": "Livraison pas encore validable — vérifie que le véhicule est entièrement dans le contour.",
     "notify.not_in_your_tow_truck": "Tu n'es dans aucune de tes dépanneuses.",
     "notify.must_be_driver_seat": "Tu dois être au siège conducteur.",
