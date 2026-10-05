@@ -1,32 +1,29 @@
 <template>
-	<div v-if="data" class="absolute top-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white">
-		<div class="rounded-md bg-neutral-900/80 border border-white/10 px-4 py-2 min-w-[260px] text-center">
-			<div class="flex items-center justify-center gap-1.5 text-xs uppercase tracking-wide text-white/50">
-				<span
-					v-if="data.isPriority"
-					class="rounded-sm bg-blue-500/20 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider text-blue-300"
-				>
-					{{ t("hud.priority") }}
-				</span>
-				<span>{{ data.missionName }}</span>
+	<div v-if="data" class="hud-anchor">
+		<div class="hud-card">
+			<div class="hud-stripe" />
+
+			<div class="hud-label">
+				<span v-if="data.isPriority" class="hud-chip">{{ t("hud.priority") }}</span>
+				<span class="hud-mission">{{ data.missionName }}</span>
 			</div>
 
-			<div class="mt-1 text-sm font-medium">
+			<div class="hud-objective">
 				{{ data.state === "searching" ? t("hud.find_vehicle") : t("hud.tow_to_dropoff") }}
 			</div>
 
-			<div v-if="data.state === 'searching'" class="mt-1 text-xs text-white/70">
+			<div v-if="data.state === 'searching'" class="hud-vehicle">
 				{{ data.vehicleLabel }}
 				<span v-if="colorLabel"> · {{ colorLabel }}</span>
 			</div>
 
-			<div class="mt-1 text-xs text-white/60">{{ t("hud.distance_away", { distance: data.distance }) }}</div>
+			<div class="hud-distance">{{ t("hud.distance_away", { distance: data.distance }) }}</div>
 
-			<div v-if="data.damagePercent !== undefined" class="mt-2 h-1.5 overflow-hidden rounded-full bg-neutral-700">
-				<div class="h-full bg-red-500" :style="{ width: data.damagePercent + '%' }" />
+			<div v-if="data.damagePercent !== undefined" class="hud-damage">
+				<div class="hud-damage-fill" :style="{ width: data.damagePercent + '%' }" />
 			</div>
 
-			<div v-if="formattedTime" class="mt-1 text-xs font-semibold text-amber-300">{{ formattedTime }}</div>
+			<div v-if="formattedTime" class="hud-time" :class="{ 'hud-time-low': isTimeLow }">{{ formattedTime }}</div>
 		</div>
 	</div>
 </template>
@@ -36,6 +33,8 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useActiveDeliveryStore } from "@/stores/activeDeliveryStore";
 import { vehicleColorName } from "@/utils/vehicleColors";
+
+const LOW_TIME_SECONDS = 60;
 
 const { t } = useI18n();
 const activeDeliveryStore = useActiveDeliveryStore();
@@ -58,4 +57,110 @@ const formattedTime = computed(() => {
 	const rest = seconds % 60;
 	return t("hud.time_remaining", { time: `${minutes}:${rest.toString().padStart(2, "0")}` });
 });
+
+const isTimeLow = computed(() => {
+	const seconds = data.value?.secondsRemaining;
+	return seconds !== undefined && seconds <= LOW_TIME_SECONDS;
+});
 </script>
+
+<style scoped>
+/* Same palette and type as the Dashboard and Admin views: Archivo + IBM Plex Mono on #22262d, accent #22c55e. */
+.hud-anchor {
+	--accent: #22c55e;
+	position: absolute;
+	top: 24px;
+	left: 50%;
+	transform: translateX(-50%);
+	font-family: 'Archivo', system-ui, sans-serif;
+}
+
+.hud-card {
+	position: relative;
+	min-width: 280px;
+	max-width: 420px;
+	padding: 16px 18px 12px;
+	border-radius: 14px;
+	border: 1px solid #353b45;
+	background: rgba(34, 38, 45, 0.92);
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+	overflow: hidden;
+	text-align: center;
+}
+
+.hud-stripe {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	height: 3px;
+	background: repeating-linear-gradient(45deg, var(--accent) 0 8px, #2e333b 8px 16px);
+	opacity: 0.55;
+}
+
+.hud-label {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	font-family: 'IBM Plex Mono', monospace;
+	font-size: 10px;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: #7a818c;
+}
+
+.hud-chip {
+	padding: 2px 6px;
+	border-radius: 5px;
+	background: rgba(59, 130, 246, 0.18);
+	color: #60a5fa;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+}
+
+.hud-objective {
+	margin-top: 6px;
+	font-size: 15px;
+	font-weight: 700;
+	color: #fff;
+}
+
+.hud-vehicle {
+	margin-top: 4px;
+	font-size: 12px;
+	color: #c9ced6;
+}
+
+.hud-distance {
+	margin-top: 4px;
+	font-family: 'IBM Plex Mono', monospace;
+	font-size: 11px;
+	color: #9aa1ab;
+}
+
+.hud-damage {
+	margin-top: 10px;
+	height: 5px;
+	border-radius: 3px;
+	overflow: hidden;
+	background: #3a414b;
+}
+
+.hud-damage-fill {
+	height: 100%;
+	background: #d24b3a;
+}
+
+.hud-time {
+	margin-top: 8px;
+	font-family: 'IBM Plex Mono', monospace;
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--accent);
+}
+
+.hud-time-low {
+	color: #d24b3a;
+}
+</style>
