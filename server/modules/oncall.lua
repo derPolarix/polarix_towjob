@@ -239,7 +239,7 @@ function OnCall.DebugSendTestPage(source)
 
     local expiresAt = os.time() + serverConfig.PagerOfferTimeoutSeconds
     s.pendingOffer = { missionId = offer.id, expiresAt = expiresAt }
-    offer.expiresAt = expiresAt
+    offer.expiresIn = serverConfig.PagerOfferTimeoutSeconds
     TriggerClientEvent("polarix_towjob:pagerOffer", source, offer)
 
     debug.DebugPrint(("OnCall.DebugSendTestPage: paged %s mission %s (%s)"):format(source, offer.id, offer.name))
@@ -270,7 +270,7 @@ CreateThread(function()
                         if offer then
                             local expiresAt = now + serverConfig.PagerOfferTimeoutSeconds
                             s.pendingOffer = { missionId = offer.id, expiresAt = expiresAt }
-                            offer.expiresAt = expiresAt
+                            offer.expiresIn = serverConfig.PagerOfferTimeoutSeconds
                             TriggerClientEvent("polarix_towjob:pagerOffer", source, offer)
                         else
                             -- Nothing eligible right now (all done/leveled past/areas locked) —

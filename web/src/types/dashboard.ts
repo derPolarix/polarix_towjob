@@ -34,7 +34,8 @@ export interface PagerOffer {
   time_limit_minutes: number | null;
   level_required: number;
   area_name: string;
-  expiresAt: number;
+  /** Seconds the offer stays open, counted from receipt: the player's clock need not match the server's. */
+  expiresIn: number;
   /** Police-marked tow request (server/modules/priority.lua) rather than a mission template. */
   is_priority?: boolean;
 }

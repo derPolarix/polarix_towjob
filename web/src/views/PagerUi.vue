@@ -60,9 +60,18 @@ const payoutText = computed(() => {
 	return `${reward} · +${xp} XP`;
 });
 
+const expiresAtMs = ref(0);
+watch(
+	offer,
+	(value) => {
+		if (value) expiresAtMs.value = Date.now() + value.expiresIn * 1000;
+	},
+	{ immediate: true, flush: "sync" },
+);
+
 const secondsLeft = computed(() => {
 	if (!offer.value) return 0;
-	return Math.max(0, Math.ceil((offer.value.expiresAt * 1000 - now.value) / 1000));
+	return Math.max(0, Math.ceil((expiresAtMs.value - now.value) / 1000));
 });
 
 // Server-side sweep is authoritative on real expiry (ground rule 4) — this just hides the
