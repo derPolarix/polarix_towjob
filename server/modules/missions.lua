@@ -210,6 +210,23 @@ end
 -- derived from anything client-reported.
 local activeDeliveryState = {} -- [source] = { deliveryId, targetNetId, found, deadlineAt, bodyHealthBaseline, engineHealthBaseline }
 
+-- Accept/Complete/Abort yield on DB awaits, so two concurrent calls from one player would both
+-- pass their state checks (double payout, two active deliveries). One in-flight call per source.
+local busy = {}
+
+local function exclusive(fn)
+    return function(source, ...)
+        if busy[source] then return { ok = false, reason = "busy" } end
+
+        busy[source] = true
+        local ok, result = pcall(fn, source, ...)
+        busy[source] = nil
+
+        if not ok then error(result, 0) end
+        return result
+    end
+end
+
 RegisterNetEvent("polarix_towjob:setTargetVehicle", function(deliveryId, netId, pointIndex)
     local source = source
     local player = Player.GetData(source)
@@ -376,6 +393,8 @@ end)
 -- the delivery row's `aborted` status (there is no separate enum value) but deliberately
 -- records a "cancelled" outcome, which Player.RecordDeliveryOutcome counts against nothing.
 function Missions.CancelPriority(source, deliveryId, reason)
+    if busy[source] then return end
+
     local state = activeDeliveryState[source]
     if not state or state.deliveryId ~= deliveryId then return end
 
@@ -405,6 +424,8 @@ end
 -- (Step 10.1) and missed rental payments (server/modules/vehicles.lua), so the
 -- delivery-row/notify/cleanup/counter sequence only lives in one place.
 function Missions.Fail(source, deliveryId, reason)
+    if busy[source] then return end
+
     local state = activeDeliveryState[source]
     if not state or state.deliveryId ~= deliveryId then return end
 
@@ -499,7 +520,7 @@ end)
 -- `isTest` is never client-controlled — only AdminMissions.TestRun (which re-checks
 -- Framework.IsAdmin itself) passes true: it skips the level/area-lock gates and the run
 -- leaves no trace (no payout, XP, stats, history row or rental charge).
-function Missions.Accept(source, missionId, isTest)
+local function accept(source, missionId, isTest)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
 
@@ -675,7 +696,7 @@ end
 -- Server computes the damage penalty from health it reads off the tracked entity (baseline
 -- from the vehicleFound handler), and re-validates the towed vehicle's position/heading
 -- against the dropoff rectangle — never trusts a client-reported number for either.
-function Missions.Complete(source, deliveryId)
+local function complete(source, deliveryId)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
 
@@ -806,7 +827,7 @@ end
 -- Step 10.4: player-initiated cancel, Dashboard-only (no in-world trigger — confirmed
 -- with user). Detach/despawn of the target vehicle happens client-side via the same
 -- `polarix_towjob:deliveryEnded` event Complete/Fail already use.
-function Missions.Abort(source, deliveryId)
+local function abort(source, deliveryId)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
 
@@ -842,3 +863,7 @@ function Missions.Abort(source, deliveryId)
 
     return { ok = true }
 end
+
+Missions.Accept = exclusive(accept)
+Missions.Complete = exclusive(complete)
+Missions.Abort = exclusive(abort)

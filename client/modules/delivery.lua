@@ -86,11 +86,18 @@ local function canComplete()
     return isAligned(delivery.mission, GetEntityCoords(delivery.targetVehicle), GetEntityHeading(delivery.targetVehicle))
 end
 
+local completing = false
+
 local function attemptComplete()
+    if completing then return end
+
     local delivery = Vehicle.GetCurrentDelivery()
     if not delivery or not canComplete() then return end
 
+    completing = true
     local result = lib.callback.await("polarix_towjob:completeDelivery", false, delivery.deliveryId)
+    completing = false
+
     if result and result.ok then
         Vehicle.EndDelivery("completed")
     else
