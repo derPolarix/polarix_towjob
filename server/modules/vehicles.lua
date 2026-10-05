@@ -230,6 +230,40 @@ function Vehicles.ParkOut(source, vehicleId)
     }
 end
 
+local ENTITY_POLL_MS = 200
+local ENTITY_POLL_ATTEMPTS = 15
+
+local function trimPlate(plate)
+    return (tostring(plate or ""):gsub("%s+$", ""))
+end
+
+-- The client reports a fresh entity's netId (and sets its plate) before either has reached the
+-- server, so a failed match is retried for a few seconds before it counts.
+local function awaitVehicleEntity(netId, matches)
+    if type(netId) ~= "number" then return nil end
+
+    for attempt = 1, ENTITY_POLL_ATTEMPTS do
+        local entity = NetworkGetEntityFromNetworkId(netId)
+        if entity and entity ~= 0 and DoesEntityExist(entity) and GetEntityType(entity) == 2 and matches(entity) then
+            return entity
+        end
+
+        if attempt < ENTITY_POLL_ATTEMPTS then Wait(ENTITY_POLL_MS) end
+    end
+
+    return nil
+end
+
+local function isDeployedRowEntity(row, entity)
+    local tier = findTier(row.tier_id)
+
+    return tier ~= nil
+        and GetEntityModel(entity) == GetHashKey(tier.model)
+        and trimPlate(GetVehicleNumberPlateText(entity)) == row.plate
+end
+
+-- Only an entity that is this vehicle's tier model wearing its plate is trusted: the netId later
+-- feeds DeleteEntity (Vehicles.ParkIn), so an arbitrary one would let a client delete any vehicle.
 RegisterNetEvent("polarix_towjob:registerDeployedTruck", function(vehicleId, netId)
     local source = source
     local player = Player.GetData(source)
@@ -237,6 +271,14 @@ RegisterNetEvent("polarix_towjob:registerDeployedTruck", function(vehicleId, net
 
     local vehicle = DB.GetVehicle(vehicleId)
     if not vehicle or vehicle.identifier ~= player.identifier or vehicle.state ~= "deployed" then return end
+
+    local entity = awaitVehicleEntity(netId, function(candidate) return isDeployedRowEntity(vehicle, candidate) end)
+    if not entity then
+        debug.Warn(("registerDeployedTruck: rejected netId for vehicle %s from source %s"):format(tostring(vehicleId), source))
+        return
+    end
+
+    if not Player.GetData(source) then return end
 
     deployedTruckNetIds[source] = deployedTruckNetIds[source] or {}
     deployedTruckNetIds[source][vehicleId] = netId
