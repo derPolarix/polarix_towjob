@@ -143,6 +143,10 @@ end
 -- the in-world completion confirm, and via the `polarix_towjob:deliveryEnded` net event
 -- below for every server-driven end (complete/fail/abort/cancel).
 function Vehicle.EndDelivery(reason)
+    -- A delivery that ends while the player is still choosing a truck to park out (abort, timeout,
+    -- rental repossession) must not be resumed by the next park-out.
+    pendingMission = nil
+
     if not currentDelivery then return end
 
     local target = currentDelivery.targetVehicle
@@ -201,6 +205,10 @@ local function adoptTargetVehicle(delivery)
 end
 
 local function beginDelivery(deliveryId, mission, deadlineAt)
+    -- The server only hands out a new delivery once the old one has ended, so anything still here
+    -- is left over; its target vehicle and blips would otherwise leak.
+    if currentDelivery then Vehicle.EndDelivery("cancelled") end
+
     local isPriority = mission.is_priority == true
     local targetVehicle, netId, searchHint
 
