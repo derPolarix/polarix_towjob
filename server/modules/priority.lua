@@ -16,12 +16,40 @@ local lastMarkAt = {} -- [identifier] = os.time()
 
 local ID_PREFIX = "prio_"
 
+local MAX_LABEL_LENGTH = 40
+local MAX_COLOR_ID = 255
+
 function Priority.IsPriorityId(missionId)
     return type(missionId) == "string" and missionId:sub(1, #ID_PREFIX) == ID_PREFIX
 end
 
 local function trim(value)
     return (tostring(value or ""):gsub("^%s*(.-)%s*$", "%1"))
+end
+
+-- The label is typed by the marking client and ends up in notifications (ox_lib renders markdown,
+-- GTA blip names read ~ codes) on every officer's screen, so it is reduced to plain, short text.
+local function sanitizeLabel(label)
+    if type(label) ~= "string" then return "" end
+
+    label = label:gsub("[%c~<>%[%]*_`|\\]", " "):gsub("%s+", " ")
+    label = trim(label)
+
+    local length = utf8.len(label)
+    if not length then return "" end
+    if length > MAX_LABEL_LENGTH then label = label:sub(1, utf8.offset(label, MAX_LABEL_LENGTH + 1) - 1) end
+
+    return label
+end
+
+local function isColorId(value)
+    return type(value) == "number" and value == math.floor(value) and value >= 0 and value <= MAX_COLOR_ID
+end
+
+local function sanitizeColors(colors)
+    if type(colors) ~= "table" or not isColorId(colors.primary) or not isColorId(colors.secondary) then return nil end
+
+    return { primary = colors.primary, secondary = colors.secondary }
 end
 
 local function findById(missionId)
@@ -273,14 +301,16 @@ function Priority.Mark(source, netId, label, colors)
 
     sequence = sequence + 1
 
+    local vehicleLabel = sanitizeLabel(label)
+
     local job = {
         id = ID_PREFIX .. sequence,
         netId = netId,
         plate = plate,
         owner = owner,
         vehicle_model = GetEntityModel(vehicle),
-        vehicle_label = trim(label) ~= "" and trim(label) or plate,
-        vehicle_colors = colors,
+        vehicle_label = vehicleLabel ~= "" and vehicleLabel or plate,
+        vehicle_colors = sanitizeColors(colors),
         markedCoords = coords,
         markedBy = source,
         markedByIdentifier = identifier,
