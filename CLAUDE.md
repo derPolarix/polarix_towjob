@@ -50,6 +50,8 @@ npm run build      # typecheck + build → ../html/
 npm run typecheck  # type check only
 ```
 
+**Styling:** use Tailwind classes, not inline `style=` attributes. Colours and fonts are tokens defined in `web/src/style.css` and exposed in `tailwind.config.js` (`text-ink`, `bg-surface-muted`, `font-mono`, ...). In `:style` bindings and script use `var(--token)`, never a hex literal. Shared component classes (e.g. `.accent-btn`) go in `@layer components` in `style.css`. The Pager and HUD views keep their own look.
+
 ## NUI ↔ Lua Communication
 
 **Lua → NUI:** `SendNUIMessage({ action = "...", data = {...} })` — handled in the single `switch` block in `web/src/App.vue`. All message handling must stay there.
