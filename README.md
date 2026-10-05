@@ -12,7 +12,7 @@ Works with **qbox**, **qb-core**, and **ESX** out of the box.
 - **Police tow requests** — officers mark a player's vehicle for towing and it becomes a priority job for on-call operators, with an optional impound hook. A vehicle that was just towed can't be marked again for an hour.
 - **Skill tree** — perks that reduce damage penalties, boost payouts and XP, and open up jobs earlier.
 - **Map areas** — unlock regions of the map with money and level. Each area has its own reward and XP multiplier.
-- **Vehicles** — buy tow trucks with their own damage resistance, or rent one on the spot. Optional livery, extras, colours and mods per truck.
+- **Vehicles** — buy tow trucks with their own damage resistance, or rent one on the spot (the first payment is taken when the rental starts). Optional livery, extras, colours and mods per truck.
 - **Admin editor** — create and edit missions and areas in-game, test a mission without it being paid or recorded, and tune the economy at runtime. No restart needed.
 - **Multi-language** — dashboard and notifications ship in de, en, es, fr, it, nl, pl, pt-br and tr.
 - **Multiple target systems** — ox_target, qb-target, sleepless_interact, or none (markers and text prompts).
