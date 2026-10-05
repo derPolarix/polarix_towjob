@@ -662,7 +662,8 @@ local function accept(source, missionId, isTest)
 
     if isPriority then Priority.OnClaimed(missionId, source, deliveryId) end
 
-    local response = { ok = true, deliveryId = deliveryId, mission = mission, deadlineAt = deadlineAt }
+    -- Time left rather than the timestamp: the client's own clock need not match the server's.
+    local response = { ok = true, deliveryId = deliveryId, mission = mission, secondsRemaining = mission.time_limit_minutes and mission.time_limit_minutes * 60 or nil }
 
     if rentalActive then
         -- Standalone on-call rental already out — reuse it, no spawn.

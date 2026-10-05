@@ -16,8 +16,8 @@ local function buildUpdatePayload(delivery)
     local distance = math.floor(#(playerCoords - vector3(objective.x, objective.y, objective.z)) + 0.5)
 
     local secondsRemaining = nil
-    if delivery.deadlineAt then
-        secondsRemaining = math.max(0, delivery.deadlineAt - os.time())
+    if delivery.deadlineMs then
+        secondsRemaining = math.max(0, math.ceil((delivery.deadlineMs - GetGameTimer()) / 1000))
     end
 
     return {

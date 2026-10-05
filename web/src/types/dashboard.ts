@@ -120,7 +120,7 @@ export interface AcceptPageResult {
   ok: boolean;
   reason?: string;
   deliveryId?: number;
-  deadlineAt?: number | null;
+  secondsRemaining?: number | null;
 }
 
 export interface DeclinePageResult {
