@@ -106,6 +106,7 @@
 import { computed, getCurrentInstance, onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
+import { useConfirmStore } from "@/stores/confirmStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { AbortDeliveryResult, TabKey } from "@/types/dashboard";
 
@@ -120,6 +121,7 @@ const { t } = useI18n();
 const proxy = getCurrentInstance()!.proxy!;
 const persistantStore = proxy.$persistantStore;
 const dashboardStore = useDashboardStore();
+const confirmStore = useConfirmStore();
 
 const player = computed(() => dashboardStore.player);
 const initial = computed(() => (player.value?.name?.[0] ?? "?").toUpperCase());
@@ -157,6 +159,14 @@ const abortingDelivery = ref(false);
 async function abortDelivery() {
 	const delivery = dashboardStore.activeDelivery;
 	if (!delivery) return;
+
+	const confirmed = await confirmStore.ask({
+		title: t("confirm.abort_title"),
+		body: t("confirm.abort_body"),
+		confirmLabel: t("dashboard.abort_delivery"),
+		danger: true,
+	});
+	if (!confirmed) return;
 
 	abortingDelivery.value = true;
 

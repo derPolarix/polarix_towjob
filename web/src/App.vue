@@ -16,6 +16,7 @@
 		     HUD above rather than living inside a route. -->
 		<PagerUi />
 		<RentalPromptModal />
+		<ConfirmModal />
 
 		<main class="w-full h-full" v-show="persistantStore.IsNuiOpen">
 			<router-view />
@@ -35,14 +36,17 @@ import Sidebar from "@/components/app/Sidebar.vue";
 import ActiveDeliveryUi from "@/views/ActiveDeliveryUi.vue";
 import PagerUi from "@/views/PagerUi.vue";
 import RentalPromptModal from "@/components/app/RentalPromptModal.vue";
+import ConfirmModal from "@/components/app/ConfirmModal.vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { useActiveDeliveryStore } from "@/stores/activeDeliveryStore";
+import { useConfirmStore } from "@/stores/confirmStore";
 
 const proxy = getCurrentInstance()!.proxy!;
 const router = proxy.$router;
 const persistantStore = proxy.$persistantStore;
 const dashboardStore = useDashboardStore();
 const activeDeliveryStore = useActiveDeliveryStore();
+const confirmStore = useConfirmStore();
 
 // Only place allowed to handle NUI messages, so the compiled build always keeps a single message handler.
 const handleMessage = (event: MessageEvent) => {
@@ -84,6 +88,10 @@ const handleMessage = (event: MessageEvent) => {
 };
 
 const handleEscape = async (event: KeyboardEvent) => {
+	if (event.key === "Escape" && confirmStore.options) {
+		confirmStore.answer(false);
+		return;
+	}
 	if (event.key === "Escape" && persistantStore.IsNuiOpen) {
 		try {
 			await persistantStore.closeNui();

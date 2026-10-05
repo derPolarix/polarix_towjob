@@ -147,12 +147,14 @@ import { onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { formatMoney } from "@/lib/uiConfig";
 import { useDashboardStore } from "@/stores/dashboardStore";
+import { useConfirmStore } from "@/stores/confirmStore";
 import { usePersistantStore } from "@/stores/persistantStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { OwnedVehicle, ReturnRentalResult, VehicleActionResult, VehicleTier } from "@/types/dashboard";
 
 const { t } = useI18n();
 const dashboardStore = useDashboardStore();
+const confirmStore = useConfirmStore();
 const persistantStore = usePersistantStore();
 
 // model name (config VehicleTiers[].model) -> bundled image url; falls back to a truck icon
@@ -290,6 +292,13 @@ async function parkIn(vehicle: OwnedVehicle) {
 }
 
 async function purchase(tier: VehicleTier) {
+	const confirmed = await confirmStore.ask({
+		title: t("confirm.purchase_title"),
+		body: t("confirm.purchase_body", { name: tier.label, price: formatMoney(tier.price) }),
+		confirmLabel: t("app.buy"),
+	});
+	if (!confirmed) return;
+
 	purchasingTierId.value = tier.id;
 	actionError.value = "";
 

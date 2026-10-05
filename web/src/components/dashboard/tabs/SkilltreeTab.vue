@@ -78,11 +78,13 @@
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDashboardStore } from "@/stores/dashboardStore";
+import { useConfirmStore } from "@/stores/confirmStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { SkillBranch, SkillEffects, SkillNode, UnlockSkillResult } from "@/types/dashboard";
 
 const { t } = useI18n();
 const dashboardStore = useDashboardStore();
+const confirmStore = useConfirmStore();
 
 const branches = ref<SkillBranch[]>(dashboardStore.payload?.skillBranches ?? []);
 const hoverSkillId = ref<string | null>(null);
@@ -170,6 +172,13 @@ function formatEffects(effects: SkillEffects): string {
 
 async function unlock(skill: SkillNode) {
 	if (skillState(skill) !== "unlockable") return;
+
+	const confirmed = await confirmStore.ask({
+		title: t("confirm.unlock_skill_title"),
+		body: t("confirm.unlock_skill_body", { name: skill.name, count: skill.cost }),
+		confirmLabel: t("confirm.unlock"),
+	});
+	if (!confirmed) return;
 
 	unlockingId.value = skill.id;
 	actionError.value = "";

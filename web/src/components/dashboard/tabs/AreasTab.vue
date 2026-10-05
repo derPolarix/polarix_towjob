@@ -101,11 +101,13 @@ import "leaflet/dist/leaflet.css";
 import gtaMapUrl from "@/assets/maps/gta_map.jpg";
 import { gtaToLatLng, MAP_IMAGE_BOUNDS } from "@/lib/gtaMap";
 import { useDashboardStore } from "@/stores/dashboardStore";
+import { useConfirmStore } from "@/stores/confirmStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { MapArea, UnlockAreaResult } from "@/types/dashboard";
 
 const { t } = useI18n();
 const dashboardStore = useDashboardStore();
+const confirmStore = useConfirmStore();
 
 const mapContainer = ref<HTMLDivElement>();
 let map: L.Map | null = null;
@@ -180,6 +182,13 @@ function renderAreas() {
 
 async function confirmUnlock() {
 	if (!selectedArea.value) return;
+
+	const confirmed = await confirmStore.ask({
+		title: t("confirm.unlock_area_title"),
+		body: t("confirm.unlock_area_body", { name: selectedArea.value.name, price: formatMoney(selectedArea.value.unlock_cost) }),
+		confirmLabel: t("areas.unlock_area"),
+	});
+	if (!confirmed || !selectedArea.value) return;
 
 	unlocking.value = true;
 	unlockError.value = "";
