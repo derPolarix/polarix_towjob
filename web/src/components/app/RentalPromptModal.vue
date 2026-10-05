@@ -56,6 +56,8 @@ const reasonMessages: Record<string, string> = {
 	insufficient_funds: "error.rental_insufficient_funds",
 	active_delivery_exists: "error.finish_delivery_before_on_call",
 	no_missions_configured: "error.no_missions_configured",
+	already_renting: "error.rental_already_active",
+	owned_vehicle_exists: "error.owned_vehicle_exists",
 	no_player: "error.no_player",
 };
 

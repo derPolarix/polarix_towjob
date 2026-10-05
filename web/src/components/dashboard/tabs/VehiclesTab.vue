@@ -205,6 +205,8 @@ const reasonMessages: Record<string, string> = {
 	delivery_in_progress: "error.finish_delivery_before_park_in",
 	already_full_health: "error.vehicle_full_health",
 	truck_unreachable: "error.vehicle_unreachable",
+	invalid_vehicle: "error.vehicle_mismatch",
+	plate_mismatch: "error.vehicle_mismatch",
 	no_player: "error.no_player",
 };
 
