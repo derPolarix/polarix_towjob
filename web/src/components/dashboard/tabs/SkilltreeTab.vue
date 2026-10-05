@@ -2,34 +2,34 @@
 	<div style="display:flex;flex-direction:column;gap:18px">
 		<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
 			<div>
-				<div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:#1b1f24">{{ t("skills.title") }}</div>
-				<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:4px">{{ t("skills.subtitle") }}</div>
+				<div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:var(--ink)">{{ t("skills.title") }}</div>
+				<div style="font-family:var(--font-mono);font-size:11px;color:var(--faint);margin-top:4px">{{ t("skills.subtitle") }}</div>
 			</div>
 			<div style="display:flex;align-items:center;gap:18px">
-				<div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#6b7280">
+				<div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)">
 					<span style="width:13px;height:13px;border-radius:50%;background:var(--accent)"></span>{{ t("skills.legend_unlocked") }}
 				</div>
-				<div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#6b7280">
+				<div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)">
 					<span style="width:13px;height:13px;border-radius:50%;background:#fff;border:2px solid var(--accent)"></span>{{ t("skills.legend_unlockable") }}
 				</div>
-				<div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#6b7280">
+				<div style="display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)">
 					<span style="width:13px;height:13px;border-radius:50%;background:#e9ebee;border:1px solid #d2d6db"></span>{{ t("skills.legend_locked") }}
 				</div>
-				<div style="display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:20px;background:#22262d;color:#fff;font-size:12px;font-weight:600">
+				<div style="display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:20px;background:var(--sidebar);color:#fff;font-size:12px;font-weight:600">
 					<iconify-icon icon="tabler:bolt" width="15" style="color:var(--accent)"></iconify-icon>
 					{{ t("skills.points", { count: skillPoints }) }}
 				</div>
 			</div>
 		</div>
 
-		<p v-if="actionError" style="font-size:12px;color:#d24b3a;margin:0">{{ actionError }}</p>
+		<p v-if="actionError" style="font-size:12px;color:var(--danger-text);margin:0">{{ actionError }}</p>
 
-		<div v-for="branch in branches" :key="branch.name" style="background:#fff;border:1px solid #dfe2e6;border-radius:16px;padding:22px 26px">
+		<div v-for="branch in branches" :key="branch.name" style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:22px 26px">
 			<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-				<div style="width:30px;height:30px;border-radius:9px;background:#f1f2f4;display:flex;align-items:center;justify-content:center">
-					<iconify-icon :icon="branch.icon" width="17" style="color:#3c424b"></iconify-icon>
+				<div style="width:30px;height:30px;border-radius:9px;background:var(--surface-muted);display:flex;align-items:center;justify-content:center">
+					<iconify-icon :icon="branch.icon" width="17" style="color:var(--ink-soft)"></iconify-icon>
 				</div>
-				<span style="font-size:14px;font-weight:700;color:#1b1f24">{{ branch.name }}</span>
+				<span style="font-size:14px;font-weight:700;color:var(--ink)">{{ branch.name }}</span>
 			</div>
 			<div style="display:flex;align-items:center;padding:14px 0 6px;flex-wrap:wrap">
 				<div v-for="(skill, i) in branch.skills" :key="skill.id" style="display:flex;align-items:center;flex:0 0 auto">
@@ -46,20 +46,20 @@
 						>
 							<iconify-icon :icon="nodeIcon(skillState(skill))" width="22" :style="{ color: nodeIconColor(skillState(skill)) }"></iconify-icon>
 						</div>
-						<div style="font-size:11px;font-weight:600;color:#3c424b;margin-top:8px;text-align:center;line-height:1.2">{{ skill.name }}</div>
+						<div style="font-size:11px;font-weight:600;color:var(--ink-soft);margin-top:8px;text-align:center;line-height:1.2">{{ skill.name }}</div>
 
 						<div
 							v-if="hoverSkillId === skill.id"
-							style="position:absolute;bottom:64px;left:50%;transform:translateX(-50%);width:216px;background:#22262d;color:#fff;border-radius:12px;padding:13px 15px;box-shadow:0 14px 34px rgba(0,0,0,0.3);z-index:20;pointer-events:none"
+							style="position:absolute;bottom:64px;left:50%;transform:translateX(-50%);width:216px;background:var(--sidebar);color:#fff;border-radius:12px;padding:13px 15px;box-shadow:0 14px 34px rgba(0,0,0,0.3);z-index:20;pointer-events:none"
 						>
 							<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
 								<span style="font-size:13px;font-weight:700">{{ skill.name }}</span>
-								<span style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:0.08em;padding:2px 6px;border-radius:5px" :style="tagStyle(skillState(skill))">{{ stateLabel(skillState(skill)) }}</span>
+								<span style="font-family:var(--font-mono);font-size:8px;letter-spacing:0.08em;padding:2px 6px;border-radius:5px" :style="tagStyle(skillState(skill))">{{ stateLabel(skillState(skill)) }}</span>
 							</div>
 							<div style="font-size:12px;color:#aeb4bd;margin-top:7px;line-height:1.45">{{ skill.desc }}</div>
-							<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#7ee2a8;margin-top:8px">{{ formatEffects(skill.effects) }}</div>
-							<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;margin-top:4px">{{ t("skills.cost", { count: skill.cost }) }}</div>
-							<div style="position:absolute;top:100%;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid #22262d"></div>
+							<div style="font-family:var(--font-mono);font-size:10px;color:#7ee2a8;margin-top:8px">{{ formatEffects(skill.effects) }}</div>
+							<div style="font-family:var(--font-mono);font-size:10px;color:var(--faint);margin-top:4px">{{ t("skills.cost", { count: skill.cost }) }}</div>
+							<div style="position:absolute;top:100%;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid var(--sidebar)"></div>
 						</div>
 					</div>
 

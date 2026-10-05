@@ -1,49 +1,49 @@
 <template>
 	<div style="display:flex;flex-direction:column;gap:16px">
 		<div>
-			<div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:#1b1f24">{{ t("dashboard.nav_leaderboard") }}</div>
-			<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ab;margin-top:4px">{{ t("leaderboard.subtitle") }}</div>
+			<div style="font-size:20px;font-weight:800;letter-spacing:-0.01em;color:var(--ink)">{{ t("dashboard.nav_leaderboard") }}</div>
+			<div style="font-family:var(--font-mono);font-size:11px;color:var(--faint);margin-top:4px">{{ t("leaderboard.subtitle") }}</div>
 		</div>
 
-		<div style="background:#fff;border:1px solid #dfe2e6;border-radius:15px;overflow:hidden">
+		<div style="background:#fff;border:1px solid var(--border);border-radius:15px;overflow:hidden">
 			<div style="padding:16px 20px 12px;display:flex;align-items:center;gap:9px">
 				<iconify-icon icon="tabler:trophy" width="18" style="color:var(--accent)"></iconify-icon>
-				<div style="font-size:15px;font-weight:700;color:#1b1f24">{{ t("leaderboard.top_earners") }}</div>
+				<div style="font-size:15px;font-weight:700;color:var(--ink)">{{ t("leaderboard.top_earners") }}</div>
 			</div>
-			<div style="display:grid;grid-template-columns:0.5fr 2fr 0.8fr 1fr;gap:12px;padding:11px 20px;background:#f6f7f8;border-bottom:1px solid #eef0f2;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab">
+			<div style="display:grid;grid-template-columns:0.5fr 2fr 0.8fr 1fr;gap:12px;padding:11px 20px;background:var(--surface-subtle);border-bottom:1px solid var(--surface-sunken);font-family:var(--font-mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--faint)">
 				<span>{{ t("leaderboard.col_rank") }}</span><span>{{ t("leaderboard.col_driver") }}</span><span>{{ t("leaderboard.col_lvl") }}</span><span>{{ t("leaderboard.col_earned") }}</span>
 			</div>
 
-			<div v-if="loading" style="padding:32px 20px;text-align:center;font-size:13px;color:#9aa1ab">{{ t("leaderboard.loading") }}</div>
-			<div v-else-if="entries.length === 0" style="padding:32px 20px;text-align:center;font-size:13px;color:#9aa1ab">{{ t("leaderboard.empty") }}</div>
+			<div v-if="loading" style="padding:32px 20px;text-align:center;font-size:13px;color:var(--faint)">{{ t("leaderboard.loading") }}</div>
+			<div v-else-if="entries.length === 0" style="padding:32px 20px;text-align:center;font-size:13px;color:var(--faint)">{{ t("leaderboard.empty") }}</div>
 
 			<template v-else>
 				<div
 					v-for="entry in entries"
 					:key="entry.rank"
-					style="display:grid;grid-template-columns:0.5fr 2fr 0.8fr 1fr;gap:12px;padding:13px 20px;border-bottom:1px solid #f1f2f4;align-items:center"
+					style="display:grid;grid-template-columns:0.5fr 2fr 0.8fr 1fr;gap:12px;padding:13px 20px;border-bottom:1px solid var(--surface-muted);align-items:center"
 					:style="{ background: isOwnRow(entry) ? 'rgba(34,197,94,0.06)' : '#ffffff' }"
 				>
-					<span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700" :style="{ color: rankColor(entry.rank) }">{{ entry.rank }}</span>
+					<span style="font-family:var(--font-mono);font-size:13px;font-weight:700" :style="{ color: rankColor(entry.rank) }">{{ entry.rank }}</span>
 					<div style="display:flex;align-items:center;gap:10px;min-width:0">
-						<div style="width:30px;height:30px;border-radius:9px;background:#f1f2f4;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#6b7280;flex-shrink:0">{{ entry.name[0] }}</div>
-						<span style="font-size:13px;font-weight:600;color:#1b1f24;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ entry.name }}</span>
+						<div style="width:30px;height:30px;border-radius:9px;background:var(--surface-muted);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--muted);flex-shrink:0">{{ entry.name[0] }}</div>
+						<span style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ entry.name }}</span>
 					</div>
-					<span style="font-size:13px;color:#3c424b">{{ entry.level }}</span>
-					<span style="font-size:13px;font-weight:600;color:#1b1f24">{{ formatMoney(entry.total_earnings) }}</span>
+					<span style="font-size:13px;color:var(--ink-soft)">{{ entry.level }}</span>
+					<span style="font-size:13px;font-weight:600;color:var(--ink)">{{ formatMoney(entry.total_earnings) }}</span>
 				</div>
 
 				<div
 					v-if="own && !isOwnRowVisible"
-					style="display:grid;grid-template-columns:0.5fr 2fr 0.8fr 1fr;gap:12px;padding:13px 20px;border-top:2px solid #eef0f2;align-items:center;background:rgba(34,197,94,0.06)"
+					style="display:grid;grid-template-columns:0.5fr 2fr 0.8fr 1fr;gap:12px;padding:13px 20px;border-top:2px solid var(--surface-sunken);align-items:center;background:rgba(34,197,94,0.06)"
 				>
-					<span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:#c9cdd3">{{ own.rank }}</span>
+					<span style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:#c9cdd3">{{ own.rank }}</span>
 					<div style="display:flex;align-items:center;gap:10px;min-width:0">
-						<div style="width:30px;height:30px;border-radius:9px;background:#f1f2f4;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#6b7280;flex-shrink:0">{{ own.name[0] }}</div>
-						<span style="font-size:13px;font-weight:600;color:#1b1f24;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ own.name }}</span>
+						<div style="width:30px;height:30px;border-radius:9px;background:var(--surface-muted);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--muted);flex-shrink:0">{{ own.name[0] }}</div>
+						<span style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ own.name }}</span>
 					</div>
-					<span style="font-size:13px;color:#3c424b">{{ own.level }}</span>
-					<span style="font-size:13px;font-weight:600;color:#1b1f24">{{ formatMoney(own.total_earnings) }}</span>
+					<span style="font-size:13px;color:var(--ink-soft)">{{ own.level }}</span>
+					<span style="font-size:13px;font-weight:600;color:var(--ink)">{{ formatMoney(own.total_earnings) }}</span>
 				</div>
 			</template>
 		</div>

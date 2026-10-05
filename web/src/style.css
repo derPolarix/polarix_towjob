@@ -15,6 +15,22 @@
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
 
+  --accent: #22c55e;
+  --ink: #1b1f24;
+  --ink-soft: #3c424b;
+  --muted: #6b7280;
+  --faint: #9aa1ab;
+  --border: #dfe2e6;
+  --border-soft: #e4e6e9;
+  --surface-muted: #f1f2f4;
+  --surface-sunken: #eef0f2;
+  --surface-subtle: #f6f7f8;
+  --sidebar: #22262d;
+  --sidebar-muted: #7a818c;
+  --danger: #dc2626;
+  --danger-text: #d24b3a;
+  --font-sans: "Archivo", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
 }
 
 .accent-btn {

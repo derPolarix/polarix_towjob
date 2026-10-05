@@ -1,6 +1,6 @@
 <template>
 	<div style="height:100%;display:flex">
-		<aside style="width:230px;flex-shrink:0;border-right:1px solid #dfe2e6;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px;background:#f6f7f8">
+		<aside style="width:230px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px;background:var(--surface-subtle)">
 			<button type="button" class="accent-btn" style="width:100%;padding:10px;font-size:12px;justify-content:center;margin-bottom:4px" @click="startNew">
 				<iconify-icon icon="tabler:plus" width="15"></iconify-icon> {{ t("admin.new_mission") }}
 			</button>
@@ -15,13 +15,13 @@
 					@click="selectMission(mission)"
 				>
 					<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" :style="{ color: editingId === mission.id ? '#fff' : '#1b1f24' }">{{ mission.name }}</div>
-					<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;margin-top:3px" :style="{ color: editingId === mission.id ? '#9aa1ab' : '#9aa1ab' }">{{ mission.area_name ?? t("admin.no_area") }} · {{ mission.is_active ? t("admin.active") : t("admin.inactive") }}</div>
+					<div style="font-family:var(--font-mono);font-size:9px;margin-top:3px" :style="{ color: editingId === mission.id ? '#9aa1ab' : '#9aa1ab' }">{{ mission.area_name ?? t("admin.no_area") }} · {{ mission.is_active ? t("admin.active") : t("admin.inactive") }}</div>
 				</button>
 			</template>
 
 			<div v-else style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px 8px;text-align:center">
-				<iconify-icon icon="tabler:package-import" width="26" style="color:#9aa1ab"></iconify-icon>
-				<p style="margin:0;font-size:11px;line-height:1.5;color:#6b7280">{{ t("admin.no_missions_hint") }}</p>
+				<iconify-icon icon="tabler:package-import" width="26" style="color:var(--faint)"></iconify-icon>
+				<p style="margin:0;font-size:11px;line-height:1.5;color:var(--muted)">{{ t("admin.no_missions_hint") }}</p>
 				<button type="button" class="accent-btn" style="padding:9px 12px;font-size:11px;justify-content:center" :disabled="importing" :style="{ opacity: importing ? 0.4 : 1 }" @click="importSeed">
 					{{ importing ? t("admin.importing") : t("admin.import_seed_missions") }}
 				</button>
@@ -29,10 +29,10 @@
 		</aside>
 
 		<div style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px">
-			<p v-if="errorMessage" style="margin:0;font-size:12px;color:#d24b3a">{{ errorMessage }}</p>
+			<p v-if="errorMessage" style="margin:0;font-size:12px;color:var(--danger-text)">{{ errorMessage }}</p>
 
-			<div style="background:#fff;border:1px solid #dfe2e6;border-radius:14px;padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
-				<label style="grid-column:span 2;display:flex;flex-direction:column;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa1ab">
+			<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+				<label style="grid-column:span 2;display:flex;flex-direction:column;gap:6px;font-family:var(--font-mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--faint)">
 					{{ t("admin.field_name") }}
 					<input v-model="form.name" type="text" class="admin-input" />
 				</label>
@@ -93,14 +93,14 @@
 					<input v-model.number="form.xp_per_km" type="number" min="0" class="admin-input" :title="t('admin.payout_per_km_hint')" />
 				</label>
 
-				<div style="grid-column:span 2;font-size:11px;color:#6b7280">{{ payoutRangeText }}</div>
+				<div style="grid-column:span 2;font-size:11px;color:var(--muted)">{{ payoutRangeText }}</div>
 
 				<label class="admin-label">
 					{{ t("admin.field_level_required") }}
 					<input v-model.number="form.level_required" type="number" min="1" class="admin-input" />
 				</label>
 
-				<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:#3c424b;margin-top:18px">
+				<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--ink-soft);margin-top:18px">
 					<input type="checkbox" :checked="form.time_limit_minutes !== null" @change="toggleTimed" />
 					{{ t("admin.field_timed_mission") }}
 				</label>
@@ -111,18 +111,18 @@
 				</label>
 			</div>
 
-			<div style="background:#fff;border:1px solid #dfe2e6;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
+			<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
 				<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-					<span style="font-size:13px;font-weight:700;color:#1b1f24">{{ t("admin.spawn_points_heading") }}</span>
+					<span style="font-size:13px;font-weight:700;color:var(--ink)">{{ t("admin.spawn_points_heading") }}</span>
 					<button type="button" class="spawn-btn" :disabled="form.spawn_points.length >= MAX_SPAWN_POINTS" @click="addSpawnPoint">
 						<iconify-icon icon="tabler:plus" width="13"></iconify-icon> {{ t("admin.spawn_point_add") }}
 					</button>
 				</div>
 
-				<div style="font-size:11px;font-weight:600;color:#6b7280">{{ t("admin.spawn_points_count", { count: form.spawn_points.length }) }}</div>
+				<div style="font-size:11px;font-weight:600;color:var(--muted)">{{ t("admin.spawn_points_count", { count: form.spawn_points.length }) }}</div>
 
 				<div v-for="(point, index) in form.spawn_points" :key="index" style="display:flex;align-items:center;gap:8px">
-					<div style="flex:1;font-size:11px;color:#3c424b;background:#f6f7f8;border:1px solid #eef0f2;border-radius:7px;padding:6px 9px">
+					<div style="flex:1;font-size:11px;color:var(--ink-soft);background:var(--surface-subtle);border:1px solid var(--surface-sunken);border-radius:7px;padding:6px 9px">
 						#{{ index + 1 }} — {{ point.x.toFixed(1) }}, {{ point.y.toFixed(1) }}, {{ point.z.toFixed(1) }} ({{ point.heading.toFixed(0) }}°)
 					</div>
 					<button type="button" class="spawn-icon-btn" :title="t('admin.spawn_point_capture')" @click="captureSpawnPoint(index)">
@@ -134,13 +134,13 @@
 					<button type="button" class="spawn-btn danger" :title="t('admin.spawn_point_remove')" @click="removeSpawnPoint(index)">✕</button>
 				</div>
 
-				<div style="font-size:11px;color:#9aa1ab">{{ t("admin.spawn_points_hint") }}</div>
+				<div style="font-size:11px;color:var(--faint)">{{ t("admin.spawn_points_hint") }}</div>
 			</div>
 
-			<div style="background:#fff;border:1px solid #dfe2e6;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
+			<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
 				<div style="display:flex;align-items:center;justify-content:space-between">
-					<span style="font-size:13px;font-weight:700;color:#1b1f24">{{ t("admin.dropoff_zone_heading") }}</span>
-					<button type="button" style="font-size:11px;font-weight:600;border-radius:8px;background:#f1f2f4;border:1px solid #dfe2e6;color:#3c424b;padding:6px 10px;cursor:pointer" @click="useCurrentPosition()">
+					<span style="font-size:13px;font-weight:700;color:var(--ink)">{{ t("admin.dropoff_zone_heading") }}</span>
+					<button type="button" style="font-size:11px;font-weight:600;border-radius:8px;background:var(--surface-muted);border:1px solid var(--border);color:var(--ink-soft);padding:6px 10px;cursor:pointer" @click="useCurrentPosition()">
 						{{ t("admin.use_current_position") }}
 					</button>
 				</div>
@@ -152,7 +152,7 @@
 					<label class="admin-label">{{ t("admin.axis_width") }} <input v-model.number="form.dropoff_width" type="number" step="any" class="admin-input" /></label>
 					<label class="admin-label">{{ t("admin.axis_length") }} <input v-model.number="form.dropoff_length" type="number" step="any" class="admin-input" /></label>
 				</div>
-				<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#6b7280">
+				<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)">
 					<input v-model="dropoffPreviewOn" type="checkbox" @change="pushDropoffPreview" />
 					{{ t("admin.dropoff_preview_toggle") }}
 				</label>
@@ -164,13 +164,13 @@
 				</button>
 
 				<template v-if="editingId">
-					<button type="button" style="border-radius:10px;background:#fff;border:1px solid #dfe2e6;color:#3c424b;font-family:inherit;font-weight:600;font-size:13px;padding:10px 16px;cursor:pointer" :disabled="togglingActive" :style="{ opacity: togglingActive ? 0.5 : 1 }" @click="toggleActive">
+					<button type="button" style="border-radius:10px;background:#fff;border:1px solid var(--border);color:var(--ink-soft);font-family:inherit;font-weight:600;font-size:13px;padding:10px 16px;cursor:pointer" :disabled="togglingActive" :style="{ opacity: togglingActive ? 0.5 : 1 }" @click="toggleActive">
 						{{ selectedIsActive ? t("admin.deactivate") : t("admin.activate") }}
 					</button>
 
 					<button
 						type="button"
-						style="border-radius:10px;background:#fff;border:1px solid #f3c8c2;color:#dc2626;font-family:inherit;font-weight:600;font-size:13px;padding:10px 16px;cursor:pointer"
+						style="border-radius:10px;background:#fff;border:1px solid #f3c8c2;color:var(--danger);font-family:inherit;font-weight:600;font-size:13px;padding:10px 16px;cursor:pointer"
 						:disabled="deleting || selectedDeliveryCount > 0"
 						:title="selectedDeliveryCount > 0 ? t('admin.delete_blocked_history') : ''"
 						:style="{ opacity: (deleting || selectedDeliveryCount > 0) ? 0.4 : 1 }"
@@ -573,9 +573,9 @@ startNew();
 	font-size: 11px;
 	font-weight: 600;
 	border-radius: 8px;
-	background: #f1f2f4;
-	border: 1px solid #dfe2e6;
-	color: #3c424b;
+	background: var(--surface-muted);
+	border: 1px solid var(--border);
+	color: var(--ink-soft);
 	padding: 6px 10px;
 	cursor: pointer;
 	display: inline-flex;
@@ -590,7 +590,7 @@ startNew();
 	cursor: not-allowed;
 }
 .spawn-btn.danger {
-	color: #dc2626;
+	color: var(--danger);
 	border-color: #f3c8c2;
 }
 .spawn-icon-btn {
@@ -598,9 +598,9 @@ startNew();
 	align-items: center;
 	justify-content: center;
 	border-radius: 8px;
-	background: #f1f2f4;
-	border: 1px solid #dfe2e6;
-	color: #3c424b;
+	background: var(--surface-muted);
+	border: 1px solid var(--border);
+	color: var(--ink-soft);
 	padding: 6px 8px;
 	cursor: pointer;
 }
