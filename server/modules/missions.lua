@@ -541,6 +541,12 @@ Framework.OnPlayerUnload(function(source)
     local state = activeDeliveryState[source]
     if state then releaseSpawnPoints(state.deliveryId) end
     activeDeliveryState[source] = nil
+
+    -- A claimed request is only swept through its delivery state, which is gone now: hand it
+    -- back to the pool like any other operator-side ending, or it would stay claimed forever.
+    if state and state.isPriority and state.missionId then
+        Priority.OnDeliveryEnded(state.missionId, source, "disconnected")
+    end
 end)
 
 -- Validates and starts a delivery — the single accept path, shared by the on-call pager
