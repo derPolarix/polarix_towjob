@@ -139,7 +139,8 @@ local function attemptStore()
     local result = lib.callback.await("polarix_towjob:storeVehicle", false, tracked.id, netId)
 
     if not result or not result.ok then
-        Framework.Notify(Locale("notify.store_vehicle_failed"), "error")
+        local key = result and result.reason == "delivery_in_progress" and "error.finish_delivery_before_park_in" or "notify.store_vehicle_failed"
+        Framework.Notify(Locale(key), "error")
         return
     end
 

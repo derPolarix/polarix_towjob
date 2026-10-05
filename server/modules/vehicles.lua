@@ -415,6 +415,10 @@ function Vehicles.Store(source, vehicleId, netId)
         return { ok = false, reason = "not_deployed" }
     end
 
+    if DB.GetActiveDelivery(player.identifier) then
+        return { ok = false, reason = "delivery_in_progress" }
+    end
+
     local entity = NetworkGetEntityFromNetworkId(netId)
     if not entity or entity == 0 or not DoesEntityExist(entity) or GetEntityType(entity) ~= 2 then
         return { ok = false, reason = "invalid_vehicle" }
