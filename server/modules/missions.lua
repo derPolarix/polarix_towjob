@@ -753,6 +753,10 @@ local function complete(source, deliveryId)
 
     local vehicleCoords = GetEntityCoords(target)
     local vehicleHeading = GetEntityHeading(target)
+    if #(GetEntityCoords(GetPlayerPed(source)) - vehicleCoords) > serverConfig.CompletionMaxDistance then
+        return { ok = false, reason = "too_far" }
+    end
+
     if not isWithinDropoffZone(mission, vehicleCoords, vehicleHeading) then
         return { ok = false, reason = "not_in_zone" }
     end

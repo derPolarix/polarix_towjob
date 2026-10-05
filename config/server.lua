@@ -59,8 +59,10 @@ return {
     -- movement/latency.
     VehicleFoundMaxDistance = 25.0,
 
-    -- How far a spawned target vehicle may sit from the spawn point it was reported at.
+    -- How far a spawned target vehicle may sit from the spawn point it was reported at, and how
+    -- far the player may be from the towed vehicle when confirming the delivery.
     SpawnPointVerifyDistance = 10.0,
+    CompletionMaxDistance = 40.0,
 
     -- Default for the runtime-editable `search_hint_radius` setting: the circle drawn on the
     -- player's map while searching. The circle's center is offset server-side so the spawn
