@@ -8,10 +8,12 @@ Missions = {}
 -- Priority jobs (server/modules/priority.lua) live in memory, never in the missions table,
 -- but carry the same row shape — so every accept/complete path resolves a mission through
 -- here instead of calling DB.GetMission directly.
-local function getMissionRow(missionId)
+local function getMissionRow(missionId, includeInactive)
     if Priority and Priority.IsPriorityId(missionId) then
         return Priority.GetJobRow(missionId)
     end
+
+    if includeInactive then return DB.GetMissionIncludingInactive(missionId) end
 
     return DB.GetMission(missionId)
 end
@@ -247,7 +249,7 @@ RegisterNetEvent("polarix_towjob:setTargetVehicle", function(deliveryId, netId, 
         return
     end
 
-    local mission = getMissionRow(state.missionId)
+    local mission = getMissionRow(state.missionId, true)
     local reserved = reservedSpawnPoints[deliveryId]
     local spawnPoint = type(pointIndex) == "number" and reserved and reserved[pointIndex] or nil
 
@@ -702,7 +704,7 @@ function Missions.GetActiveDeliverySummary(source)
     local delivery = DB.GetActiveDelivery(player.identifier)
     if not delivery then return nil end
 
-    local mission = getMissionRow(delivery.mission_id)
+    local mission = getMissionRow(delivery.mission_id, true)
     return {
         deliveryId = delivery.id,
         missionName = (mission and mission.name) or delivery.mission_name or Locale("misc.unknown_job"),
@@ -750,7 +752,7 @@ local function complete(source, deliveryId)
         return { ok = false, reason = "vehicle_not_found_yet" }
     end
 
-    local mission = getMissionRow(delivery.mission_id)
+    local mission = getMissionRow(delivery.mission_id, true)
     if not mission then return { ok = false, reason = "mission_not_found" } end
 
     local target = state.targetNetId and NetworkGetEntityFromNetworkId(state.targetNetId)
