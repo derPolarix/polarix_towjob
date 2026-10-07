@@ -189,6 +189,11 @@ function DB.GetMission(missionId)
     return MySQL.single.await("SELECT * FROM " .. server.Tables.missions .. " WHERE id = ? AND is_active = 1", { missionId })
 end
 
+-- Deliveries already under way finish even if an admin deactivated their mission since accept.
+function DB.GetMissionIncludingInactive(missionId)
+    return MySQL.single.await("SELECT * FROM " .. server.Tables.missions .. " WHERE id = ?", { missionId })
+end
+
 function DB.CreateDelivery(missionId, identifier, usedRental, missionName, isTest)
     return MySQL.insert.await(
         "INSERT INTO " .. server.Tables.deliveries .. " (mission_id, mission_name, identifier, status, used_rental, is_test) VALUES (?, ?, ?, 'active', ?, ?)",

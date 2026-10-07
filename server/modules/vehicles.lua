@@ -163,7 +163,11 @@ function Vehicles.Purchase(source, tierId)
 end
 
 -- Same Economy-branch discount as Purchase above, via Skills.GetRepairDiscount.
-function Vehicles.Repair(source, vehicleId)
+-- Repair yields (DB, and the client round-trip for a deployed truck) between working out the cost
+-- and taking it, so concurrent calls from one player would each be charged against stale health.
+local repairing = {}
+
+local function repair(source, vehicleId)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
 
@@ -179,6 +183,16 @@ function Vehicles.Repair(source, vehicleId)
 
     local cost = math.floor(missing * Settings.GetRepairCostPerHealthPoint() * (1 - Skills.GetRepairDiscount(source)) + 0.5)
 
+    -- A deployed truck's health lives on its entity (Store/ParkIn read it back from there), so the
+    -- repair only counts if the client can reach and control that entity. Asked before any money
+    -- is taken, so nobody pays for a repair that would not stick.
+    if vehicle.state == "deployed" then
+        local ok, reachable = pcall(lib.callback.await, "polarix_towjob:canRepairLiveTruck", source, vehicle.plate)
+        if not ok or reachable ~= true then
+            return { ok = false, reason = "truck_unreachable" }
+        end
+    end
+
     if Framework.GetMoney(source) < cost then
         return { ok = false, reason = "insufficient_funds" }
     end
@@ -193,6 +207,17 @@ function Vehicles.Repair(source, vehicleId)
     debug.DebugPrint(("Vehicles.Repair: %s repaired vehicle %d for %d"):format(player.identifier, vehicleId, cost))
 
     return { ok = true, cost = cost, vehicles = Vehicles.GetOwnedForPlayer(source) }
+end
+
+function Vehicles.Repair(source, vehicleId)
+    if repairing[source] then return { ok = false, reason = "busy" } end
+
+    repairing[source] = true
+    local ok, result = pcall(repair, source, vehicleId)
+    repairing[source] = nil
+
+    if not ok then error(result, 0) end
+    return result
 end
 
 function Vehicles.ParkOut(source, vehicleId)
@@ -230,6 +255,42 @@ function Vehicles.ParkOut(source, vehicleId)
     }
 end
 
+local ENTITY_POLL_MS = 200
+local ENTITY_POLL_ATTEMPTS = 15
+
+local function trimPlate(plate)
+    return (tostring(plate or ""):gsub("%s+$", ""))
+end
+
+-- The client reports a fresh entity's netId (and sets its plate) before either has reached the
+-- server, so a failed match is retried for a few seconds before it counts.
+local function awaitVehicleEntity(netId, matches)
+    if type(netId) ~= "number" then return nil end
+
+    for attempt = 1, ENTITY_POLL_ATTEMPTS do
+        local entity = NetworkGetEntityFromNetworkId(netId)
+        if entity and entity ~= 0 and DoesEntityExist(entity) and GetEntityType(entity) == 2 and matches(entity) then
+            return entity
+        end
+
+        if attempt < ENTITY_POLL_ATTEMPTS then Wait(ENTITY_POLL_MS) end
+    end
+
+    return nil
+end
+
+Vehicles.AwaitEntity = awaitVehicleEntity
+
+local function isDeployedRowEntity(row, entity)
+    local tier = findTier(row.tier_id)
+
+    return tier ~= nil
+        and GetEntityModel(entity) == GetHashKey(tier.model)
+        and trimPlate(GetVehicleNumberPlateText(entity)) == row.plate
+end
+
+-- Only an entity that is this vehicle's tier model wearing its plate is trusted: the netId later
+-- feeds DeleteEntity (Vehicles.ParkIn), so an arbitrary one would let a client delete any vehicle.
 RegisterNetEvent("polarix_towjob:registerDeployedTruck", function(vehicleId, netId)
     local source = source
     local player = Player.GetData(source)
@@ -238,9 +299,36 @@ RegisterNetEvent("polarix_towjob:registerDeployedTruck", function(vehicleId, net
     local vehicle = DB.GetVehicle(vehicleId)
     if not vehicle or vehicle.identifier ~= player.identifier or vehicle.state ~= "deployed" then return end
 
+    local entity = awaitVehicleEntity(netId, function(candidate) return isDeployedRowEntity(vehicle, candidate) end)
+    if not entity then
+        debug.Warn(("registerDeployedTruck: rejected netId for vehicle %s from source %s"):format(tostring(vehicleId), source))
+        return
+    end
+
+    if not Player.GetData(source) then return end
+
     deployedTruckNetIds[source] = deployedTruckNetIds[source] or {}
     deployedTruckNetIds[source][vehicleId] = netId
 end)
+
+-- The tow truck this player may hold keys for: one of their deployed trucks, or (while a rental
+-- is active) a rental-model vehicle the client itself created. Rentals have no plate on record,
+-- hence the owner check.
+function Vehicles.AwaitOwnTruck(source, netId)
+    local player = Player.GetData(source)
+    if not player then return nil end
+
+    local rows = DB.GetDeployedVehicles(player.identifier) or {}
+    local rentalModel = Vehicles.IsRentalActive(source) and GetHashKey(serverConfig.RentalTruck.model) or nil
+
+    return awaitVehicleEntity(netId, function(entity)
+        for _, row in ipairs(rows) do
+            if isDeployedRowEntity(row, entity) then return true end
+        end
+
+        return rentalModel ~= nil and GetEntityModel(entity) == rentalModel and NetworkGetEntityOwner(entity) == source
+    end)
+end
 
 local function resolveDeployedTruckEntity(source, vehicleId)
     local byId = deployedTruckNetIds[source]
@@ -352,6 +440,10 @@ function Vehicles.Store(source, vehicleId, netId)
         return { ok = false, reason = "not_deployed" }
     end
 
+    if DB.GetActiveDelivery(player.identifier) then
+        return { ok = false, reason = "delivery_in_progress" }
+    end
+
     local entity = NetworkGetEntityFromNetworkId(netId)
     if not entity or entity == 0 or not DoesEntityExist(entity) or GetEntityType(entity) ~= 2 then
         return { ok = false, reason = "invalid_vehicle" }
@@ -387,8 +479,25 @@ end
 -- its one delivery ends; see Vehicles.OnDeliveryEnded below.
 local rentalState = {} -- [source] = { lastCharge, warned5, warned1, deliveryId, standalone, free }
 
+function Vehicles.CanAffordRental(source)
+    return Framework.GetMoney(source) >= Settings.GetRentalPricePerCharge()
+end
+
+-- The first interval is charged up front: with a free first window, returning the rental and
+-- renting again would run a truck without ever paying. Admin test runs are free.
 function Vehicles.StartRental(source, deliveryId, standalone, free)
+    if rentalState[source] then return false, "already_renting" end
+
+    if not free then
+        local price = Settings.GetRentalPricePerCharge()
+        if Framework.GetMoney(source) < price then return false, "insufficient_funds" end
+
+        Framework.RemoveMoney(source, price)
+        TriggerClientEvent("polarix_towjob:notify", source, Locale("notify.rental_payment_charged"), "info")
+    end
+
     rentalState[source] = { lastCharge = os.time(), warned5 = false, warned1 = false, deliveryId = deliveryId, standalone = standalone or false, free = free or false }
+    return true
 end
 
 function Vehicles.StopRental(source)

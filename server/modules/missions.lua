@@ -8,10 +8,12 @@ Missions = {}
 -- Priority jobs (server/modules/priority.lua) live in memory, never in the missions table,
 -- but carry the same row shape — so every accept/complete path resolves a mission through
 -- here instead of calling DB.GetMission directly.
-local function getMissionRow(missionId)
+local function getMissionRow(missionId, includeInactive)
     if Priority and Priority.IsPriorityId(missionId) then
         return Priority.GetJobRow(missionId)
     end
+
+    if includeInactive then return DB.GetMissionIncludingInactive(missionId) end
 
     return DB.GetMission(missionId)
 end
@@ -210,34 +212,71 @@ end
 -- derived from anything client-reported.
 local activeDeliveryState = {} -- [source] = { deliveryId, targetNetId, found, deadlineAt, bodyHealthBaseline, engineHealthBaseline }
 
+-- Accept/Complete/Abort yield on DB awaits, so two concurrent calls from one player would both
+-- pass their state checks (double payout, two active deliveries). One in-flight call per source.
+local busy = {}
+
+local function exclusive(fn)
+    return function(source, ...)
+        if busy[source] then return { ok = false, reason = "busy" } end
+
+        busy[source] = true
+        local ok, result = pcall(fn, source, ...)
+        busy[source] = nil
+
+        if not ok then error(result, 0) end
+        return result
+    end
+end
+
+-- The target is trusted only once the entity behind the reported netId is the mission's vehicle
+-- model standing at the spawn point it names; anything else ends the delivery without penalty.
+-- Registered once, and never for a priority job (its target is fixed server-side at accept).
 RegisterNetEvent("polarix_towjob:setTargetVehicle", function(deliveryId, netId, pointIndex)
     local source = source
     local player = Player.GetData(source)
     if not player then return end
 
-    local delivery = DB.GetActiveDelivery(player.identifier)
-    if not delivery or delivery.id ~= deliveryId then return end
-
     local state = activeDeliveryState[source]
-    if not state or state.deliveryId ~= deliveryId then
-        state = { deliveryId = deliveryId }
-        activeDeliveryState[source] = state
+    if not state or state.deliveryId ~= deliveryId then return end
+    if state.isPriority or state.targetNetId or state.targetPending then return end
+
+    state.targetPending = true
+
+    local delivery = DB.GetActiveDelivery(player.identifier)
+    if not delivery or delivery.id ~= deliveryId then
+        state.targetPending = nil
+        return
     end
-    state.targetNetId = netId
+
+    local mission = getMissionRow(state.missionId, true)
+    local reserved = reservedSpawnPoints[deliveryId]
+    local spawnPoint = type(pointIndex) == "number" and reserved and reserved[pointIndex] or nil
+
+    local entity = mission and spawnPoint and Vehicles.AwaitEntity(netId, function(candidate)
+        return GetEntityModel(candidate) == GetHashKey(mission.vehicle_model)
+            and #(GetEntityCoords(candidate) - spawnPoint) <= serverConfig.SpawnPointVerifyDistance
+    end)
+
+    if activeDeliveryState[source] ~= state then return end
+    state.targetPending = nil
+
+    if not entity then
+        debug.Warn(("Missions.setTargetVehicle: rejected target for delivery %s from source %s"):format(tostring(deliveryId), source))
+        Missions.Cancel(source, deliveryId, "target_invalid")
+        return
+    end
 
     -- The client reports which candidate it actually spawned at (it skips blocked spots), so
-    -- the ones it didn't use are freed for other players. A spoofed index only ever frees a
-    -- spot that is in fact occupied, whose worst case is a doubled spawn.
-    local reserved = reservedSpawnPoints[deliveryId]
-    if reserved and pointIndex and reserved[pointIndex] then
-        reservedSpawnPoints[deliveryId] = { reserved[pointIndex] }
-        state.spawnCoords = reserved[pointIndex]
-    end
+    -- the ones it didn't use are freed for other players.
+    state.targetNetId = netId
+    state.spawnCoords = spawnPoint
+    reservedSpawnPoints[deliveryId] = { spawnPoint }
 end)
 
 -- Client reports reaching the target; server re-checks the distance against the tracked
--- entity before trusting it (ground rule 4). An unresolvable entity still sets `found` —
--- Missions.Complete then falls back to a full-health damage baseline rather than stalling.
+-- entity before trusting it (ground rule 4). The target is only set once verified, so a claim
+-- that arrives while that is still pending waits for it.
 RegisterNetEvent("polarix_towjob:vehicleFound", function(deliveryId)
     local source = source
     local player = Player.GetData(source)
@@ -249,16 +288,23 @@ RegisterNetEvent("polarix_towjob:vehicleFound", function(deliveryId)
     local state = activeDeliveryState[source]
     if not state or state.deliveryId ~= deliveryId or state.found then return end
 
-    local entity = state.targetNetId and NetworkGetEntityFromNetworkId(state.targetNetId)
-    if entity and entity ~= 0 and DoesEntityExist(entity) then
-        if #(GetEntityCoords(GetPlayerPed(source)) - GetEntityCoords(entity)) > serverConfig.VehicleFoundMaxDistance then
-            debug.Warn("Missions.vehicleFound: rejected out-of-range claim for source", source)
-            return
-        end
-        state.bodyHealthBaseline = GetVehicleBodyHealth(entity)
-        state.engineHealthBaseline = GetVehicleEngineHealth(entity)
+    for _ = 1, 20 do
+        if state.targetNetId or activeDeliveryState[source] ~= state then break end
+        Wait(200)
     end
 
+    if state.found or activeDeliveryState[source] ~= state or not state.targetNetId then return end
+
+    local entity = NetworkGetEntityFromNetworkId(state.targetNetId)
+    if not entity or entity == 0 or not DoesEntityExist(entity) then return end
+
+    if #(GetEntityCoords(GetPlayerPed(source)) - GetEntityCoords(entity)) > serverConfig.VehicleFoundMaxDistance then
+        debug.Warn("Missions.vehicleFound: rejected out-of-range claim for source", source)
+        return
+    end
+
+    state.bodyHealthBaseline = GetVehicleBodyHealth(entity)
+    state.engineHealthBaseline = GetVehicleEngineHealth(entity)
     state.found = true
 
     debug.DebugPrint(("Missions.vehicleFound: delivery %d found for %s"):format(deliveryId, player.identifier))
@@ -329,7 +375,7 @@ RegisterNetEvent("polarix_towjob:reportVehicleDestroyed", function(deliveryId)
     end
 
     if status == "gone" and state.isPriority then
-        Missions.CancelPriority(source, deliveryId, "target_gone")
+        Missions.Cancel(source, deliveryId, "target_gone")
         return
     end
 
@@ -371,15 +417,22 @@ RegisterNetEvent("polarix_towjob:reportTowTruckDestroyed", function(deliveryId)
     Missions.Fail(source, deliveryId, "truck_destroyed")
 end)
 
--- No-penalty end for a priority job whose target stopped being towable through no fault
--- of the operator: the real player vehicle got cleaned up, or its owner drove it off. Uses
--- the delivery row's `aborted` status (there is no separate enum value) but deliberately
--- records a "cancelled" outcome, which Player.RecordDeliveryOutcome counts against nothing.
-function Missions.CancelPriority(source, deliveryId, reason)
+-- No-penalty end for a delivery whose target stopped being towable through no fault of the
+-- operator: a priority job's real player vehicle got cleaned up or driven off, or a spawned
+-- target could not be verified. Uses the delivery row's `aborted` status (there is no separate
+-- enum value) but deliberately records a "cancelled" outcome, which
+-- Player.RecordDeliveryOutcome counts against nothing.
+function Missions.Cancel(source, deliveryId, reason)
+    if busy[source] then return end
+
     local state = activeDeliveryState[source]
     if not state or state.deliveryId ~= deliveryId then return end
 
-    DB.CancelDelivery(deliveryId)
+    if state.isTest then
+        DB.DeleteDelivery(deliveryId)
+    else
+        DB.CancelDelivery(deliveryId)
+    end
     Vehicles.OnDeliveryEnded(source)
 
     local missionId = state.missionId
@@ -394,17 +447,20 @@ function Missions.CancelPriority(source, deliveryId, reason)
     local messageKeys = {
         target_moved = "notify.cancel_target_left_scene",
         target_gone = "notify.cancel_target_gone",
+        target_invalid = "notify.spawn_failed",
     }
     TriggerClientEvent("polarix_towjob:notify", source, Locale(messageKeys[reason] or "notify.cancel_target_gone"), "error")
     TriggerClientEvent("polarix_towjob:deliveryEnded", source, "cancelled")
 
-    debug.DebugPrint(("Missions.CancelPriority: delivery %d cancelled for source %s (%s)"):format(deliveryId, source, reason))
+    debug.DebugPrint(("Missions.Cancel: delivery %d cancelled for source %s (%s)"):format(deliveryId, source, reason))
 end
 
 -- Shared fail path — called for timed-mission expiry (Step 9.3), vehicle destruction
 -- (Step 10.1) and missed rental payments (server/modules/vehicles.lua), so the
 -- delivery-row/notify/cleanup/counter sequence only lives in one place.
 function Missions.Fail(source, deliveryId, reason)
+    if busy[source] then return end
+
     local state = activeDeliveryState[source]
     if not state or state.deliveryId ~= deliveryId then return end
 
@@ -469,12 +525,12 @@ CreateThread(function()
                 -- by its owner with the operator nowhere near it, so that ends the job without
                 -- a failure on their record.
                 if state.isPriority then
-                    Missions.CancelPriority(source, state.deliveryId, "target_gone")
+                    Missions.Cancel(source, state.deliveryId, "target_gone")
                 else
                     Missions.Fail(source, state.deliveryId, "vehicle_destroyed")
                 end
             elseif state.isPriority and (Priority.GetTargetDrift(state.missionId) or 0) > (serverConfig.PriorityAbandonDistance or 150.0) then
-                Missions.CancelPriority(source, state.deliveryId, "target_moved")
+                Missions.Cancel(source, state.deliveryId, "target_moved")
             elseif isTowTruckDestroyed(state) then
                 Missions.Fail(source, state.deliveryId, "truck_destroyed")
             end
@@ -487,6 +543,12 @@ Framework.OnPlayerUnload(function(source)
     local state = activeDeliveryState[source]
     if state then releaseSpawnPoints(state.deliveryId) end
     activeDeliveryState[source] = nil
+
+    -- A claimed request is only swept through its delivery state, which is gone now: hand it
+    -- back to the pool like any other operator-side ending, or it would stay claimed forever.
+    if state and state.isPriority and state.missionId then
+        Priority.OnDeliveryEnded(state.missionId, source, "disconnected")
+    end
 end)
 
 -- Validates and starts a delivery — the single accept path, shared by the on-call pager
@@ -499,7 +561,7 @@ end)
 -- `isTest` is never client-controlled — only AdminMissions.TestRun (which re-checks
 -- Framework.IsAdmin itself) passes true: it skips the level/area-lock gates and the run
 -- leaves no trace (no payout, XP, stats, history row or rental charge).
-function Missions.Accept(source, missionId, isTest)
+local function accept(source, missionId, isTest)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
 
@@ -564,6 +626,13 @@ function Missions.Accept(source, missionId, isTest)
     end
 
     local rentalActive = Vehicles.IsRentalActive(source)
+
+    -- Checked before anything is created: no truck of their own means a rental, and its first
+    -- payment is taken up front.
+    if not rentalActive and deployedCount == 0 and #owned == 0 and not isTest and not Vehicles.CanAffordRental(source) then
+        return { ok = false, reason = "insufficient_funds" }
+    end
+
     local mission = buildMissionPayload(row)
     mission.is_test = isTest == true
 
@@ -602,7 +671,19 @@ function Missions.Accept(source, missionId, isTest)
 
     if isPriority then Priority.OnClaimed(missionId, source, deliveryId) end
 
-    local response = { ok = true, deliveryId = deliveryId, mission = mission, deadlineAt = deadlineAt }
+    -- Undoes everything above when the vehicle for the job can't be provided; a claimed priority
+    -- request goes back to the queue instead of staying claimed by a delivery that never started.
+    local function rollback(reason)
+        if isTest then DB.DeleteDelivery(deliveryId) else DB.FailDelivery(deliveryId) end
+        activeDeliveryState[source] = nil
+        releaseSpawnPoints(deliveryId)
+        if isPriority then Priority.OnDeliveryEnded(missionId, source, "accept_failed") end
+
+        return { ok = false, reason = reason }
+    end
+
+    -- Time left rather than the timestamp: the client's own clock need not match the server's.
+    local response = { ok = true, deliveryId = deliveryId, mission = mission, secondsRemaining = mission.time_limit_minutes and mission.time_limit_minutes * 60 or nil }
 
     if rentalActive then
         -- Standalone on-call rental already out — reuse it, no spawn.
@@ -613,15 +694,11 @@ function Missions.Accept(source, missionId, isTest)
     elseif #owned == 0 then
         response.usedRental = true
         response.rental = serverConfig.RentalTruck
-        Vehicles.StartRental(source, deliveryId, false, isTest)
+        local started, rentalReason = Vehicles.StartRental(source, deliveryId, false, isTest)
+        if not started then return rollback(rentalReason) end
     elseif storedCount == 1 then
         local parkResult = Vehicles.ParkOut(source, firstStored.id)
-        if not parkResult.ok then
-            if isTest then DB.DeleteDelivery(deliveryId) else DB.FailDelivery(deliveryId) end
-            activeDeliveryState[source] = nil
-            releaseSpawnPoints(deliveryId)
-            return { ok = false, reason = parkResult.reason }
-        end
+        if not parkResult.ok then return rollback(parkResult.reason) end
         response.vehicle = parkResult.vehicle
     else
         response.needsParkOut = true
@@ -641,7 +718,7 @@ function Missions.GetActiveDeliverySummary(source)
     local delivery = DB.GetActiveDelivery(player.identifier)
     if not delivery then return nil end
 
-    local mission = getMissionRow(delivery.mission_id)
+    local mission = getMissionRow(delivery.mission_id, true)
     return {
         deliveryId = delivery.id,
         missionName = (mission and mission.name) or delivery.mission_name or Locale("misc.unknown_job"),
@@ -675,7 +752,7 @@ end
 -- Server computes the damage penalty from health it reads off the tracked entity (baseline
 -- from the vehicleFound handler), and re-validates the towed vehicle's position/heading
 -- against the dropoff rectangle — never trusts a client-reported number for either.
-function Missions.Complete(source, deliveryId)
+local function complete(source, deliveryId)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
 
@@ -689,7 +766,7 @@ function Missions.Complete(source, deliveryId)
         return { ok = false, reason = "vehicle_not_found_yet" }
     end
 
-    local mission = getMissionRow(delivery.mission_id)
+    local mission = getMissionRow(delivery.mission_id, true)
     if not mission then return { ok = false, reason = "mission_not_found" } end
 
     local target = state.targetNetId and NetworkGetEntityFromNetworkId(state.targetNetId)
@@ -699,6 +776,10 @@ function Missions.Complete(source, deliveryId)
 
     local vehicleCoords = GetEntityCoords(target)
     local vehicleHeading = GetEntityHeading(target)
+    if #(GetEntityCoords(GetPlayerPed(source)) - vehicleCoords) > serverConfig.CompletionMaxDistance then
+        return { ok = false, reason = "too_far" }
+    end
+
     if not isWithinDropoffZone(mission, vehicleCoords, vehicleHeading) then
         return { ok = false, reason = "not_in_zone" }
     end
@@ -806,7 +887,7 @@ end
 -- Step 10.4: player-initiated cancel, Dashboard-only (no in-world trigger — confirmed
 -- with user). Detach/despawn of the target vehicle happens client-side via the same
 -- `polarix_towjob:deliveryEnded` event Complete/Fail already use.
-function Missions.Abort(source, deliveryId)
+local function abort(source, deliveryId)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
 
@@ -842,3 +923,7 @@ function Missions.Abort(source, deliveryId)
 
     return { ok = true }
 end
+
+Missions.Accept = exclusive(accept)
+Missions.Complete = exclusive(complete)
+Missions.Abort = exclusive(abort)

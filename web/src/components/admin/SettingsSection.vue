@@ -1,33 +1,33 @@
 <template>
-	<div style="height:100%;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px">
-		<p style="margin:0;font-size:12px;color:#6b7280;background:#fff;border:1px solid #dfe2e6;border-radius:11px;padding:12px 14px">
+	<div class="h-full overflow-y-auto p-[20px] flex flex-col gap-[12px]">
+		<p class="m-0 text-[12px] text-muted bg-white border border-line rounded-[11px] py-[12px] px-[14px]">
 			{{ t("admin.settings_intro") }}
 		</p>
 
 		<div
 			v-for="setting in adminStore.settings"
 			:key="setting.key"
-			style="display:flex;align-items:center;justify-content:space-between;gap:16px;background:#fff;border:1px solid #dfe2e6;border-radius:12px;padding:13px 16px"
+			class="flex items-center justify-between gap-[16px] bg-white border border-line rounded-[12px] py-[13px] px-[16px]"
 		>
-			<div style="min-width:0">
-				<div style="font-size:13px;font-weight:700;color:#1b1f24">{{ setting.label }}</div>
-				<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9aa1ab;margin-top:2px">{{ t("admin.setting_key_default", { key: setting.key, default: setting.default }) }}</div>
+			<div class="min-w-0">
+				<div class="text-[13px] font-bold text-ink">{{ setting.label }}</div>
+				<div class="font-mono text-[10px] text-faint mt-[2px]">{{ t("admin.setting_key_default", { key: setting.key, default: setting.default }) }}</div>
 			</div>
 
-			<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+			<div class="flex items-center gap-[8px] shrink-0">
 				<input
 					v-model.number="drafts[setting.key]"
 					type="number"
 					step="any"
-					style="width:110px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px;color:#1b1f24;background:#f6f7f8;border:1px solid #e4e6e9;border-radius:9px;padding:8px 10px;outline:none"
+					class="w-[110px] text-right font-mono text-[13px] text-ink bg-surface-subtle border border-line-soft rounded-[9px] py-[8px] px-[10px] [outline:none]"
 				/>
-				<button type="button" class="accent-btn" style="padding:8px 14px;font-size:12px" :disabled="saving === setting.key" @click="save(setting)">
+				<button type="button" class="accent-btn py-[8px] px-[14px] text-[12px]" :disabled="saving === setting.key" @click="save(setting)">
 					{{ saving === setting.key ? t("common.saving") : t("common.save") }}
 				</button>
 			</div>
 		</div>
 
-		<p v-if="errorMessage" style="margin:0;font-size:12px;color:#d24b3a">{{ errorMessage }}</p>
+		<p v-if="errorMessage" class="m-0 text-[12px] text-danger-text">{{ errorMessage }}</p>
 	</div>
 </template>
 

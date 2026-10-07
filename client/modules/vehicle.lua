@@ -143,6 +143,10 @@ end
 -- the in-world completion confirm, and via the `polarix_towjob:deliveryEnded` net event
 -- below for every server-driven end (complete/fail/abort/cancel).
 function Vehicle.EndDelivery(reason)
+    -- A delivery that ends while the player is still choosing a truck to park out (abort, timeout,
+    -- rental repossession) must not be resumed by the next park-out.
+    pendingMission = nil
+
     if not currentDelivery then return end
 
     local target = currentDelivery.targetVehicle
@@ -200,7 +204,11 @@ local function adoptTargetVehicle(delivery)
     end)
 end
 
-local function beginDelivery(deliveryId, mission, deadlineAt)
+local function beginDelivery(deliveryId, mission, deadlineMs)
+    -- The server only hands out a new delivery once the old one has ended, so anything still here
+    -- is left over; its target vehicle and blips would otherwise leak.
+    if currentDelivery then Vehicle.EndDelivery("cancelled") end
+
     local isPriority = mission.is_priority == true
     local targetVehicle, netId, searchHint
 
@@ -232,7 +240,7 @@ local function beginDelivery(deliveryId, mission, deadlineAt)
         blip = blip,
         searchRouteBlip = searchRouteBlip,
         state = "searching",
-        deadlineAt = deadlineAt,
+        deadlineMs = deadlineMs,
         isPriority = isPriority,
     }
 
@@ -262,8 +270,12 @@ local function handleAcceptResult(result)
         return result
     end
 
+    -- Counted from receipt on a local monotonic timer, so time spent choosing a truck to park out
+    -- still runs down the deadline.
+    local deadlineMs = result.secondsRemaining and (GetGameTimer() + result.secondsRemaining * 1000) or nil
+
     if result.needsParkOut then
-        pendingMission = { deliveryId = result.deliveryId, mission = result.mission, deadlineAt = result.deadlineAt }
+        pendingMission = { deliveryId = result.deliveryId, mission = result.mission, deadlineMs = deadlineMs }
         return result
     end
 
@@ -273,7 +285,7 @@ local function handleAcceptResult(result)
         Garage.SpawnVehicle(result.vehicle)
     end
 
-    beginDelivery(result.deliveryId, result.mission, result.deadlineAt)
+    beginDelivery(result.deliveryId, result.mission, deadlineMs)
 
     return result
 end
@@ -303,7 +315,7 @@ function Vehicle.ContinueAfterParkOut()
 
     local mission = pendingMission
     pendingMission = nil
-    beginDelivery(mission.deliveryId, mission.mission, mission.deadlineAt)
+    beginDelivery(mission.deliveryId, mission.mission, mission.deadlineMs)
 
     return true
 end

@@ -71,13 +71,13 @@ return {
     end,
 
     OnPlayerLoaded = function(callback)
-        RegisterNetEvent("esx:playerLoaded", function(playerId)
+        AddEventHandler("esx:playerLoaded", function(playerId)
             callback(playerId)
         end)
     end,
 
     OnPlayerUnload = function(callback)
-        RegisterNetEvent("esx:playerDropped", function(playerId)
+        AddEventHandler("esx:playerDropped", function(playerId)
             callback(playerId)
         end)
     end,

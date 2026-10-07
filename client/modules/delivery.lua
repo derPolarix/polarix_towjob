@@ -16,8 +16,8 @@ local function buildUpdatePayload(delivery)
     local distance = math.floor(#(playerCoords - vector3(objective.x, objective.y, objective.z)) + 0.5)
 
     local secondsRemaining = nil
-    if delivery.deadlineAt then
-        secondsRemaining = math.max(0, delivery.deadlineAt - os.time())
+    if delivery.deadlineMs then
+        secondsRemaining = math.max(0, math.ceil((delivery.deadlineMs - GetGameTimer()) / 1000))
     end
 
     return {
@@ -86,11 +86,18 @@ local function canComplete()
     return isAligned(delivery.mission, GetEntityCoords(delivery.targetVehicle), GetEntityHeading(delivery.targetVehicle))
 end
 
+local completing = false
+
 local function attemptComplete()
+    if completing then return end
+
     local delivery = Vehicle.GetCurrentDelivery()
     if not delivery or not canComplete() then return end
 
+    completing = true
     local result = lib.callback.await("polarix_towjob:completeDelivery", false, delivery.deliveryId)
+    completing = false
+
     if result and result.ok then
         Vehicle.EndDelivery("completed")
     else

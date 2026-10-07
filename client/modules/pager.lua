@@ -14,7 +14,8 @@ local function resolveOffer(accepted)
     if accepted then
         local result = Vehicle.AcceptPagerOffer()
         if result and not result.ok then
-            Framework.Notify(Locale("notify.job_no_longer_available"), "error")
+            local key = result.reason == "insufficient_funds" and "error.rental_insufficient_funds" or "notify.job_no_longer_available"
+            Framework.Notify(Locale(key), "error")
         end
     else
         lib.callback.await("polarix_towjob:declinePage", false)
