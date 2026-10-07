@@ -9,8 +9,8 @@ Works with **qbox**, **qb-core**, and **ESX** out of the box.
 - **On-call pager** — go on call and get paged with a random job. Each page shows its payout range. Declining repeatedly makes the next page take longer.
 - **Real tow gameplay** — find the vehicle inside a search circle, tow it with GTA's native tow rig and place it in the drop-off outline. Crashes during the tow cut into your payout.
 - **Distance-based payout** — each mission pays a flat base plus an optional per-km bonus from the spawn point to the drop-off.
-- **Police tow requests** — officers mark a player's vehicle for towing and it becomes a priority job for on-call operators, with an optional impound hook.
-- **Skill tree** — perks that reduce damage penalties, boost payouts and XP, and open up jobs earlier.
+- **Police tow requests** — officers mark a player's vehicle for towing and it becomes a priority job for on-call operators, with an optional impound hook (`polarix_towjob:vehicleImpounded` event, or write straight to your framework's vehicle table). Officers mark via target option, or `/towrequest` without a target system.
+- **Skill tree** — three branches (Precision, Economy, Access) with perks that reduce damage penalties, boost payouts, discount truck purchases, repairs and area unlocks, and open up jobs earlier.
 - **Map areas** — unlock regions of the map with money and level. Each area has its own reward and XP multiplier.
 - **Vehicles** — buy tow trucks with their own damage resistance, or rent one on the spot. Optional livery, extras, colours and mods per truck.
 - **Admin editor** — create and edit missions and areas in-game, test a mission without it being paid or recorded, and tune the economy at runtime. No restart needed.
@@ -41,15 +41,15 @@ Works with **qbox**, **qb-core**, and **ESX** out of the box.
 
 | File | What you can change |
 |---|---|
-| [config/shared.lua](config/shared.lua) | Framework, target system, language, currency, XP curve, skill tree |
-| [config/server.lua](config/server.lua) | Admin access, tow truck shop and rental, pager timing, police requests, payout tuning |
-| [config/client.lua](config/client.lua) | Depot NPC, spawn and parking locations, default keybinds |
+| [config/shared.lua](config/shared.lua) | Framework, target system, language, currency, update check, XP curve, skill tree |
+| [config/server.lua](config/server.lua) | Admin access, tow truck shop and rental (incl. livery, extras, colours, mods), pager timing, police requests and impound mode, damage penalty and payout tuning |
+| [config/client.lua](config/client.lua) | Depot NPC and blip, spawn and parking locations, default keybinds (dashboard, store truck, confirm delivery, pager accept/decline) |
 
 Missions, areas and most economy values are edited in-game, not in these files.
 
 ## Admin editor
 
-Admins open the in-game editor with `/towjobadmin` to create, edit or disable missions and areas and to change runtime settings. Admin access follows your framework's permission group, with an ACE fallback (`command.towjob_admin`).
+Admins open the in-game editor with `/towjobadmin` to create, edit or disable missions and areas and to change runtime settings. Missions use hand-placed spawn points with a ghost-vehicle preview, and a test run is never paid or recorded. Admin access follows your framework's permission group, with an ACE fallback (`command.towjob_admin`).
 
 ## Support
 
