@@ -49,10 +49,7 @@ function AdminAreas.ListForAdmin(source)
     return { ok = true, areas = rows }
 end
 
--- points are GTA world-coord polygon vertices (the admin map component converts its clicks
--- from the Leaflet image back to world coords, see web/src/lib/gtaMap.ts) — stored verbatim,
--- no conversion here. unlock_cost falls back to Settings.GetDefaultAreaUnlockCost() when
--- the admin leaves it blank, matching Step 13.5's "default area unlock cost" setting.
+-- points are GTA world coords, stored verbatim (the map component converts clicks, see web/src/lib/gtaMap.ts). unlock_cost falls back to the default setting when blank.
 function AdminAreas.Create(source, area)
     local ok, reason = requireAdmin(source)
     if not ok then return { ok = false, reason = reason } end

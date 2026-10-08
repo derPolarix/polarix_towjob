@@ -4,14 +4,12 @@ local Keybinds = require("client.lib.keybinds")
 
 local HUD_UPDATE_INTERVAL_MS = 500
 local DROPOFF_RENDER_DISTANCE = 30.0
--- dropoff_z is stored at ped-root height (admin editor's "use current position"); drop the
--- outline this far to paint it on the ground. Matches polarix_truckerjob's parking outline.
+-- dropoff_z is at ped-root height; this offset paints the outline on the ground.
 local GROUND_OFFSET = 0.8
 
 local function buildUpdatePayload(delivery)
     local playerCoords = GetEntityCoords(PlayerPedId())
-    -- While searching, distance is to the hint-circle center rather than the vehicle itself —
-    -- the HUD must not be a more precise locator than the map blip.
+    -- While searching, distance is to the hint-circle center so the HUD isn't more precise than the blip.
     local objective = delivery.state == "searching" and delivery.searchHint or delivery.mission.dropoff
     local distance = math.floor(#(playerCoords - vector3(objective.x, objective.y, objective.z)) + 0.5)
 
@@ -33,7 +31,7 @@ local function buildUpdatePayload(delivery)
     }
 end
 
--- Global: also drawn by the admin mission editor's dropoff preview (client/modules/admin.lua).
+-- Global: reused by client/modules/admin.lua.
 function DrawOutlineRectangle(center, heading, length, width, correct)
     local rad = math.rad(heading or 0.0)
     local lengthDir = vector3(-math.sin(rad), math.cos(rad), 0.0)
@@ -54,10 +52,7 @@ function DrawOutlineRectangle(center, heading, length, width, correct)
     DrawLine(p4.x, p4.y, p4.z, p1.x, p1.y, p1.z, r, g, b, 220)
 end
 
--- Display-only preview of the server's own isWithinDropoffZone (server/modules/missions.lua)
--- — mission.dropoff_heading_tolerance is sent down at accept time so this never drifts out
--- of sync with the authoritative server config value (client_scripts can't require() a
--- server_scripts-only config file, see Phase 7's judgment-call note on that exact limitation).
+-- Display-only; the server's isWithinDropoffZone is authoritative. Tolerance is sent down because client scripts can't require config/server.lua.
 local function isAligned(mission, coords, heading)
     local d = mission.dropoff
     local rad = math.rad(d.heading or 0.0)
@@ -136,8 +131,7 @@ Keybinds.Register("ConfirmDelivery", function()
     if promptShown then attemptComplete() end
 end)
 
--- Renders the red/green ground outline near the dropoff and shows the confirm prompt. The
--- rectangle checks the *towed vehicle's* position/heading, never the player's/tow truck's.
+-- Checks the towed vehicle's position/heading, never the player's.
 CreateThread(function()
     while true do
         local delivery = Vehicle.GetCurrentDelivery()

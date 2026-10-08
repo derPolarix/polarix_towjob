@@ -33,9 +33,7 @@ AddEventHandler('onResourceStart', function(resourceName)
     LoadDatabaseToCache()
     Settings.Load()
 
-    -- A mid-session restart wipes PlayerCache but the framework's "player loaded" event
-    -- only fires on initial connect, so already-connected players would be stuck with no
-    -- cached data (dashboard fails to load) until they relog. Repopulate them here.
+    -- A restart wipes PlayerCache but "player loaded" only fires on connect; repopulate connected players.
     for _, playerId in ipairs(GetPlayers()) do
         local source = tonumber(playerId)
         if source then

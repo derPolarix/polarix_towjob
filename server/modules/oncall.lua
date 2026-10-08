@@ -3,13 +3,10 @@ local debug = require("shared.debug")
 
 OnCall = {}
 
--- [source] = { onCall = true, pendingOffer = { missionId, expiresAt } | nil, nextPageAt, declineStreak }
--- In-memory only, same precedent as Missions' activeDeliveryState — on-call is a live
--- session concept, not something that needs to survive a resource restart or reconnect.
+-- In-memory. [source] = { onCall, pendingOffer = { missionId, expiresAt } | nil, nextPageAt, declineStreak }
 local state = {}
 
--- Survives going off-call, so toggling on-call can't reset the decline streak or skip the wait
--- a decline earned. [source] = { declineStreak, nextPageAt }
+-- Survives going off-call so toggling can't reset the decline wait. [source] = { declineStreak, nextPageAt }
 local carried = {}
 
 function OnCall.IsOnCall(source)
@@ -17,10 +14,7 @@ function OnCall.IsOnCall(source)
     return s ~= nil and s.onCall == true
 end
 
--- An admin who never set up (or deactivated all) missions leaves every player on-call
--- forever with nothing to receive, so going on-call is refused outright in that state.
--- Deliberately server-wide, not per-player: a player whose level/unlocked areas happen to
--- match nothing right now still goes on-call, and the scheduler below keeps retrying.
+-- Refused when no active missions exist at all (server-wide, not per-player; the scheduler retries for players matching nothing).
 local function hasPlayableMissions()
     return (DB.GetActiveMissionCount() or 0) > 0
 end
@@ -57,10 +51,7 @@ local function startOnCall(source)
     end
 end
 
--- Player-initiated toggle (Dashboard Overview tab). On-call is decoupled from having a
--- truck deployed — the pager accept path (Missions.Accept) parks a stored truck out or
--- spawns a rental when a job is taken. Only requirement: a way to tow at all, i.e. owning
--- at least one truck or an active rental; zero of both routes through the rental prompt.
+-- Requires a way to tow: an owned truck or an active rental; with neither the rental prompt is shown.
 function OnCall.SetOnCall(source, wantOn)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
@@ -101,17 +92,12 @@ function OnCall.SetOnCall(source, wantOn)
     return { ok = true, onCall = true }
 end
 
--- Called once OnCall.StartStandaloneRental's rental spawn succeeds — the vehicle is
--- deployed at that point, so this skips SetOnCall's own gate checks rather than re-running
--- a second round-trip of the same checks against state we just established ourselves.
+-- Skips SetOnCall's gate checks: the rental spawn just established that state.
 function OnCall.ForceOnAfterRentalSpawn(source)
     startOnCall(source)
 end
 
--- Confirmed with user: a zero-owned-vehicle player going on-call gets prompted (client-side
--- RentalPromptModal) to rent instead of being told to go buy a truck first — rentals here are
--- standalone (no deliveryId yet), unlike the delivery-scoped rental Missions.Accept spawns
--- for the Admin "Test mission" bypass path.
+-- Players with no owned vehicle are prompted to rent; this rental is standalone (no deliveryId), unlike the delivery-scoped admin test rental.
 function OnCall.StartStandaloneRental(source)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
@@ -139,9 +125,7 @@ function OnCall.StartStandaloneRental(source)
     return { ok = true, onCall = true, rental = serverConfig.RentalTruck }
 end
 
--- Called by Priority.Mark: a police request queue-jumps the pager but doesn't page anyone
--- instantly, so this only caps how long an idle operator's next page can still be away.
--- Resolution is the scheduler's 10s tick, which is plenty for a ~45s cap.
+-- Police requests queue-jump the pager; this only caps how long an idle operator's next page can still be away.
 function OnCall.PullInPages(maxWaitSeconds)
     local cap = os.time() + (maxWaitSeconds or 45)
 
@@ -162,8 +146,6 @@ function OnCall.HandleRentalRepossessed(source)
     TriggerClientEvent("polarix_towjob:onCallStateUpdate", source, { onCall = false })
 end
 
--- Called from Missions.Complete/Fail/Abort right after activeDeliveryState is cleared for
--- this source — re-arms the scheduler for the next page now that the player is free again.
 function OnCall.HandleDeliveryEnded(source)
     local s = state[source]
     if not s or not s.onCall then return end
@@ -183,9 +165,7 @@ function OnCall.AcceptOffer(source)
         return { ok = false, reason = "offer_expired" }
     end
 
-    -- Missions.Accept does the full vehicle provisioning: reuse a deployed truck or active
-    -- rental as-is, auto-park-out the one stored truck, spawn a rental for a truckless
-    -- player, or ask a 2+-truck player to pick one (needsParkOut).
+    -- Missions.Accept provisions the vehicle (reuse, auto park-out, rental, or needsParkOut).
     local result = Missions.Accept(source, offer.missionId)
 
     if result.ok then
@@ -200,8 +180,7 @@ function OnCall.AcceptOffer(source)
     return result
 end
 
--- Also the timeout path (the scheduler thread below calls this identically for an expired
--- offer, per the confirmed design: "timeout behaves like an explicit decline").
+-- Also the timeout path: an expired offer behaves like a decline.
 function OnCall.DeclineOffer(source)
     local s = state[source]
     if not s or not s.pendingOffer then return { ok = false, reason = "no_offer" } end
@@ -217,10 +196,7 @@ function OnCall.DeclineOffer(source)
     return { ok = true }
 end
 
--- Debug-only test helper, invoked by /towjobtestpage (server/commands.lua, itself gated on
--- config.shared.Debug and admin-only). Bypasses the random scheduler: picks one eligible
--- mission right now and pages it. Puts the player on-call if they weren't, since receiving a
--- page has no meaning off-call and Accept needs a live state entry to resolve against.
+-- Debug helper for /towjobtestpage: pages one eligible mission now, going on-call first if needed.
 function OnCall.DebugSendTestPage(source)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
@@ -248,9 +224,6 @@ function OnCall.DebugSendTestPage(source)
     return { ok = true, name = offer.name }
 end
 
--- Ticks every on-call player: sweeps an expired pending offer (treated as a decline) and
--- offers a fresh page to anyone who's due, clear (no active delivery), and not already
--- waiting on an offer. A 10s resolution is plenty for minute-scale pager timing.
 CreateThread(function()
     while true do
         Wait(10000)
@@ -266,8 +239,7 @@ CreateThread(function()
                 elseif s.nextPageAt and now >= s.nextPageAt then
                     local player = Player.GetData(source)
                     if player and not DB.GetActiveDelivery(player.identifier) then
-                        -- Police requests queue-jump: the player's next page serves the oldest
-                        -- open one instead of a random template.
+                        -- Police requests queue-jump: serve the oldest open one.
                         local offer = Priority.TakeNextFor(source) or Missions.PickRandomForPager(source)
                         if offer then
                             local expiresAt = now + serverConfig.PagerOfferTimeoutSeconds

@@ -2,10 +2,7 @@ local debug = require("shared.debug")
 
 Areas = {}
 
--- Full active-area list for the Map tab, each flagged `unlocked` from this player's
--- perspective (default areas + polarix_towjob_player_areas rows). `unlock_cost` already
--- has this player's Access-branch discount applied (Skills.GetAreaUnlockDiscount) so the
--- displayed price always matches what Areas.Unlock actually charges.
+-- unlock_cost has the player's Access-branch discount applied so it matches what Areas.Unlock charges.
 function Areas.GetMapAreas(source)
     local unlockedIds = {}
     for _, id in ipairs(Player.GetUnlockedAreaIds(source)) do
@@ -34,8 +31,6 @@ function Areas.GetMapAreas(source)
     return areas
 end
 
--- Re-validates cost/level requirement server-side (ground rule 4) — never trusts that
--- the client only shows the unlock button because it met these conditions itself.
 function Areas.Unlock(source, areaId)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
@@ -56,7 +51,6 @@ function Areas.Unlock(source, areaId)
         return { ok = false, reason = "level_too_low" }
     end
 
-    -- Access branch ("Local Rates") reduces this cost via Skills.GetAreaUnlockDiscount.
     local cost = math.floor((area.unlock_cost or 0) * (1 - Skills.GetAreaUnlockDiscount(source)) + 0.5)
     if cost > 0 then
         if Framework.GetMoney(source) < cost then

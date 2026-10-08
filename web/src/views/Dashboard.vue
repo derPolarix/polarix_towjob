@@ -2,7 +2,6 @@
 	<div class="min-h-screen flex items-center justify-center p-[24px] font-ui">
 		<div class="w-[1366px] h-[1024px] flex bg-[#e7e9ec] rounded-[22px] overflow-hidden [box-shadow:0_40px_120px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.04)] text-[14px] text-ink">
 
-			<!-- SIDEBAR -->
 			<aside class="w-[242px] shrink-0 bg-sidebar flex flex-col text-[#c9ced6]">
 				<div class="pt-[18px] px-[18px] pb-[13px] flex items-center gap-[12px]">
 					<div class="w-[40px] h-[40px] rounded-[12px] bg-accent flex items-center justify-center shrink-0">
@@ -54,7 +53,6 @@
 				</button>
 			</aside>
 
-			<!-- MAIN -->
 			<main class="px-main flex flex-1 flex-col min-w-0 bg-[#e7e9ec]">
 				<header class="h-[62px] shrink-0 flex items-center gap-[14px] py-0 px-[22px] bg-white border-b border-b-line">
 					<div class="flex-1"></div>

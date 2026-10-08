@@ -1,7 +1,5 @@
--- Locale loader (SSOT: locales/*.json). Usage: local Locale = require("shared.locale")
--- Keys are semantic (e.g. "notify.vehicle_stored"); en.json is the source of truth,
--- every other locale file translates the same keys. Loaded on both client and server.
--- Only user-facing text goes through here — error/debug prints stay English in code.
+-- Keys are semantic ("notify.vehicle_stored"); en.json is the source of truth.
+-- Only user-facing text goes through here; error/debug prints stay English.
 
 local SharedConfig = require("config.shared")
 

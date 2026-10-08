@@ -1,5 +1,3 @@
--- Single entry point for keybinds; default keys come from config/client.lua (Keybinds).
--- Usage: local Keybinds = require("client.lib.keybinds")
 local clientConfig = require("config.client")
 local Locale = require("shared.locale")
 
@@ -27,7 +25,6 @@ function Keybinds.Register(action, onPressed)
     })
 end
 
--- Key the player currently has bound, falling back to the config default.
 function Keybinds.GetKey(action)
     local keybind = registered[action]
     local key = keybind and keybind:getCurrentKey()
@@ -37,13 +34,11 @@ function Keybinds.GetKey(action)
     return key
 end
 
--- Key label for the NUI, which has no TextUI-style "[E]" wrapper.
 function Keybinds.GetDisplayKey(action)
     local key = Keybinds.GetKey(action)
     return DISPLAY_NAMES[key:upper()] or key
 end
 
--- Prompt text like "[E] Store Tow Truck".
 function Keybinds.Prompt(action, localeKey)
     return ("[%s] %s"):format(Keybinds.GetKey(action), Locale(localeKey))
 end

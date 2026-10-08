@@ -1,19 +1,15 @@
-<!-- This is a Vue 3 single-file component -->
 <template>
 	<div class="w-full h-screen relative overflow-hidden">
 		<div v-if="isDev" class="absolute inset-y-0 left-0 z-50">
 			<Sidebar />
 		</div>
 
-		<!-- Persistent HUD overlay, independent of the focus-grabbing router-view below —
-		     never gated by IsNuiOpen since it must stay visible while the player drives. -->
+		<!-- HUD stays visible while driving, so it is never gated by IsNuiOpen -->
 		<div v-if="activeDeliveryStore.isActive" class="absolute inset-0 z-40 pointer-events-none">
 			<ActiveDeliveryUi />
 		</div>
 
-		<!-- On-call pager + rental prompt: both must interrupt gameplay regardless of
-		     whether the Dashboard is open, so they're mounted unconditionally like the
-		     HUD above rather than living inside a route. -->
+		<!-- Pager and rental prompt interrupt gameplay with or without the Dashboard open, so they are mounted unconditionally -->
 		<PagerUi />
 		<RentalPromptModal />
 		<ConfirmModal />
@@ -48,12 +44,10 @@ const dashboardStore = useDashboardStore();
 const activeDeliveryStore = useActiveDeliveryStore();
 const confirmStore = useConfirmStore();
 
-// Only place allowed to handle NUI messages, so the compiled build always keeps a single message handler.
 const handleMessage = (event: MessageEvent) => {
 	const raw = event.data as any;
 	const action = (raw?.action ?? "") as NuiMessage["action"];
 
-	// Every Lua->NUI message carries the current Config.Language — keep vue-i18n in sync.
 	setLanguage((raw?.data as { language?: string })?.language);
 	setUiConfig(raw?.data);
 

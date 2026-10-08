@@ -8,9 +8,7 @@ function SetFocus(state)
     SetNuiFocus(state, state)
 end
 
--- Every NUI message carries the active language so App.vue can keep vue-i18n in sync with
--- Config.Language regardless of which message opens or updates the UI. The currency rides
--- along for the same reason, and the pager keys because the player may rebind them at any time.
+-- Every message carries language, currency and pager keys so App.vue stays in sync (keys can be rebound anytime).
 function SendMessage(action, data)
     data = data or {}
     data.language = sharedConfig.Language

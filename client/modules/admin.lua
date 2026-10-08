@@ -11,11 +11,6 @@ function Admin.GetCurrentPosition()
     return { x = coords.x, y = coords.y, z = coords.z, heading = GetEntityHeading(ped) }
 end
 
--- Live dropoff-rectangle preview while an admin edits a mission's dropoff fields, reusing
--- the exact DrawOutlineRectangle primitive the real in-game delivery flow already draws
--- (client/modules/delivery.lua, kept global there specifically for this reuse — see that
--- file's own comment). Always red (`correct=false`) — there's no "aligned" concept in the
--- editor, it's just a position/size/heading preview.
 local dropoffPreview = { active = false, x = 0.0, y = 0.0, z = 0.0, heading = 0.0, length = 10.0, width = 6.0 }
 
 function Admin.SetDropoffPreview(data)
@@ -33,7 +28,7 @@ end
 CreateThread(function()
     while true do
         if dropoffPreview.active then
-            -- -0.8 so the preview sits on the ground exactly like the live delivery outline.
+            -- ground offset, same as the live delivery outline
             DrawOutlineRectangle(vector3(dropoffPreview.x, dropoffPreview.y, dropoffPreview.z - 0.8), dropoffPreview.heading, dropoffPreview.length, dropoffPreview.width, false)
             Wait(0)
         else
@@ -42,11 +37,7 @@ CreateThread(function()
     end
 end)
 
--- Ghost preview of a mission spawn point: the mission's own vehicle model, faded and
--- collisionless, placed at the coordinate the admin just captured. Spawning the real model is
--- the whole point — a marker can't show whether that car actually fits in that gap. Local-only
--- (CreateVehicle networked=false), so no other player ever sees an editor ghost.
--- One ghost per row index, mirroring polarix_truckerjob's pallet editor.
+-- Local-only (networked=false) ghost of the real model, to show whether the car fits the gap.
 local spawnPointGhosts = {}
 
 local function deleteGhost(index)

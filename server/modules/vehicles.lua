@@ -8,10 +8,7 @@ Vehicles = {}
 local MAX_HEALTH = 1000.0
 local PLATE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
--- netId of every deployed truck's live entity, reported by the client on spawn/resync
--- (client/modules/garage.lua). Lets Vehicles.ParkIn despawn a truck from the Dashboard and
--- read its authoritative health regardless of where the truck sits in the world. Keyed by
--- source (session-scoped) — cleared on unload and on park-in.
+-- netId of each deployed truck's entity as reported by the client; lets ParkIn despawn and read health from anywhere. Session-scoped.
 local deployedTruckNetIds = {} -- [source] = { [vehicleId] = netId }
 
 local function findTier(tierId)
@@ -50,10 +47,7 @@ local function toClientVehicle(row)
     }
 end
 
--- Resolves a tow-truck-tier's damage_resistance from a live entity's model hash, not a
--- stored tier_id — works uniformly for owned vehicles (any tier) and the rental (no DB
--- row/tier_id at all, but its model matches the "standard" tier's model 1:1). Used by
--- Missions.Complete (Phase 10.3) to reduce the towed-vehicle damage penalty.
+-- Resolves damage_resistance from the entity's model hash so the rental (no tier_id) works via the "standard" tier model.
 function Vehicles.GetDamageResistanceForModel(modelHash)
     for _, tier in ipairs(serverConfig.VehicleTiers) do
         if GetHashKey(tier.model) == modelHash then
@@ -63,9 +57,7 @@ function Vehicles.GetDamageResistanceForModel(modelHash)
     return 0.0
 end
 
--- Damage-resistance of the truck the player is running the delivery with, for
--- Missions.Complete. On-call guarantees a truck is deployed (or rented); best of the
--- deployed set wins if there are several.
+-- Best resistance among deployed trucks.
 function Vehicles.GetActiveTruckDamageResistance(source, identifier)
     if Vehicles.IsRentalActive(source) then
         return Vehicles.GetDamageResistanceForModel(GetHashKey(serverConfig.RentalTruck.model))
@@ -79,9 +71,7 @@ function Vehicles.GetActiveTruckDamageResistance(source, identifier)
     return best
 end
 
--- Tier catalog with the player's own Economy-branch purchase discount already applied to
--- `price`, so the Vehicles tab's displayed price always matches what Purchase actually
--- charges — the client never has to know the discount rate itself to show a correct number.
+-- Prices include the player's Economy-branch discount so they match what Purchase charges.
 function Vehicles.GetTiersForPlayer(source)
     local discount = Skills.GetPurchaseDiscount(source)
     local list = {}
@@ -98,9 +88,7 @@ function Vehicles.GetTiersForPlayer(source)
     return list
 end
 
--- Same idea as GetTiersForPlayer above, for the Repair action's displayed per-health-point
--- rate. Reads the base rate through Settings (Phase 13) so an admin edit is reflected
--- immediately, falling back to config/server.lua's RepairCost.perHealthPoint on first boot.
+-- Rate read through Settings so admin edits apply immediately.
 function Vehicles.GetRepairCostPerHealthPoint(source)
     return Settings.GetRepairCostPerHealthPoint() * (1 - Skills.GetRepairDiscount(source))
 end
@@ -128,7 +116,6 @@ function Vehicles.GetDeployedForPlayer(source)
     return list
 end
 
--- Economy skill branch (e2 "Bulk Discount") reduces this cost via Skills.GetPurchaseDiscount.
 function Vehicles.Purchase(source, tierId)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
@@ -162,9 +149,7 @@ function Vehicles.Purchase(source, tierId)
     return { ok = true, vehicles = Vehicles.GetOwnedForPlayer(source) }
 end
 
--- Same Economy-branch discount as Purchase above, via Skills.GetRepairDiscount.
--- Repair yields (DB, and the client round-trip for a deployed truck) between working out the cost
--- and taking it, so concurrent calls from one player would each be charged against stale health.
+-- Repair yields between pricing and charging; concurrent calls would charge against stale health.
 local repairing = {}
 
 local function repair(source, vehicleId)
@@ -183,9 +168,7 @@ local function repair(source, vehicleId)
 
     local cost = math.floor(missing * Settings.GetRepairCostPerHealthPoint() * (1 - Skills.GetRepairDiscount(source)) + 0.5)
 
-    -- A deployed truck's health lives on its entity (Store/ParkIn read it back from there), so the
-    -- repair only counts if the client can reach and control that entity. Asked before any money
-    -- is taken, so nobody pays for a repair that would not stick.
+    -- A deployed truck's health lives on its entity: the repair only counts if the client can control it. Asked before charging.
     if vehicle.state == "deployed" then
         local ok, reachable = pcall(lib.callback.await, "polarix_towjob:canRepairLiveTruck", source, vehicle.plate)
         if not ok or reachable ~= true then
@@ -262,8 +245,7 @@ local function trimPlate(plate)
     return (tostring(plate or ""):gsub("%s+$", ""))
 end
 
--- The client reports a fresh entity's netId (and sets its plate) before either has reached the
--- server, so a failed match is retried for a few seconds before it counts.
+-- The client reports netId/plate before they reach the server, so a failed match is retried for a few seconds.
 local function awaitVehicleEntity(netId, matches)
     if type(netId) ~= "number" then return nil end
 
@@ -289,8 +271,7 @@ local function isDeployedRowEntity(row, entity)
         and trimPlate(GetVehicleNumberPlateText(entity)) == row.plate
 end
 
--- Only an entity that is this vehicle's tier model wearing its plate is trusted: the netId later
--- feeds DeleteEntity (Vehicles.ParkIn), so an arbitrary one would let a client delete any vehicle.
+-- Only an entity of this tier's model wearing its plate is trusted: the netId feeds DeleteEntity.
 RegisterNetEvent("polarix_towjob:registerDeployedTruck", function(vehicleId, netId)
     local source = source
     local player = Player.GetData(source)
@@ -311,9 +292,7 @@ RegisterNetEvent("polarix_towjob:registerDeployedTruck", function(vehicleId, net
     deployedTruckNetIds[source][vehicleId] = netId
 end)
 
--- The tow truck this player may hold keys for: one of their deployed trucks, or (while a rental
--- is active) a rental-model vehicle the client itself created. Rentals have no plate on record,
--- hence the owner check.
+-- Deployed trucks, or a client-created rental-model vehicle while a rental is active (no plate on record, hence the owner check).
 function Vehicles.AwaitOwnTruck(source, netId)
     local player = Player.GetData(source)
     if not player then return nil end
@@ -342,11 +321,7 @@ local function resolveDeployedTruckEntity(source, vehicleId)
     return entity
 end
 
--- Dashboard "Park in" — stores a deployed truck from anywhere (design decision: no depot
--- requirement, unlike the in-world Vehicles.Store prompt). Health is read off the live entity
--- server-side when the netId still resolves (ground rule 4), otherwise the last stored health
--- is kept and the client is asked to best-effort despawn it. Blocked while a delivery is
--- active so the player can't strand their tow job (Missions would then fail on truck loss).
+-- Dashboard park-in works from anywhere. Health is read off the entity when the netId resolves, else the last stored value is kept. Blocked during a delivery.
 function Vehicles.ParkIn(source, vehicleId)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
@@ -383,10 +358,7 @@ function Vehicles.ParkIn(source, vehicleId)
     return { ok = true, vehicles = Vehicles.GetOwnedForPlayer(source) }
 end
 
--- A tow truck destroyed mid-delivery (Missions.Fail, "truck_destroyed") leaves its owned DB
--- row stranded in `deployed` with no live entity — the player then can't Park Out again (state
--- must be `stored`). Force it back to `stored` at zero health (it was wrecked, so a repair is
--- owed) and clear the client's deploy cache / any wreck still in the world.
+-- A truck destroyed mid-delivery leaves its row stuck in `deployed`; force it back to stored at zero health and clear the client cache and wreck.
 function Vehicles.HandleOwnedTruckDestroyed(source, truckNetId)
     local player = Player.GetData(source)
     if not player then return end
@@ -402,8 +374,7 @@ function Vehicles.HandleOwnedTruckDestroyed(source, truckNetId)
         end
     end
 
-    -- No netId match (client never reported the truck, or a stale id): only fall back when the
-    -- player has exactly one deployed owned truck, so the wrong one can't be reset.
+    -- No netId match: fall back only when exactly one truck is deployed, so the wrong one can't be reset.
     if not targetVehicleId then
         local deployed = DB.GetDeployedVehicles(player.identifier)
         if #deployed == 1 then targetVehicleId = deployed[1].id else return end
@@ -424,9 +395,7 @@ function Vehicles.HandleOwnedTruckDestroyed(source, truckNetId)
     debug.DebugPrint(("Vehicles.HandleOwnedTruckDestroyed: %s truck %d reset to stored"):format(player.identifier, targetVehicleId))
 end
 
--- Reads the towed... er, tow truck's live health straight off the networked entity
--- instead of trusting a client-supplied number (ground rule 4) — a lying client could
--- otherwise "store" a wrecked vehicle as if it were undamaged and get a free repair.
+-- Health is read off the networked entity, not client-supplied (else a wrecked truck could be stored as undamaged for a free repair).
 function Vehicles.Store(source, vehicleId, netId)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end
@@ -472,19 +441,14 @@ function Vehicles.Store(source, vehicleId, netId)
     return { ok = true, vehicles = Vehicles.GetOwnedForPlayer(source) }
 end
 
--- Rental billing (Step 7.5). `standalone` distinguishes an on-call rental (spawned via
--- OnCall.StartStandaloneRental with no delivery yet, persists across however many paged jobs
--- the player runs on it) from the older delivery-scoped rental Missions.Accept still spawns
--- for the Admin "Test mission" bypass path — only the latter should be torn down the instant
--- its one delivery ends; see Vehicles.OnDeliveryEnded below.
+-- standalone = on-call rental persisting across jobs; otherwise a delivery-scoped admin test rental, torn down when its delivery ends.
 local rentalState = {} -- [source] = { lastCharge, warned5, warned1, deliveryId, standalone, free }
 
 function Vehicles.CanAffordRental(source)
     return Framework.GetMoney(source) >= Settings.GetRentalPricePerCharge()
 end
 
--- The first interval is charged up front: with a free first window, returning the rental and
--- renting again would run a truck without ever paying. Admin test runs are free.
+-- The first interval is charged up front, otherwise return-and-rerent would run free. Admin test runs are free.
 function Vehicles.StartRental(source, deliveryId, standalone, free)
     if rentalState[source] then return false, "already_renting" end
 
@@ -508,18 +472,13 @@ function Vehicles.IsRentalActive(source)
     return rentalState[source] ~= nil
 end
 
--- Called once OnCall.AcceptOffer's delivery is created, so a missed payment mid-delivery
--- still routes through Missions.Fail (deliveryId now set) instead of the no-delivery
--- repossession path.
+-- Once the delivery exists, a missed payment routes through Missions.Fail instead of plain repossession.
 function Vehicles.SetRentalDeliveryId(source, deliveryId)
     local state = rentalState[source]
     if state then state.deliveryId = deliveryId end
 end
 
--- Called from Missions.Complete/Fail/Abort instead of a blanket StopRental — a standalone
--- on-call rental should survive the delivery it was just used for (the player keeps driving
--- the same truck, on-call resumes waiting for the next page); only the delivery-scoped
--- admin-test-run rental gets fully torn down here.
+-- Standalone rentals survive their delivery; only the delivery-scoped rental is torn down.
 function Vehicles.OnDeliveryEnded(source)
     local state = rentalState[source]
     if not state then return end
@@ -531,8 +490,6 @@ function Vehicles.OnDeliveryEnded(source)
     end
 end
 
--- Explicit "give the rental back" action (Vehicles tab) — only valid for a standalone
--- rental with no delivery currently riding on it.
 function Vehicles.ReturnRental(source)
     local state = rentalState[source]
     if not state or not state.standalone then
@@ -553,8 +510,7 @@ CreateThread(function()
         Wait(30000)
 
         local now = os.time()
-        -- Interval/price read fresh from Settings every tick (not cached at thread start) so
-        -- a Phase 13 admin edit takes effect on the next tick, no resource restart needed.
+        -- Read from Settings each tick so admin edits apply without a restart.
         local intervalSeconds = Settings.GetRentalIntervalMinutes() * 60
         local warnAt5 = (serverConfig.RentalWarningMinutesBefore[1] or 5) * 60
         local warnAt1 = (serverConfig.RentalWarningMinutesBefore[2] or 1) * 60
@@ -573,13 +529,8 @@ CreateThread(function()
                     state.warned1 = false
                     TriggerClientEvent("polarix_towjob:notify", source, Locale("notify.rental_payment_charged"), "info")
                 else
-                    -- Same auto-fail path as vehicle destruction/timed expiry (design-decisions
-                    -- table: "Missed rental payment → same auto-fail path") when a delivery is
-                    -- actually riding on this rental. A standalone on-call rental with no
-                    -- deliveryId (not currently on a paged job) has nothing for Missions.Fail to
-                    -- fail — just clear on-call and the rental state directly instead.
-                    -- Cleared before either branch runs (not after) so mid-`pairs()` iteration is
-                    -- safe and neither branch can double-clear a nil'd-out entry.
+                    -- With a delivery on this rental: Missions.Fail. Standalone with no delivery: just clear on-call and rental state.
+                    -- State is cleared before either branch so mid-pairs() iteration is safe.
                     TriggerClientEvent("polarix_towjob:repossessRental", source)
                     local deliveryId = state.deliveryId
                     rentalState[source] = nil
@@ -602,10 +553,7 @@ CreateThread(function()
     end
 end)
 
--- Keeps the client's Store-interaction cache correct across reconnects — otherwise a
--- vehicle deployed in an earlier session would be untrackable by plate after rejoining
--- (see client/modules/garage.lua's `deployedVehicles` cache, which only self-populates
--- from ParkOut calls made in the current session).
+-- Keeps the client's Store cache correct across reconnects (it only self-populates from ParkOut in the current session).
 Framework.OnPlayerLoaded(function(source)
     TriggerClientEvent("polarix_towjob:syncDeployedVehicles", source, Vehicles.GetDeployedForPlayer(source))
 end)

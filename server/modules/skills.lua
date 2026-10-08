@@ -4,8 +4,6 @@ local Locale = require("shared.locale")
 
 Skills = {}
 
--- config/shared.lua stores skill/branch name+desc as locale keys — resolve them to the
--- active language's display text before the tree reaches the NUI (server/callback.lua).
 function Skills.ResolveBranches()
     local out = {}
     for _, branch in ipairs(sharedConfig.Skills.branches) do
@@ -34,9 +32,7 @@ local function findSkillDef(skillId)
     return nil
 end
 
--- Branch progression effects (e.g. p1 -> p2) express the *total* resulting value once
--- that tier is owned, not an additive stack on top of the lower tier (see config/shared.lua
--- Skills.branches comments) — so the strongest owned skill per effect key wins, not a sum.
+-- Tier effects are total values, not additive: the strongest owned skill per effect key wins.
 function Skills.GetEffectValue(source, effectKey)
     local player = Player.GetData(source)
     if not player then return 0 end
@@ -51,40 +47,31 @@ function Skills.GetEffectValue(source, effectKey)
     return value
 end
 
--- Used by Missions.Complete (Phase 10.3) to reduce the towed-vehicle damage penalty.
 function Skills.GetDamageReduction(source)
     return Skills.GetEffectValue(source, "damage_penalty_reduction")
 end
 
--- Used by Missions.Complete (Phase 10.3) to boost the paid-out reward.
 function Skills.GetPayoutBonus(source)
     return Skills.GetEffectValue(source, "payout_bonus")
 end
 
--- Used by Vehicles.Purchase (Phase 7.2).
 function Skills.GetPurchaseDiscount(source)
     return Skills.GetEffectValue(source, "purchase_discount")
 end
 
--- Used by Vehicles.Repair (Phase 7.3).
 function Skills.GetRepairDiscount(source)
     return Skills.GetEffectValue(source, "repair_discount")
 end
 
--- Used by the on-call pager's eligibility filter and Missions.Accept — confirmed with user:
--- applies uniformly to every mission's level_required, not only timed/hard ones.
+-- Applies to every mission's level_required.
 function Skills.GetLevelRequirementReduction(source)
     return Skills.GetEffectValue(source, "level_requirement_reduction")
 end
 
--- Used by Areas.Unlock (Phase 6.2).
 function Skills.GetAreaUnlockDiscount(source)
     return Skills.GetEffectValue(source, "area_unlock_discount")
 end
 
--- Re-validates prerequisite chain + skill_points balance server-side (ground rule 4) —
--- never trusts that the Skilltree tab only shows an "unlock" button because it already
--- checked these itself; a forged NUI payload must be rejected here regardless.
 function Skills.Unlock(source, skillId)
     local player = Player.GetData(source)
     if not player then return { ok = false, reason = "no_player" } end

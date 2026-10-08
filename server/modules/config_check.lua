@@ -1,5 +1,3 @@
--- Validates config values against what the resource actually ships and prints a
--- clear server console error for each misconfiguration.
 local sharedConfig = require("config.shared")
 local serverConfig = require("config.server")
 local debug = require("shared.debug")

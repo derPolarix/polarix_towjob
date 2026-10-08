@@ -1,6 +1,5 @@
 <template>
 	<div class="flex flex-col gap-[18px]">
-		<!-- Hero banner -->
 		<div class="relative rounded-[18px] overflow-hidden bg-sidebar py-[26px] px-[30px] flex items-center gap-[24px]">
 			<div class="absolute left-0 top-0 right-0 h-[4px] bg-[repeating-linear-gradient(45deg,var(--accent)_0_11px,var(--ink)_11px_22px)]"></div>
 			<div class="flex-1 min-w-0">
@@ -40,7 +39,6 @@
 			</i18n-t>
 		</p>
 
-		<!-- Stat cards -->
 		<div class="grid grid-cols-[repeat(4,1fr)] gap-[14px]">
 			<div v-for="stat in stats" :key="stat.label" class="bg-white border border-line rounded-[15px] p-[18px]">
 				<div class="w-[40px] h-[40px] rounded-[11px] flex items-center justify-center" :style="{ background: stat.tileBg }">
@@ -52,7 +50,6 @@
 		</div>
 
 		<div class="grid grid-cols-[1fr_1fr] gap-[14px] [align-items:start]">
-			<!-- Active delivery -->
 			<div class="bg-white border border-line rounded-[15px] pt-[18px] px-[18px] pb-0 min-h-[330px] flex flex-col">
 				<div class="flex items-center justify-between">
 					<div class="text-[15px] font-bold text-ink">{{ t("dashboard.active_delivery") }}</div>
@@ -76,7 +73,6 @@
 				</div>
 			</div>
 
-			<!-- Recent runs -->
 			<div class="bg-white border border-line rounded-[15px] p-[18px]">
 				<div class="flex items-center justify-between mb-[6px]">
 					<div class="text-[15px] font-bold text-ink">{{ t("overview.recent_jobs") }}</div>

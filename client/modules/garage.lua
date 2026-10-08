@@ -93,9 +93,7 @@ local function findDeployedVehicleNearPlayer()
     return tracked, vehicle, plate
 end
 
--- Resolves the tow truck the active delivery is being run with, for client/modules/damage.lua's
--- truck-destroyed watch: the on-call rental first, then the deployed owned truck the player is
--- sitting in, else the nearest deployed owned truck.
+-- Order: on-call rental, owned truck the player sits in, nearest deployed truck.
 function Garage.ResolveActiveTruck()
     if rentalVehicle and DoesEntityExist(rentalVehicle) then
         return rentalVehicle
@@ -203,8 +201,7 @@ RegisterNetEvent("polarix_towjob:syncDeployedVehicles", function(vehicles)
         deployedVehicles[vehicle.plate] = { id = vehicle.id }
     end
 
-    -- Re-attach any live entities (deployed in an earlier session) and report their netIds so
-    -- Vehicles.ParkIn can despawn them straight from the Dashboard.
+    -- Re-attach entities deployed in an earlier session and report their netIds for ParkIn.
     for _, veh in ipairs(GetGamePool("CVehicle")) do
         local tracked = deployedVehicles[stripPlate(GetVehicleNumberPlateText(veh))]
         if tracked then
@@ -214,9 +211,7 @@ RegisterNetEvent("polarix_towjob:syncDeployedVehicles", function(vehicles)
     end
 end)
 
--- Server has stored the truck (Vehicles.ParkIn). Drop it from the local cache and, when the
--- server couldn't resolve the entity itself (truck not streamed to any player), best-effort
--- delete it here.
+-- Best-effort delete when the server couldn't resolve the entity (not streamed to any player).
 RegisterNetEvent("polarix_towjob:truckParkedIn", function(data)
     local tracked = deployedVehicles[data.plate]
     local entity = tracked and tracked.entity
@@ -237,8 +232,6 @@ RegisterNetEvent("polarix_towjob:truckParkedIn", function(data)
     deployedVehicles[data.plate] = nil
 end)
 
--- The deployed truck's live entity, wherever it stands (only trucks this client tracks), so a
--- repair paid for in the Dashboard also reaches a truck the player is not sitting in.
 local function findDeployedEntity(plate)
     local tracked = deployedVehicles[plate]
     if not tracked then return nil end

@@ -34,8 +34,7 @@ RegisterNetEvent("polarix_towjob:pagerOfferCleared", function()
     SendMessage("pagerOfferCleared", nil)
 end)
 
--- Pager NUI is focus-less (never grabs the cursor mid-drive), so its buttons can't be
--- clicked — accept/decline run off keybinds instead.
+-- Focus-less NUI: buttons can't be clicked, so accept/decline use keybinds.
 Keybinds.Register("PagerAccept", function()
     if offerActive then resolveOffer(true) end
 end)

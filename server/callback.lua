@@ -10,9 +10,7 @@ local function localizeList(keys)
 end
 
 lib.callback.register("polarix_towjob:openDashboard", function(source)
-    -- Player.Load normally runs on the framework's "player loaded" event, but that doesn't
-    -- fire for players already connected when the resource restarts. Rebuild the cache on
-    -- demand here so a mid-session `ensure` doesn't leave the dashboard unusable until relog.
+    -- Player.Load doesn't fire for players connected during a resource restart; rebuild the cache on demand.
     local playerData = Player.GetData(source)
     if not playerData then
         pcall(Player.Load, source)
@@ -52,7 +50,6 @@ lib.callback.register("polarix_towjob:openDashboard", function(source)
     return payload
 end)
 
--- Used by the Areas tab to refresh area unlock state without reopening the whole Dashboard.
 lib.callback.register("polarix_towjob:getMapAreas", function(source)
     return Areas.GetMapAreas(source)
 end)
@@ -61,7 +58,6 @@ lib.callback.register("polarix_towjob:unlockArea", function(source, areaId)
     return Areas.Unlock(source, areaId)
 end)
 
--- Used by the Vehicles tab to refresh owned vehicles/catalog without reopening the whole Dashboard.
 lib.callback.register("polarix_towjob:getOwnedVehicles", function(source)
     return {
         vehicles = Vehicles.GetOwnedForPlayer(source),
@@ -122,9 +118,7 @@ lib.callback.register("polarix_towjob:abortDelivery", function(source, deliveryI
     return Missions.Abort(source, deliveryId)
 end)
 
--- Police "mark for tow" (client/modules/police.lua). The client only ever learns *whether*
--- it may mark and how to trigger it; every rule about what may be marked is re-checked in
--- Priority.Mark itself (ground rule 4).
+-- The client only learns whether it may mark; Priority.Mark re-checks every rule.
 lib.callback.register("polarix_towjob:getPoliceMarkConfig", function(source)
     local canMark = Priority.CanMark(source)
 

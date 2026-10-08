@@ -47,7 +47,6 @@ module.exports = {
     require("tailwindcss-animate"),
     require('@tailwindcss/typography'),
     function({ addUtilities, theme, matchUtilities }) {
-      // Add basic text shadow utilities
       const textShadows = theme('textShadow')
       const utilities = Object.entries(textShadows).map(([key, value]) => {
         return {
@@ -58,7 +57,6 @@ module.exports = {
       })
       addUtilities(utilities)
       
-      // Add color-based text shadow utilities
       matchUtilities(
         {
           'text-shadow': (value) => ({

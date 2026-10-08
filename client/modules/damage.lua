@@ -20,14 +20,8 @@ local function resetTracking()
     truckNetIdSent = false
 end
 
--- Fail-condition watch for the whole delivery: the target vehicle and the tow truck being
--- destroyed both fail the mission. The client only fast-reports outright destruction (dead
--- entity) — deletion/despawn is left to the server's own 5s sweep (server/modules/missions.lua)
--- so a target that's simply unstreamed during the search phase isn't misread as gone.
--- Also computes a local display-only towed-vehicle damage percent once the vehicle is found
--- (Vehicle.GetCurrentDelivery() is a shared table ref, so `.damagePercent` is read directly by
--- client/modules/delivery.lua's Active Delivery UI push). That preview is not authoritative —
--- Missions.Complete re-reads the entities server-side for the real payout math.
+-- Only outright destruction is fast-reported; despawn is left to the server sweep so an unstreamed target isn't misread as gone.
+-- damagePercent is display-only; Missions.Complete recomputes it server-side.
 CreateThread(function()
     while true do
         local delivery = Vehicle.GetCurrentDelivery()

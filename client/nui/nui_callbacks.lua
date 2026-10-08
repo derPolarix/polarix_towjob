@@ -102,10 +102,6 @@ RegisterNUICallback('getDeliveryHistory', function(data, cb)
     cb(result or { entries = {}, total = 0, offset = 0, pageSize = 20 })
 end)
 
--- Phase 13: Admin Settings UI. Server-side Framework.IsAdmin is re-checked inside every
--- one of the polarix_towjob:admin* lib.callbacks below (ground rule 4) — these are thin
--- dispatchers only, same shape as every other callback in this file.
-
 RegisterNUICallback('adminListMissions', function(data, cb)
     local result = lib.callback.await("polarix_towjob:adminListMissions", false)
     cb(result or { ok = false, reason = "no_response" })

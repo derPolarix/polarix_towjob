@@ -74,8 +74,7 @@ const secondsLeft = computed(() => {
 	return Math.max(0, Math.ceil((expiresAtMs.value - now.value) / 1000));
 });
 
-// Server-side sweep is authoritative on real expiry (ground rule 4) — this just hides the
-// pager locally so a slow client doesn't sit on a stale offer waiting for the next server tick.
+// Hide locally on expiry; the server sweep is authoritative.
 watch(secondsLeft, (value) => {
 	if (value <= 0 && offer.value) {
 		dashboardStore.clearPagerOffer();

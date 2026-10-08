@@ -4,14 +4,8 @@ local Locale = require("shared.locale")
 
 Settings = {}
 
--- Step 13.5: generic key/value runtime tunables. Each definition names its config.server.lua
--- fallback default (used whenever the key is absent from polarix_towjob_settings, e.g. first
--- boot) and a validator, so Settings.Set can never persist a value that would break the
--- consuming code path (ground rule 4 — re-validated here, not just trusted from the NUI form).
--- `delivery_heading_tolerance` isn't named in Step 13.5's own list, but ground rule 3 and
--- Phase 10's implementation notes both explicitly flag DeliveryHeadingTolerance as a future
--- Phase 13 Admin Settings value — included here to close that already-flagged gap.
--- `label` is a locales/*.json key — resolved to display text in Settings.GetAllForAdmin.
+-- Runtime tunables: each definition names its config.server fallback default and a validator, so Settings.Set never persists a value that breaks consumers.
+-- label is a locale key, resolved in GetAllForAdmin.
 local DEFINITIONS = {
     {
         key = "reward_multiplier",
@@ -105,8 +99,6 @@ function Settings.GetRepairCostPerHealthPoint() return get("repair_cost_per_heal
 function Settings.GetDeliveryHeadingTolerance() return get("delivery_heading_tolerance") end
 function Settings.GetSearchHintRadius() return get("search_hint_radius") end
 
--- Admin UI list: current effective value (DB override or config default) plus the
--- shipped default, so the editor can show "currently X, default Y" and offer a reset.
 function Settings.GetAllForAdmin()
     if not loaded then Settings.Load() end
 
@@ -117,8 +109,6 @@ function Settings.GetAllForAdmin()
     return list
 end
 
--- Re-checks admin status and re-validates the value itself (ground rule 4) — never trusts
--- that the NUI form only shows this because /towjobadmin already gated it once.
 function Settings.Set(source, key, value)
     if not Framework.IsAdmin(source) then return { ok = false, reason = "not_admin" } end
 

@@ -18,9 +18,7 @@ export interface VehicleColors {
 
 export type MissionDifficulty = "easy" | "medium" | "hard";
 
-/** Sent when the on-call pager pings with a randomly-picked job (server/modules/oncall.lua).
- * No `vehicle_colors`/exact coords — same "don't show exact point" rule the old Available
- * Jobs list followed, now enforced by construction since there's no longer a browsable list. */
+/** Pager ping with a randomly picked job (server/modules/oncall.lua). Deliberately no exact coords or vehicle_colors. */
 export interface PagerOffer {
   id: string;
   name: string;
@@ -36,7 +34,7 @@ export interface PagerOffer {
   area_name: string;
   /** Seconds the offer stays open, counted from receipt: the player's clock need not match the server's. */
   expiresIn: number;
-  /** Police-marked tow request (server/modules/priority.lua) rather than a mission template. */
+  /** Police-marked tow request rather than a mission template. */
   is_priority?: boolean;
 }
 
@@ -93,8 +91,7 @@ export interface VehicleActionResult {
   reason?: string;
   cost?: number;
   vehicles?: OwnedVehicle[];
-  /** Set by the client's `parkOutVehicle` NUI callback when this Park Out also resumed a
-   * mission accepted earlier via the 2+ owned vehicles path (see AcceptMissionResult.needsParkOut). */
+  /** Set when this Park Out also resumed a mission accepted via the 2+ owned vehicles path (needsParkOut). */
   missionStarted?: boolean;
 }
 
@@ -104,8 +101,7 @@ export interface ToggleOnCallResult {
   onCall?: boolean;
 }
 
-/** Response to the "Get rental truck" confirm — used only for a zero-owned-vehicle
- * player going on-call for the first time (see OverviewTab's rental-prompt flow). */
+/** Response to "Get rental truck"; only for a zero-owned-vehicle player going on-call. */
 export interface StartStandaloneRentalResult {
   ok: boolean;
   reason?: string;

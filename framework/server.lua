@@ -1,4 +1,3 @@
--- Loads the active framework's server provider (config/shared.lua -> Framework)
 local config = require("config.shared")
 
 local ok, provider = pcall(require, "framework." .. config.Framework .. ".server")

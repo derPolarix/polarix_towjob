@@ -65,7 +65,6 @@ const isTimeLow = computed(() => {
 </script>
 
 <style scoped>
-/* Same palette and type as the Dashboard and Admin views: Archivo + IBM Plex Mono on #22262d, accent #22c55e. */
 .hud-anchor {
 	--accent: #22c55e;
 	position: absolute;

@@ -1,9 +1,4 @@
--- Logging module for formatted console output.
--- usage: local debug = require("shared.debug")
---   debug.DebugPrint(...)  -- [DEBUG], gated on Config.PrintDebug
---   debug.Info(...)        -- [INFO]
---   debug.Warn(...)        -- [WARNING]
---   debug.Error(...)       -- [ERROR]
+-- DebugPrint is gated on Config.PrintDebug; Info/Warn/Error always print.
 
 local SharedConfig = require("config.shared")
 local suffix = "^7"
@@ -72,7 +67,6 @@ local function stringify(value, visited, depth)
     local parts = {}
     local nextDepth = depth - 1
 
-    -- Best-effort: show arrays as [a, b, c] and maps as {k=v, ...}
     local isArray = true
     local n = #value
     for k, _ in pairs(value) do
@@ -111,13 +105,11 @@ local function joinArgs(...)
 end
 
 return {
-    -- Gated on SharedConfig.PrintDebug — verbose developer tracing.
     DebugPrint = function(...)
         if not SharedConfig.PrintDebug then return end
         printPrefixed(LEVEL_PREFIX.DEBUG, joinArgs(...))
     end,
 
-    -- Always printed — operational messages worth seeing in a normal console.
     Info = function(...)
         printPrefixed(LEVEL_PREFIX.INFO, joinArgs(...))
     end,

@@ -23,7 +23,6 @@
 			</button>
 		</div>
 
-		<!-- Garage -->
 		<div>
 			<div class="flex items-center justify-between mb-[14px]">
 				<div>
@@ -99,7 +98,6 @@
 			</div>
 		</div>
 
-		<!-- Shop -->
 		<div>
 			<div class="flex items-center justify-between mb-[14px]">
 				<div>
@@ -154,7 +152,7 @@ const dashboardStore = useDashboardStore();
 const confirmStore = useConfirmStore();
 const persistantStore = usePersistantStore();
 
-// model name (config VehicleTiers[].model) -> bundled image url; falls back to a truck icon
+// model -> bundled image, falling back to a truck icon
 const vehicleImages = import.meta.glob("@/assets/vehicles/*.png", { eager: true, import: "default" }) as Record<string, string>;
 
 function vehicleImage(model: string): string | undefined {

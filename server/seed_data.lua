@@ -1,18 +1,11 @@
--- Data for the "Import seed missions" button in the Admin UI's mission/area sections
--- (see server/modules/admin_missions.lua AdminMissions.ImportSeedData). Areas and missions
--- are one set: the missions below reference these area ids, so they import together.
---
--- Coordinates below are placeholders (not tied to any real world position) —
--- replace with real spawn/dropoff spots before go-live, same as config/client.lua's NPC/parking placeholders.
--- Each mission's `spawn_points` are hand-placed parked-car spots inside one small area;
--- the server picks one per delivery, so every entry must be somewhere a car can actually stand.
+-- Data for the Admin UI's seed import (AdminMissions.ImportSeedData). Areas and missions import together since missions reference area ids.
+-- Coordinates are placeholders: replace before go-live. spawn_points must be spots a car can stand.
 return {
     areas = {
         {
             id = "area_default",
             name = "Los Santos Central",
             region = "Los Santos",
-            -- placeholder GTA world-coord polygon (rectangle) around central Los Santos
             points = { { x = -600.0, y = -1200.0 }, { x = 900.0, y = -1200.0 }, { x = 900.0, y = 400.0 }, { x = -600.0, y = 400.0 } },
             unlock_cost = 0,
             level_required = 1,
@@ -22,7 +15,6 @@ return {
             id = "area_paleto",
             name = "Paleto Bay",
             region = "Blaine County",
-            -- placeholder GTA world-coord polygon (rectangle) around Paleto Bay
             points = { { x = -900.0, y = 5900.0 }, { x = 100.0, y = 5900.0 }, { x = 100.0, y = 6700.0 }, { x = -900.0, y = 6700.0 } },
             unlock_cost = 750,
             level_required = 2,

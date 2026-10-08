@@ -1,5 +1,3 @@
--- Loaded before all other scripts, defines framework-agnostic globals.
--- Active framework is set in config/shared.lua -> Framework
 local config = require("config.shared")
 
 Framework = {}

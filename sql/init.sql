@@ -1,4 +1,3 @@
--- Player progression
 CREATE TABLE IF NOT EXISTS polarix_towjob_players (
     identifier        VARCHAR(60) PRIMARY KEY,
     name              VARCHAR(50),
@@ -14,7 +13,6 @@ CREATE TABLE IF NOT EXISTS polarix_towjob_players (
     updated_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Area definitions (map-unlockable regions)
 CREATE TABLE IF NOT EXISTS polarix_towjob_areas (
     id            VARCHAR(36)  PRIMARY KEY,
     name          VARCHAR(100),
@@ -30,7 +28,7 @@ CREATE TABLE IF NOT EXISTS polarix_towjob_areas (
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Per-player area unlocks (only rows for non-default areas a player has unlocked)
+-- Only non-default areas a player has unlocked
 CREATE TABLE IF NOT EXISTS polarix_towjob_player_areas (
     id           INT AUTO_INCREMENT PRIMARY KEY,
     identifier   VARCHAR(60),
@@ -39,7 +37,6 @@ CREATE TABLE IF NOT EXISTS polarix_towjob_player_areas (
     UNIQUE KEY uq_player_area (identifier, area_id)
 );
 
--- Mission templates (Admin-UI managed, seeded from config on first boot)
 CREATE TABLE IF NOT EXISTS polarix_towjob_missions (
     id                VARCHAR(36) PRIMARY KEY,
     area_id           VARCHAR(36),
@@ -65,7 +62,6 @@ CREATE TABLE IF NOT EXISTS polarix_towjob_missions (
     updated_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Delivery history / active deliveries
 CREATE TABLE IF NOT EXISTS polarix_towjob_deliveries (
     id             INT AUTO_INCREMENT PRIMARY KEY,
     mission_id     VARCHAR(36),
@@ -81,7 +77,6 @@ CREATE TABLE IF NOT EXISTS polarix_towjob_deliveries (
     completed_at   TIMESTAMP NULL
 );
 
--- Owned tow trucks (purchase + persistent damage + garage state)
 CREATE TABLE IF NOT EXISTS polarix_towjob_vehicles (
     id            INT AUTO_INCREMENT PRIMARY KEY,
     identifier    VARCHAR(60),
@@ -93,7 +88,6 @@ CREATE TABLE IF NOT EXISTS polarix_towjob_vehicles (
     purchased_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Runtime-editable admin settings (key/value)
 CREATE TABLE IF NOT EXISTS polarix_towjob_settings (
     setting_key   VARCHAR(60) PRIMARY KEY,
     setting_value JSON,
@@ -101,9 +95,7 @@ CREATE TABLE IF NOT EXISTS polarix_towjob_settings (
     updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Migrations for servers whose tables predate later columns. CREATE TABLE IF NOT EXISTS
--- never adds columns to an existing table, so these run every boot (each is pcall'd
--- individually in server/main.lua's loadSchema and is a no-op once the column exists).
+-- CREATE TABLE IF NOT EXISTS never adds columns, so these migrations run every boot (no-op once the column exists).
 ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS points JSON;
 ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS reward_multiplier DECIMAL(4,2) DEFAULT 1.00;
 ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS xp_multiplier DECIMAL(4,2) DEFAULT 1.00;

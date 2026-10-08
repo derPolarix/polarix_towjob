@@ -1,7 +1,4 @@
-// Dev-only fixture data — `npm run dev` has no NUI runtime, so nuiCallbackAsync no-ops and
-// every store stays empty by default. Seeding realistic data here means the design can
-// actually be looked at (cards, tables, skill tree, pager, etc.) without a live FiveM server.
-// Never imported by the production build path in App.vue except behind `if (isDev)`.
+// Dev-only fixtures: `npm run dev` has no NUI runtime, so stores would stay empty. Only imported behind isDev in App.vue.
 import type { DashboardPayload } from "@/types/dashboard";
 import type { AdminArea, AdminMission, AdminSetting } from "@/types/admin";
 

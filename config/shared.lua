@@ -1,12 +1,9 @@
--- Import with: local config = require("config.shared")
 return {
     Debug = false,
     PrintDebug = false,
     CheckForUpdates = true, -- warn in server console when a newer GitHub release exists
 
-    -- Symbol used by every money value (notifications + NUI).
-    -- position "prefix" -> $680,000 | "suffix" -> 680,000 € (space added automatically)
-    -- Digits are always grouped with ",".
+    -- "prefix" -> $680,000 | "suffix" -> 680,000 € (space added). Digits are grouped with ",".
     Currency = {
         symbol   = "$",
         position = "prefix", -- "prefix" | "suffix"
@@ -16,23 +13,20 @@ return {
     -- When the chosen system isn't running, interactions fall back to markers/TextUI and /towrequest.
     Target = "ox_target", -- "ox_target" | "qb-target" | "sleepless_interact" | "none"
 
-    -- Language for locales/<Language>.json — the SSOT for every user-facing string
-    -- (Lua notifications + NUI). Ships: de, en, es, fr, it, nl, pl, pt-br, tr.
+    -- locales/<Language>.json. Ships: de, en, es, fr, it, nl, pl, pt-br, tr.
     Language = "en",
 
     XPThresholds = { 0, 150, 400, 800, 1400, 2200, 3200, 4500, 6200, 8500, 11500 }, -- index = level
 
     SkillPointsPerLevel = 1,
 
-    -- locales/*.json keys, not display text — resolved via Locale() before they reach the NUI
-    -- (server/callback.lua, server/modules/player.lua).
+    -- Locale keys, resolved server-side before reaching the NUI.
     LevelTitles = { "level.trainee", "level.junior_operator", "level.operator", "level.senior_operator",
                     "level.recovery_specialist", "level.expert", "level.master_operator", "level.elite",
                     "level.legend", "level.grand_master", "level.titan" },
 
     Skills = {
-        -- name/desc are locales/*.json keys, not display text — resolved via Locale()
-        -- in Skills.ResolveBranches (server/modules/skills.lua).
+        -- name/desc are locale keys.
         branches = {
             { name = "skill.branch_precision", icon = "tabler:target", skills = {
                 { id = "p1", name = "skill.steady_rigging", desc = "skill.steady_rigging_desc", cost = 1, requires = nil, effects = { damage_penalty_reduction = 0.15 } },

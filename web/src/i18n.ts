@@ -1,7 +1,6 @@
 import { createI18n } from "vue-i18n";
 
-// SSOT: the same locales/*.json files the Lua side reads via shared/locale.lua.
-// Keys are semantic (e.g. "notify.vehicle_stored"); en.json is the source of truth.
+// Same locales/*.json as the Lua side (shared/locale.lua).
 import de from "../../locales/de.json";
 import en from "../../locales/en.json";
 import es from "../../locales/es.json";
@@ -19,8 +18,7 @@ export const i18n = createI18n({
   messages: { de, en, es, fr, it, nl, pl, "pt-br": ptBr, tr },
 });
 
-// Lua sends the active Config.Language on every NUI message (client/nui/nui_messages.lua) —
-// App.vue calls this so vue-i18n always matches the server config.
+// Called from App.vue with the language Lua sends on every NUI message.
 export function setLanguage(lang: string | undefined) {
   if (!lang) return;
   if ((i18n.global.availableLocales as string[]).includes(lang)) {

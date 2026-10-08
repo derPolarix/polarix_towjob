@@ -22,9 +22,7 @@ local function computeLevel(xp)
 end
 
 local function reconcileStalePlayerState(source, identifier)
-    -- "deployed" means "spawned in the world" — that entity is gone after a disconnect, so
-    -- every deployed vehicle on load is an orphan. Re-store them all (the rental is not an
-    -- owned vehicle row, so this never touches it).
+    -- "deployed" entities are gone after a disconnect: re-store them all (the rental has no owned row).
     for _, vehicle in ipairs(DB.GetDeployedVehicles(identifier)) do
         DB.SetVehicleState(vehicle.id, "stored")
     end
@@ -124,11 +122,7 @@ function Player.AddXP(source, amount)
     end
 end
 
--- Called by Missions.Complete/Fail/Abort (Phase 10) to bump the relevant lifetime
--- counter. `reward` is only meaningful for "completed" — total_earnings tracks paid-out
--- money, not the mission's listed reward_base. Saves/broadcasts on its own since
--- Fail/Abort have no other mutation in flight; Complete additionally calls Player.AddXP
--- right after this, which does its own save/broadcast for the xp/level change.
+-- reward only counts for "completed": total_earnings tracks paid-out money.
 function Player.RecordDeliveryOutcome(source, outcome, reward)
     local player = PlayerCache[source]
     if not player then return end

@@ -1,5 +1,3 @@
-// Usage: import { nuiCallback, nuiCallbackAsync } from "@/nui/nuiCallbacks";
-// e.g. nuiCallbackAsync("callbackName", data)
 import type { NuiCallback, NuiCallbackAsync } from "@/type";
 
 let hasWarnedMissingRuntime = false;
@@ -39,13 +37,12 @@ export const nuiCallback = (async <TResponse = unknown>(
 			throw new Error(`NUI callback HTTP ${resp.status}: ${name}`);
 		}
 
-		// Some callbacks may respond with an empty/whitespace body; avoid `Unexpected end of JSON input`.
+		// Empty/whitespace bodies would throw `Unexpected end of JSON input`.
 		const text = (await resp.text()).trim();
 		if (!text) return null;
 		try {
 			return JSON.parse(text) as TResponse;
 		} catch {
-			// Fallback for non-JSON responses
 			return text as unknown as TResponse;
 		}
 	} catch (error) {
@@ -60,8 +57,7 @@ export const nuiCallbackAsync = (async <TResponse = unknown>(
 ) => {
 	if (!canUseNuiRuntime() && import.meta.env.DEV) {
 		warnMissingRuntimeOnce();
-		// In browser/dev mode there is no NUI bridge.
-		// Return a harmless placeholder so UI interactions (e.g. ESC close) don't throw.
+		// No NUI bridge in browser/dev mode: return a placeholder so UI interactions (e.g. ESC close) don't throw.
 		return {} as TResponse;
 	}
 

@@ -203,7 +203,7 @@ import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import { formatMoney } from "@/lib/uiConfig";
 import type { AdminActionResult, AdminCurrentPosition, AdminMission, AdminSpawnPoint } from "@/types/admin";
 
-// Mirrors config.server.lua's MaxSpawnPointsPerMission — the server re-validates it anyway.
+// Mirrors MaxSpawnPointsPerMission; the server re-validates.
 const MAX_SPAWN_POINTS = 20;
 
 const { t } = useI18n();
@@ -244,7 +244,7 @@ const form = reactive({
 	level_required: 1,
 });
 
-// Same formula as the server's payoutRange (missions.lua): base + per-km * spawn->dropoff km.
+// Same formula as payoutRange in missions.lua.
 const payoutRangeText = computed(() => {
 	const bonus = (perKm: number, point: AdminSpawnPoint) => {
 		const km = Math.hypot(point.x - form.dropoff_x, point.y - form.dropoff_y, point.z - form.dropoff_z) / 1000;
@@ -341,8 +341,6 @@ async function useCurrentPosition() {
 	}
 }
 
-// Each row previews as a ghost copy of the mission's own vehicle model at that coordinate,
-// so the admin can see whether the car actually fits before saving.
 function previewSpawnPoint(index: number) {
 	const point = form.spawn_points[index];
 	if (!point) return;
@@ -384,8 +382,7 @@ function clearSpawnPointGhosts() {
 	nuiCallbackAsync("adminClearSpawnPointGhosts", {}).catch((error) => console.error("adminClearSpawnPointGhosts failed:", error));
 }
 
-// Removing a row shifts every later index, so the ghosts are cleared wholesale rather than
-// left pointing at coordinates that have moved under them.
+// Removing a row shifts indices, so ghosts are cleared wholesale.
 function removeSpawnPoint(index: number) {
 	form.spawn_points.splice(index, 1);
 	clearSpawnPointGhosts();
@@ -429,9 +426,7 @@ const reasonMessages: Record<string, string> = {
 	active_delivery_exists: "admin.err_test_active_delivery",
 };
 
-// Seed content ships with the resource (server/seed_data.lua) and covers areas + missions in
-// one go; the server refuses the import unless both tables are empty, which is also the only
-// state this button renders in.
+// The server refuses the seed import unless both tables are empty, the only state this button renders in.
 async function importSeed() {
 	if (importing.value) return;
 	importing.value = true;
@@ -522,9 +517,6 @@ async function remove() {
 	}
 }
 
-// Step 13.3's "clearly labeled as a test action": closes the Admin UI so the admin
-// immediately sees the same find/attach/tow/deliver loop a normal player gets, same
-// precedent trucker job's own admin editor established for its "Mission testen" button.
 async function testRun() {
 	if (!editingId.value) return;
 

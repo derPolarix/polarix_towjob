@@ -121,8 +121,7 @@ import { useAdminStore } from "@/stores/adminStore";
 import { nuiCallbackAsync } from "@/nui/nuiCallbacks";
 import type { AdminActionResult, AdminArea } from "@/types/admin";
 
-// Points are stored/sent as GTA world coords and converted to the Leaflet image via
-// @/lib/gtaMap — map clicks here are captured the reverse way (latLngToGta).
+// Points are stored as GTA world coords; map clicks convert back via latLngToGta (@/lib/gtaMap).
 const { t } = useI18n();
 const adminStore = useAdminStore();
 
@@ -237,9 +236,7 @@ function selectArea(area: AdminArea) {
 	}
 }
 
-// Seed content ships with the resource (server/seed_data.lua) and covers areas + missions in
-// one go; the server refuses the import unless both tables are empty, which is also the only
-// state this button renders in.
+// The server refuses the seed import unless both tables are empty, the only state this button renders in.
 async function importSeed() {
 	if (importing.value) return;
 	importing.value = true;
@@ -351,8 +348,7 @@ onMounted(() => {
 			addPoint(gta.x, gta.y);
 		});
 
-		// The panel's flex layout settles its height after mount; without recalculating,
-		// Leaflet's click→latlng mapping and vertex hitboxes land offset.
+		// Flex height settles after mount; without a recalc Leaflet's click mapping and vertex hitboxes are offset.
 		resizeObserver = new ResizeObserver(() => map?.invalidateSize());
 		resizeObserver.observe(mapContainer.value);
 	}

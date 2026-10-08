@@ -92,8 +92,7 @@ export interface AdminActionResult {
   missionId?: string;
   areaId?: string;
   settings?: AdminSetting[];
-  /** Set by AdminMissions.TestRun's underlying Missions.Accept response — mirrors
-   * AcceptMissionResult so the test-run flow can drive the same client spawn logic. */
+  /** Mirrors AcceptMissionResult so the test-run flow can drive the same client spawn logic. */
   deliveryId?: number;
   needsParkOut?: boolean;
 }

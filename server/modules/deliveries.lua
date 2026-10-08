@@ -15,10 +15,7 @@ local function getCachedTopEarners()
     return leaderboardCache.entries
 end
 
--- Step 12.1: fixed total_earnings sort, no player-togglable sort in v1 (design-decisions
--- table). The top-N list is cached briefly to avoid sorting the full players table on
--- every tab open; `own` is resolved fresh every call (one cheap query) so a player's own
--- rank/earnings are never stale even while the top-N cache is.
+-- Top-N is cached briefly; own rank/earnings are fetched fresh each call.
 function Deliveries.GetLeaderboard(source)
     local topEarners = getCachedTopEarners()
 
@@ -65,7 +62,6 @@ end
 
 local RECENT_DEFAULT_LIMIT = 5
 
--- Step 12.3: Overview tab's "recent jobs" card — last N deliveries, any status.
 function Deliveries.GetRecentForPlayer(source, limit)
     local player = Player.GetData(source)
     if not player then return { entries = {} } end
@@ -83,7 +79,6 @@ end
 
 local HISTORY_PAGE_SIZE = 20
 
--- Step 12.4: History tab's full, paginated delivery list (not just "recent").
 function Deliveries.GetHistoryPage(source, offset)
     local player = Player.GetData(source)
     if not player then return { entries = {}, total = 0, offset = 0, pageSize = HISTORY_PAGE_SIZE } end

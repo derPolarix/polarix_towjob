@@ -1,5 +1,3 @@
--- Checks GitHub Releases for a newer polarix_towjob version on resource
--- start and warns in the server console if the running copy is outdated.
 local config = require("config.shared")
 local debug = require("shared.debug")
 
@@ -26,8 +24,7 @@ end
 
 if config.CheckForUpdates == false then return end
 
--- Deferred: PerformHttpRequest issued while the resource is still loading can be
--- dropped before its callback is ever scheduled.
+-- Deferred: a PerformHttpRequest issued during resource load can be dropped.
 CreateThread(function()
     local resourceName = GetCurrentResourceName()
     local currentVersion = GetResourceMetadata(resourceName, "version", 0) or "0.0.0"

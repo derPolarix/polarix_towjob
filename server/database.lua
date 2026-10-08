@@ -3,13 +3,6 @@ local server = require("config.server")
 local shared = require("shared.debug")
 
 function LoadDatabaseToCache()
-    -- Example function to load data from the database into a cache
-    -- local result = MySQL.query.await("SELECT * FROM " .. server.database_table)
-
-    -- for _, row in ipairs(result) do
-    --     LocalCache.table[row.COLUMNNAME] = row
-    -- end
-    -- return true
 end
 
 DB = {}
@@ -91,9 +84,6 @@ function DB.UnlockArea(identifier, areaId)
     MySQL.insert.await("INSERT IGNORE INTO " .. server.Tables.player_areas .. " (identifier, area_id) VALUES (?, ?)", { identifier, areaId })
 end
 
--- Used by Player.Load's stale-delivery cleanup (Step 3.4); DB.SetVehicleState is also
--- the exact function Phase 7.1 specifies, so vehicle purchase/repair/garage code should
--- call this same one rather than adding a duplicate.
 function DB.GetActiveDelivery(identifier)
     return MySQL.single.await("SELECT * FROM " .. server.Tables.deliveries .. " WHERE identifier = ? AND status = 'active' LIMIT 1", { identifier })
 end
@@ -163,8 +153,6 @@ function DB.SaveVehicleHealth(vehicleId, bodyHealth, engineHealth)
     MySQL.update.await("UPDATE " .. server.Tables.vehicles .. " SET body_health = ?, engine_health = ? WHERE id = ?", { bodyHealth, engineHealth, vehicleId })
 end
 
--- Joins area name/region in for the on-call pager's eligibility filter (Missions.lua's
--- getEligibleMissionRows/PickRandomForPager).
 function DB.GetActiveMissionsWithAreas()
     return MySQL.query.await([[
         SELECT m.*, a.name AS area_name, a.region AS area_region
@@ -174,8 +162,6 @@ function DB.GetActiveMissionsWithAreas()
     ]])
 end
 
--- Cheap "is this server set up at all" probe for the on-call gate — same is_active join as
--- GetActiveMissionsWithAreas above, without dragging every row over for a zero test.
 function DB.GetActiveMissionCount()
     return MySQL.scalar.await([[
         SELECT COUNT(*)
@@ -205,8 +191,7 @@ function DB.DeleteDelivery(deliveryId)
     MySQL.update.await("DELETE FROM " .. server.Tables.deliveries .. " WHERE id = ?", { deliveryId })
 end
 
--- Priority jobs (server/modules/priority.lua) live in memory only, so there is no mission
--- row to mark aborted against — the delivery row carries the whole story on its own.
+-- Priority jobs are in-memory only: no mission row to mark aborted.
 function DB.CancelDelivery(deliveryId)
     MySQL.update.await("UPDATE " .. server.Tables.deliveries .. " SET status = 'aborted', completed_at = NOW() WHERE id = ?", { deliveryId })
 end
@@ -236,10 +221,7 @@ function DB.GetPlayerRank(identifier)
     ]], { identifier }) or 1
 end
 
--- LEFT JOIN, not DB.GetMission's `is_active = 1`-filtered lookup: a deactivated or
--- (per Step 13.3) hard-deleted mission template must not erase its own delivery history.
--- d.mission_name wins over the joined template name: it's the snapshot taken at accept time
--- and the only name a priority job ever had.
+-- LEFT JOIN so deactivated/deleted missions keep their history; d.mission_name (accept-time snapshot) wins over the template name.
 function DB.GetDeliveryHistory(identifier, limit, offset)
     return MySQL.query.await([[
         SELECT d.id, d.status, d.reward_paid, d.xp_paid, d.damage_penalty, d.started_at, d.completed_at,
@@ -256,9 +238,7 @@ function DB.GetDeliveryCount(identifier)
     return MySQL.scalar.await("SELECT COUNT(*) FROM " .. server.Tables.deliveries .. " WHERE identifier = ?", { identifier }) or 0
 end
 
--- Phase 13: admin CRUD helpers. Unlike DB.GetArea/DB.GetMission (player-facing, hard-filtered
--- to is_active = 1), these intentionally return every row so the Admin UI can see/manage
--- deactivated content too.
+-- Admin helpers return every row, including inactive ones.
 function DB.GetAllAreasAdmin()
     return MySQL.query.await("SELECT * FROM " .. server.Tables.areas .. " ORDER BY id")
 end
@@ -284,8 +264,7 @@ function DB.SetAreaActive(areaId, isActive)
     MySQL.update.await("UPDATE " .. server.Tables.areas .. " SET is_active = ? WHERE id = ?", { isActive and 1 or 0, areaId })
 end
 
--- LEFT JOIN (not DB.GetActiveMissionsWithAreas' is_active-filtered join) so a mission
--- whose area was deactivated still shows up for editing.
+-- LEFT JOIN so missions whose area was deactivated stay editable.
 function DB.GetAllMissionsAdmin()
     return MySQL.query.await([[
         SELECT m.*, a.name AS area_name
@@ -307,10 +286,7 @@ function DB.MissionIdExists(missionId)
     return (MySQL.scalar.await("SELECT COUNT(*) FROM " .. server.Tables.missions .. " WHERE id = ?", { missionId }) or 0) > 0
 end
 
--- Flat column shape (matches DB.GetAllMissionsAdmin's SELECT output and the admin form) —
--- unlike DB.InsertMission, which keeps its nested dropoff shape because
--- server/seed_data.lua's missions are written that way and the seed import
--- depends on it unchanged.
+-- Flat column shape (admin form); InsertMission keeps its nested shape for seed_data.
 function DB.UpdateMission(missionId, mission, adminIdentifier)
     MySQL.update.await("UPDATE " .. server.Tables.missions .. [[ SET
         area_id=?, name=?, vehicle_model=?, vehicle_label=?, vehicle_colors=?, spawn_points=?,
@@ -333,8 +309,7 @@ function DB.SetMissionActive(missionId, isActive, adminIdentifier)
     MySQL.update.await("UPDATE " .. server.Tables.missions .. " SET is_active = ?, updated_by = ? WHERE id = ?", { isActive and 1 or 0, adminIdentifier, missionId })
 end
 
--- DB.InsertMission (seed + admin create) doesn't know about the audit columns, so admin
--- create calls this right after to stamp both created_by/updated_by in one statement.
+-- InsertMission doesn't know the audit columns; stamp created_by/updated_by right after.
 function DB.SetMissionCreatedBy(missionId, adminIdentifier)
     MySQL.update.await("UPDATE " .. server.Tables.missions .. " SET created_by = ?, updated_by = ? WHERE id = ?", { adminIdentifier, adminIdentifier, missionId })
 end

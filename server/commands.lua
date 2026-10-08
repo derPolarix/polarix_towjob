@@ -2,10 +2,7 @@ local debug = require("shared.debug")
 local sharedConfig = require("config.shared")
 local Locale = require("shared.locale")
 
--- Phase 13.2: the one deliberate, permanent admin tool. Framework.IsAdmin is
--- re-checked here at open time AND again inside every individual admin*
--- lib.callback (ground rule 4) — this command opening the UI must never be
--- the only gate.
+-- IsAdmin is re-checked in every admin* callback; this command is not the only gate.
 RegisterCommand('towjobadmin', function(source)
     if source == 0 then return end -- console has no NUI to open
 
@@ -18,10 +15,7 @@ RegisterCommand('towjobadmin', function(source)
     TriggerClientEvent("polarix_towjob:openAdminUi", source)
 end, false)
 
--- Debug-only tester: page yourself a random eligible mission to exercise the pager flow
--- without waiting on the on-call scheduler. Registered only when config.shared.Debug is set
--- so it can't exist on a production build, and still admin-gated on top of that — the Debug
--- flag is a build switch, not an auth check (ground rule 4).
+-- Debug-only: pages yourself a random mission. Still admin-gated; Debug is a build switch, not auth.
 if sharedConfig.Debug then
     RegisterCommand('towjobtestpage', function(source)
         if source == 0 then return end -- needs a real player to page

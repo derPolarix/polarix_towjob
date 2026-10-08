@@ -126,8 +126,6 @@ const reasonMessages: Record<string, string> = {
 	no_player: "error.no_player",
 };
 
-// Unlocked areas surface first (most relevant for active play), locked areas below
-// sorted by level_required ascending (natural progression order).
 const sortedAreas = computed(() => {
 	return [...areas.value].sort((a, b) => {
 		if (a.unlocked !== b.unlocked) return a.unlocked ? -1 : 1;
@@ -139,8 +137,7 @@ function areaLatLngs(area: MapArea): L.LatLngExpression[] {
 	return area.points.map((point) => gtaToLatLng(point.x, point.y));
 }
 
-// Frame the map on the areas themselves rather than the whole state — polygons are small
-// relative to the full image, so a full-image fit leaves them near-invisible.
+// Frame the areas rather than the whole map; the polygons are small relative to the image.
 function fitToAreas() {
 	if (!map) return;
 	const latlngs = areas.value
@@ -153,8 +150,6 @@ function fitToAreas() {
 	}
 }
 
-// Shared by both the map polygon click and the list row click — always opens the info
-// card; locked areas additionally get the unlock action inside it.
 function selectAreaRow(area: MapArea) {
 	unlockError.value = "";
 	selectedArea.value = area;
@@ -228,9 +223,7 @@ onMounted(async () => {
 		renderAreas();
 		fitToAreas();
 
-		// The flex container often reports its final height a frame or two after mount;
-		// without this, Leaflet's vector pane desyncs from the image pane and polygon
-		// hitboxes land offset from where they render.
+		// Flex height settles after mount; without a recalc the vector pane desyncs and polygon hitboxes are offset.
 		resizeObserver = new ResizeObserver(() => {
 			map?.invalidateSize();
 			fitToAreas();

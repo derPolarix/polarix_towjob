@@ -1,5 +1,3 @@
--- Loads the active target system's client provider (config/shared.lua -> Target)
---
 -- Normalized option schema every provider accepts:
 --   { name, icon = "fa-solid fa-...", label, distance?, canInteract?(entity), onSelect?(entity) }
 local config = require("config.shared")

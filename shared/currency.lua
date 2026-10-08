@@ -1,7 +1,3 @@
--- Money formatter (SSOT: Config.Currency); usage: local Money = require("shared.currency")
--- Turns a number into the display string every notify and NUI value uses, so the
--- symbol and its position are decided in exactly one place.
-
 local SharedConfig = require("config.shared")
 
 local DEFAULT_SYMBOL   = "$"

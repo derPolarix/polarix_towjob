@@ -1,4 +1,3 @@
--- Import with: local config = require("config.client")
 return {
     NPC = {
         model = "s_m_y_construct_01",
@@ -15,9 +14,7 @@ return {
 
     VehicleFoundRadius = 12.0, -- reaching this range of the target vehicle flips the job to "found"
 
-    -- How close another vehicle has to be to a mission spawn point to count as standing in it:
-    -- ambient traffic that close is deleted, anything protected makes the spot fall through to
-    -- the next candidate (client/modules/vehicle.lua).
+    -- Distance at which another vehicle counts as standing in a spawn point: ambient traffic is deleted, protected vehicles skip the spot.
     SpawnPointClearance = 4.0,
 
     -- Default keys only: a player who already rebound an action under Settings > Key Bindings > FiveM keeps theirs.

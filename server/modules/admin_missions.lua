@@ -22,10 +22,7 @@ local function slugify(name)
     return candidate
 end
 
--- The admin form works with flat columns (matches DB.GetAllMissionsAdmin's SELECT output
--- and DB.UpdateMission's flat shape) but DB.InsertMission expects the nested
--- dropoff shape server/seed_data.lua's missions use — reshape here
--- rather than duplicating the INSERT statement or changing InsertMission's seed-facing signature.
+-- The admin form uses flat columns; DB.InsertMission expects the nested dropoff shape of seed_data.lua, so reshape here.
 local function toNestedMission(flat)
     return {
         area_id = flat.area_id,
@@ -47,8 +44,7 @@ local function toNestedMission(flat)
     }
 end
 
--- Re-validated here rather than trusted from the NUI form (ground rule 4): every point must
--- carry a complete coordinate, because the spawn path has no radius left to fall back on.
+-- Every point needs a complete coordinate; the spawn path has no radius fallback.
 local function validateSpawnPoints(points)
     if type(points) ~= "table" or #points < 1 then return "no_spawn_points" end
     if #points > serverConfig.MaxSpawnPointsPerMission then return "too_many_spawn_points" end
@@ -162,10 +158,7 @@ function AdminMissions.SetActive(source, missionId, isActive)
     return { ok = true }
 end
 
--- Soft-delete (is_active=0, via SetActive) is always available; hard-delete only when
--- no delivery row references this mission, so History/Leaderboard-adjacent joins never
--- lose their mission_name lookup for a completed/failed/aborted delivery (Phase 12's
--- DB.GetDeliveryHistory already LEFT JOINs for exactly this reason).
+-- Hard-delete only when no delivery references the mission, so history joins keep their mission_name; otherwise soft-delete.
 function AdminMissions.Delete(source, missionId)
     local ok, reason = requireAdmin(source)
     if not ok then return { ok = false, reason = reason } end
@@ -181,9 +174,7 @@ function AdminMissions.Delete(source, missionId)
     return { ok = true }
 end
 
--- Areas and missions import as one set: the seed missions reference the seed area ids, so
--- a server with either table populated has content of its own and is left alone (the Admin
--- UI only offers the button when both lists are empty, but that is a hint, not the gate).
+-- Areas and missions import as one set (seed missions reference seed area ids); refused if either table has rows. The UI button is a hint, not the gate.
 function AdminMissions.ImportSeedData(source)
     local ok, reason = requireAdmin(source)
     if not ok then return { ok = false, reason = reason } end
@@ -206,12 +197,7 @@ function AdminMissions.ImportSeedData(source)
     return { ok = true, areas = #seedData.areas, missions = #seedData.missions }
 end
 
--- Step 13.3: QA-only test button — bypasses level_required/area_locked (the mission-
--- availability gates) the same way trucker job's TestRun bypasses level/hazmat/long-hauler,
--- but never the player's own active-delivery/vehicle-state checks inside Missions.Accept,
--- so testing can never leave the admin's own account stuck (e.g. a phantom active delivery
--- or a desynced vehicle). Re-checks Framework.IsAdmin itself (ground rule 4) even though the
--- NUI callback -> lib.callback path that reaches this already does too.
+-- Bypasses level/area gates but not Missions.Accept's own active-delivery/vehicle checks, so a test can't leave the admin stuck. Re-checks IsAdmin.
 function AdminMissions.TestRun(source, missionId)
     local ok, reason = requireAdmin(source)
     if not ok then return { ok = false, reason = reason } end

@@ -5,19 +5,14 @@ local Money = require("shared.currency")
 
 Priority = {}
 
--- Police-marked tow subjects ("tow requests"). Deliberately in-memory only, same precedent
--- as OnCall's state: a job points at one live world entity by netId, and neither the entity
--- nor its netId survives a resource restart — persisting the job would outlive the thing it
--- describes. Each entry doubles as a mission row (see buildJobRow) so every existing
--- accept/complete path in server/modules/missions.lua works on it unchanged.
+-- Police-marked tow requests, in-memory only: a job points at a live entity by netId, which doesn't survive a restart. Entries double as mission rows (buildJobRow).
 local pool = {} -- FIFO: oldest request is offered first
 local sequence = 0
 local lastMarkAt = {} -- [identifier] = os.time()
 
 local ID_PREFIX = "prio_"
 
--- A plate that was just towed for a payout can't be marked again for this long, so the same car
--- can't be marked, towed and marked again in a loop. In-memory like the pool.
+-- A just-towed plate can't be re-marked for this long.
 local PLATE_COOLDOWN_SECONDS = 3600
 local plateCooldownUntil = {} -- [plate] = os.time()
 
@@ -32,8 +27,7 @@ local function trim(value)
     return (tostring(value or ""):gsub("^%s*(.-)%s*$", "%1"))
 end
 
--- The label is typed by the marking client and ends up in notifications (ox_lib renders markdown,
--- GTA blip names read ~ codes) on every officer's screen, so it is reduced to plain, short text.
+-- The label is typed by the marking client and shown in notifications and blip names, so it is reduced to plain short text.
 local function sanitizeLabel(label)
     if type(label) ~= "string" then return "" end
 
@@ -69,8 +63,7 @@ local function findByNetId(netId)
     end
 end
 
--- Job/grade gate. Returns the job table only when this source may mark; nil otherwise, so
--- callers can use it as both the permission check and the job lookup.
+-- Returns the job table when this source may mark, else nil.
 local function officerJob(source)
     if not Framework.GetJob then return nil end
 
@@ -113,9 +106,7 @@ local function notifyMarker(job, message, notifyType)
     TriggerClientEvent("polarix_towjob:notify", source, message, notifyType or "info")
 end
 
--- Blips live with every authorized officer, not just the marker, so a second unit can see a
--- car is already called in rather than re-marking it. They stay up while a job is claimed —
--- "someone is on the way" is exactly what the officer wants to know.
+-- Blips go to every authorized officer and stay up while a job is claimed.
 local function blipPayload(job)
     return {
         id = job.id,
@@ -136,7 +127,6 @@ local function broadcastRemoved(jobId)
     end
 end
 
--- Sent to an officer on load so a mid-session connect still sees the open requests.
 function Priority.GetBlipsForOfficer(source)
     if not officerJob(source) then return {} end
 
@@ -172,9 +162,7 @@ local function isTowTruckModel(modelHash)
     return towTruckModels[modelHash] == true
 end
 
--- Donor mission: the marked car is towed to the nearest active mission's dropoff, and
--- inherits that mission's area purely so the area reward/xp multipliers still apply
--- (the area *gates* are skipped for priority jobs — confirmed design).
+-- Donor mission: the nearest active mission's dropoff; its area is inherited for multipliers only (area gates are skipped).
 local function findNearestDonorMission(coords)
     local best, bestDistance
 
@@ -193,8 +181,7 @@ local function scaledValue(spec, distance)
     return math.floor(math.min(spec.max or math.huge, (spec.base or 0) + (spec.perMeter or 0) * distance) + 0.5)
 end
 
--- Mirrors the polarix_towjob_missions column shape (JSON columns encoded, not decoded) so
--- Missions' buildMissionPayload/Complete read it exactly like a template row.
+-- Mirrors the missions column shape (JSON columns encoded) so Missions reads it like a template row.
 local function buildJobRow(job, donor, distance)
     job.is_priority = true
     job.area_id = donor.area_id
@@ -240,9 +227,7 @@ local function refuse(source, reason, ...)
     return { ok = false, reason = reason }
 end
 
--- `label`/`colors` are display-only hints from the marking client (the server can't read a
--- vehicle's display name or colours). Everything the job is validated on — model, plate,
--- ownership, occupancy, position — is read server-side off the entity itself.
+-- label/colors are display-only hints; everything validated on is read server-side off the entity.
 function Priority.Mark(source, netId, label, colors)
     if not officerJob(source) then return refuse(source, "not_authorized") end
 
@@ -254,8 +239,7 @@ function Priority.Mark(source, netId, label, colors)
         return refuse(source, "vehicle_not_found")
     end
 
-    -- Re-marking a request cancels it (any authorized officer may, the original marker is
-    -- told), so a stuck request never needs an admin.
+    -- Re-marking cancels the request (any authorized officer may), so a stuck one never needs an admin.
     local existing = findByNetId(netId)
     if existing then
         if existing.claimedBy then return refuse(source, "already_claimed") end
@@ -278,15 +262,13 @@ function Priority.Mark(source, netId, label, colors)
 
     local officerPed = GetPlayerPed(source)
     local coords = GetEntityCoords(vehicle)
-    -- Slack on top of the client's own reach for movement/latency, same idea as
-    -- VehicleFoundMaxDistance's re-check of a "found" claim.
+    -- Slack for movement/latency, like VehicleFoundMaxDistance.
     if #(GetEntityCoords(officerPed) - coords) > (serverConfig.PoliceMarkDistance or 12.0) + 4.0 then
         return refuse(source, "too_far")
     end
 
     if isTowTruckModel(GetEntityModel(vehicle)) then return refuse(source, "is_tow_truck") end
-    -- Driver seat only: the seat that matters for "is this car about to be driven off", and
-    -- the one native that reads reliably server-side.
+    -- Driver seat only: the one native that reads reliably server-side.
     if GetPedInVehicleSeat(vehicle, -1) ~= 0 then return refuse(source, "occupied") end
     if Missions.IsTargetNetId(netId) then return refuse(source, "already_in_delivery") end
 
@@ -337,8 +319,7 @@ function Priority.Mark(source, netId, label, colors)
     broadcastAdded(job)
     TriggerClientEvent("polarix_towjob:notify", source, Locale("notify.tow_request_registered"):format(job.vehicle_label), "success")
 
-    -- Priority jobs queue-jump the pager rather than paging instantly; this only stops an
-    -- idle operator's next page from being up to PagerMaxIntervalMinutes away.
+    -- Queue-jumps the pager; this only caps how far away the next page can be.
     OnCall.PullInPages(serverConfig.PriorityMaxWaitSeconds or 45)
 
     debug.DebugPrint(("Priority.Mark: %s marked %s (%s) as %s, reward %d"):format(identifier, plate, job.vehicle_label, job.id, job.reward_base))
@@ -346,7 +327,6 @@ function Priority.Mark(source, netId, label, colors)
     return { ok = true, id = job.id }
 end
 
--- Pool-first half of Missions' mission-row resolver.
 function Priority.GetJobRow(missionId)
     if not Priority.IsPriorityId(missionId) then return nil end
     return findById(missionId)
@@ -357,8 +337,7 @@ function Priority.GetTargetNetId(missionId)
     return job and job.netId or nil
 end
 
--- FIFO pick for the on-call scheduler: oldest open request first, skipping ones this player
--- already declined or aborted, and ones another player is currently being offered.
+-- FIFO pick: skips requests this player declined/aborted or another player is currently being offered.
 function Priority.TakeNextFor(source)
     local identifier = Framework.GetPlayerIdentifier(source)
     if not identifier then return nil end
@@ -394,7 +373,6 @@ function Priority.OnOfferDeclined(source, missionId)
     if identifier then job.suppressed[identifier] = true end
 end
 
--- Releases the offer lock without suppressing: used when Missions.Accept refused the job.
 function Priority.OnOfferFailed(source, missionId)
     local job = findById(missionId)
     if job and job.offeredTo == source then job.offeredTo = nil end
@@ -409,9 +387,7 @@ function Priority.OnClaimed(missionId, source, deliveryId)
     job.deliveryId = deliveryId
 end
 
--- Validates a claimed job's target right before the delivery starts, and rolls the
--- search-hint circle around the marked position (tighter radius than a template mission's:
--- dispatch gave a location, it just isn't exact).
+-- Validates the target before the delivery starts and rolls the hint circle (tighter than a template mission's).
 function Priority.PrepareTarget(missionId)
     local job = findById(missionId)
     if not job then return nil end
@@ -434,9 +410,7 @@ function Priority.PrepareTarget(missionId)
     }
 end
 
--- How far the target has drifted from where it was marked. Claimed jobs tolerate a lot more
--- than unclaimed ones — rigging a car with the tow arm moves it, so only "left the scene"
--- distances may cancel a delivery that's already underway.
+-- Drift from the marked spot. Claimed jobs tolerate more: rigging moves the car.
 function Priority.GetTargetDrift(missionId)
     local job = findById(missionId)
     if not job then return nil end
@@ -489,11 +463,7 @@ function Priority.OnDeliveryCompleted(missionId, source, rewardPaid)
     debug.DebugPrint(("Priority.OnDeliveryCompleted: %s impounded (mode %s)"):format(job.plate, mode))
 end
 
--- Only the target going bad kills a request: moved means its coords are stale, destroyed
--- and gone mean there is nothing left to tow. Every other ending (the operator aborted,
--- their truck was wrecked, their rental was repossessed, a timed job ran out) puts a
--- still-valid request back in the queue — the car is sitting right where the officer
--- called it in. A requeue keeps the ORIGINAL expiry, so total lifetime stays bounded.
+-- Only the target going bad (moved, destroyed, gone) kills a request; any operator-side ending requeues it with the ORIGINAL expiry.
 local TARGET_LOST_MESSAGES = {
     target_moved = "notify.tow_request_target_moved",
     target_gone = "notify.tow_request_target_gone",
@@ -531,8 +501,7 @@ function Priority.OnDeliveryEnded(missionId, source, reason)
     debug.DebugPrint(("Priority.OnDeliveryEnded: %s requeued after %s"):format(job.id, tostring(reason)))
 end
 
--- Unclaimed requests are validated against the live entity; a claimed one is the delivery
--- sweep's business (server/modules/missions.lua) so the two can't both end the same job.
+-- Unclaimed requests are validated here; claimed ones belong to the delivery sweep so both can't end the same job.
 CreateThread(function()
     local offerLockTimeout = (serverConfig.PagerOfferTimeoutSeconds or 30) + 15
 
@@ -543,7 +512,7 @@ CreateThread(function()
         for i = #pool, 1, -1 do
             local job = pool[i]
 
-            -- A player who dropped or reconnected mid-offer would otherwise hold the lock forever.
+            -- A dropped/reconnected player would otherwise hold the offer lock forever.
             if job.offeredTo and job.offeredAt and now - job.offeredAt > offerLockTimeout then
                 job.offeredTo = nil
             end

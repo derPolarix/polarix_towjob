@@ -1,13 +1,9 @@
-// GTA V world-coordinate <-> Leaflet CRS.Simple pixel-space conversion for the reused
-// gta_map.jpg overlay. Same image and constants as polarix_truckerjob's OrderRouteMap.vue
-// (originally from vinewood_blipmanager). Area polygons and any future map markers are
-// stored in GTA world coords and converted here at render time.
+// GTA world coords <-> Leaflet CRS.Simple pixel space for gta_map.jpg; areas are stored in world coords and converted at render time.
 import L from "leaflet";
 
 export const IMG_WIDTH = 4096;
 export const IMG_HEIGHT = 6144;
 
-// Full-image bounds for L.imageOverlay / map.fitBounds under CRS.Simple.
 export const MAP_IMAGE_BOUNDS: L.LatLngBoundsExpression = [
 	[0, 0],
 	[IMG_HEIGHT, IMG_WIDTH],

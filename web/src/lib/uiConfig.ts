@@ -1,8 +1,6 @@
 import { reactive } from "vue";
 
-// Lua sends the resolved keybinds and currency with every NUI message
-// (client/nui/nui_messages.lua), so prompts show the key the player actually has bound
-// and every amount follows Config.Currency.
+// Keybinds and currency arrive with every NUI message (client/nui/nui_messages.lua).
 export const uiConfig = reactive({
 	keybinds: {
 		pagerAccept: "Enter",
@@ -33,7 +31,7 @@ export function setUiConfig(data: UiConfigMessage | undefined) {
 	if (data?.currency) Object.assign(uiConfig.currency, data.currency);
 }
 
-// Mirrors shared/currency.lua so the NUI and the notifications always read the same.
+// Mirrors shared/currency.lua.
 export function formatMoney(amount: number | null | undefined): string {
 	const grouped = String(Math.floor(Number(amount) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 	const { symbol, position } = uiConfig.currency;

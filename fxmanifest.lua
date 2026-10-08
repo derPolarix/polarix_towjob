@@ -1,8 +1,6 @@
--- Set the FX version and game type
 fx_version "cerulean"
 game "gta5"
 
--- Resource metadata
 author "derPolarix"
 description "Tow job resource with dashboard, mission/skill/vehicle progression and admin settings UI (qbox / qb-core / esx)"
 version "1.0.0"
@@ -66,14 +64,8 @@ ox_libs {
     'table',
 }
 
--- Target systems are deliberately NOT listed here — ground rule 5 requires a native-fallback path
--- whenever the configured one isn't running, so they stay soft, GetResourceState()-checked
--- dependencies (target/**).
--- Framework core (qbx_core / qb-core / es_extended) and the per-framework vehicle-keys
--- resources are the same story: only one is ever active per config/shared.lua's Framework
--- value, and every reference to them is already runtime-guarded (see framework/**, ground
--- rule 1, Phase 0.3) — listing one as a hard dependency would break resource start on servers
--- running either of the other two frameworks.
+-- Target systems and framework cores are soft dependencies (GetResourceState-checked): only one framework is active
+-- and every target needs a native fallback, so hard-listing them would break other setups.
 dependencies {
     'ox_lib',
     'oxmysql',

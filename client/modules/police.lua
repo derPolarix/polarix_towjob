@@ -3,9 +3,7 @@ local Locale = require("shared.locale")
 
 Police = {}
 
--- Everything here is convenience only: whether this player may mark, what may be marked and
--- where it ends up is decided server-side in Priority.Mark (ground rule 4). The config comes
--- down from the server because config/server.lua isn't loadable from client_scripts.
+-- Convenience only; Priority.Mark decides everything server-side. Config comes from the server since config/server.lua isn't loadable from client_scripts.
 local markConfig = { canMark = false, distance = 12.0 }
 local blips = {} -- [jobId] = blip handle
 local busy = false
@@ -50,9 +48,7 @@ RegisterNetEvent("polarix_towjob:priorityJobRemoved", function(jobId)
     blips[jobId] = nil
 end)
 
--- The server can't read a vehicle's display name or colours, so both are sent as
--- display-only hints; the plate, model, ownership and position it validates on are all
--- read from the entity server-side.
+-- Label and colours are display-only hints; the server reads plate, model, ownership and position itself.
 local function requestMark(vehicle)
     if busy or not DoesEntityExist(vehicle) then return end
     busy = true
@@ -70,9 +66,7 @@ local function requestMark(vehicle)
     busy = false
 end
 
--- Client-side pre-filter for the target option. A car is only excluded here when it's
--- obviously not a candidate; "is this a registered player vehicle" needs the framework's
--- vehicle table, so that call stays on the server and refuses with a notify.
+-- Pre-filter only; "is a registered player vehicle" needs the framework table, checked server-side.
 local function looksMarkable(vehicle)
     if not markConfig.canMark then return false end
     if not vehicle or not DoesEntityExist(vehicle) then return false end
@@ -81,8 +75,6 @@ local function looksMarkable(vehicle)
     return IsVehicleSeatFree(vehicle, -1)
 end
 
--- Native fallback for servers without a target system: raycast from the camera so the officer
--- marks the car they're looking at rather than whichever one happens to be nearest.
 local function raycastVehicle()
     local ped = PlayerPedId()
     local from = GetGameplayCamCoord()
@@ -91,7 +83,7 @@ local function raycastVehicle()
     local direction = vector3(-math.sin(yaw) * math.cos(pitch), math.cos(yaw) * math.cos(pitch), math.sin(pitch))
     local to = from + direction * (markConfig.distance or 12.0)
 
-    -- Synchronous probe: the command needs a result in the same frame it was typed.
+    -- Synchronous: the command needs the result in the same frame.
     local handle = StartExpensiveSynchronousShapeTestLosProbe(from.x, from.y, from.z, to.x, to.y, to.z, 2, ped, 4)
     local _, hit, _, _, entity = GetShapeTestResult(handle)
 
@@ -99,8 +91,7 @@ local function raycastVehicle()
 end
 
 CreateThread(function()
-    -- Waits for the framework to hand the player their job before asking, otherwise a
-    -- connecting officer would be told they can't mark and keep that answer.
+    -- Wait for the framework to assign the job first, otherwise a connecting officer is told they can't mark.
     Wait(5000)
 
     local config = refreshConfig()
@@ -142,8 +133,7 @@ CreateThread(function()
         debug.DebugPrint("Police: no target system available, registered /" .. (config.command or "towrequest"))
     end
 
-    -- The frameworks don't share a job-change event this resource abstracts, so the officer
-    -- flag is simply re-read periodically instead of being pushed.
+    -- No shared job-change event across frameworks, so the officer flag is re-read periodically.
     while true do
         Wait(60000)
         local previous = markConfig.canMark
