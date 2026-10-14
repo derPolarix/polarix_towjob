@@ -43,6 +43,8 @@ function AdminAreas.ListForAdmin(source)
     for _, row in ipairs(rows) do
         row.is_active = DB.ToBool(row.is_active)
         row.is_default = DB.ToBool(row.is_default)
+        row.reward_multiplier = tonumber(row.reward_multiplier) or 1.0
+        row.xp_multiplier = tonumber(row.xp_multiplier) or 1.0
         row.points = row.points and json.decode(row.points) or {}
     end
 
