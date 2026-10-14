@@ -41,8 +41,8 @@ function AdminAreas.ListForAdmin(source)
 
     local rows = DB.GetAllAreasAdmin()
     for _, row in ipairs(rows) do
-        row.is_active = row.is_active == 1
-        row.is_default = row.is_default == 1
+        row.is_active = DB.ToBool(row.is_active)
+        row.is_default = DB.ToBool(row.is_default)
         row.points = row.points and json.decode(row.points) or {}
     end
 

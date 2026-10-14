@@ -7,6 +7,11 @@ end
 
 DB = {}
 
+-- oxmysql returns TINYINT(1) columns as booleans, other drivers as 0/1.
+function DB.ToBool(value)
+    return value == true or value == 1
+end
+
 function DB.GetPlayer(identifier)
     return MySQL.single.await("SELECT * FROM " .. server.Tables.players .. " WHERE identifier = ?", { identifier })
 end

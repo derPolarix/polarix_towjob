@@ -104,7 +104,7 @@ function AdminMissions.ListForAdmin(source)
     for _, row in ipairs(rows) do
         row.vehicle_colors = row.vehicle_colors and json.decode(row.vehicle_colors) or { primary = 0, secondary = 0 }
         row.spawn_points = row.spawn_points and json.decode(row.spawn_points) or {}
-        row.is_active = row.is_active == 1
+        row.is_active = DB.ToBool(row.is_active)
         row.delivery_count = DB.CountDeliveriesForMission(row.id)
     end
 

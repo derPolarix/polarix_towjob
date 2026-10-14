@@ -23,7 +23,7 @@ function Areas.GetMapAreas(source)
             reward_multiplier = tonumber(row.reward_multiplier) or 1.0,
             xp_multiplier = tonumber(row.xp_multiplier) or 1.0,
             note = row.note,
-            is_default = row.is_default == 1,
+            is_default = DB.ToBool(row.is_default),
             unlocked = unlockedIds[row.id] == true,
         }
     end
@@ -43,7 +43,7 @@ function Areas.Unlock(source, areaId)
         unlockedIds[id] = true
     end
 
-    if area.is_default == 1 or unlockedIds[areaId] then
+    if DB.ToBool(area.is_default) or unlockedIds[areaId] then
         return { ok = false, reason = "already_unlocked" }
     end
 
