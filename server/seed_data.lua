@@ -107,9 +107,9 @@ return {
             vehicle_label = "Karin Sultan",
             vehicle_colors = { primary = 111, secondary = 0 },
             spawn_points = {
-                { x = -1230.0, y = -1500.0, z = 4.3, heading = 125.0 },
-                { x = -1258.0, y = -1471.0, z = 4.3, heading = 215.0 },
-                { x = -1205.0, y = -1523.0, z = 4.3, heading = 35.0 },
+                { x = -728.219, y = -2152.038, z = 5.992, heading = 4.943 },
+                { x = -647.730, y = -2071.423, z = 8.868, heading = 226.318 },
+                { x = -575.137, y = -2125.849, z = 5.992, heading = 182.874 },
             },
             dropoff = { x = 401.826, y = -1632.35, z = 29.2919, heading = 322.65 },
             dropoff_width = 6.0,
