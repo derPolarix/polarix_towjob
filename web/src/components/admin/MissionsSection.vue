@@ -101,11 +101,11 @@
 				</label>
 
 				<label class="flex items-center gap-[8px] text-[13px] font-medium text-ink-soft mt-[18px]">
-					<input type="checkbox" :checked="form.time_limit_minutes !== null" @change="toggleTimed" />
+					<input type="checkbox" :checked="form.time_limit_minutes != null" @change="toggleTimed" />
 					{{ t("admin.field_timed_mission") }}
 				</label>
 
-				<label v-if="form.time_limit_minutes !== null" class="admin-label">
+				<label v-if="form.time_limit_minutes != null" class="admin-label">
 					{{ t("admin.field_time_limit") }}
 					<input v-model.number="form.time_limit_minutes" type="number" min="1" class="admin-input" />
 				</label>
@@ -264,6 +264,12 @@ const payoutRangeText = computed(() => {
 	return t("admin.payout_range", { reward: range(rewards, formatMoney), xp: range(xps, String) });
 });
 
+// Lua drops nil fields, so an untimed mission arrives without the key; 0 and "" (cleared input) also mean untimed.
+function normalizeTimeLimit(value: number | string | null | undefined): number | null {
+	const minutes = Number(value);
+	return Number.isFinite(minutes) && minutes > 0 ? minutes : null;
+}
+
 function toggleTimed(event: Event) {
 	const checked = (event.target as HTMLInputElement).checked;
 	form.time_limit_minutes = checked ? 10 : null;
@@ -320,7 +326,7 @@ function selectMission(mission: AdminMission) {
 		xp_base: mission.xp_base,
 		reward_per_km: mission.reward_per_km ?? 0,
 		xp_per_km: mission.xp_per_km ?? 0,
-		time_limit_minutes: mission.time_limit_minutes,
+		time_limit_minutes: normalizeTimeLimit(mission.time_limit_minutes),
 		difficulty: mission.difficulty,
 		level_required: mission.level_required,
 	});
@@ -453,9 +459,10 @@ async function save() {
 	errorMessage.value = "";
 
 	try {
+		const payload = { ...form, time_limit_minutes: normalizeTimeLimit(form.time_limit_minutes) };
 		const result = editingId.value
-			? await nuiCallbackAsync<AdminActionResult>("adminUpdateMission", { missionId: editingId.value, mission: { ...form } })
-			: await nuiCallbackAsync<AdminActionResult>("adminCreateMission", { ...form });
+			? await nuiCallbackAsync<AdminActionResult>("adminUpdateMission", { missionId: editingId.value, mission: payload })
+			: await nuiCallbackAsync<AdminActionResult>("adminCreateMission", payload);
 
 		if (result?.ok) {
 			await adminStore.fetchMissions();
