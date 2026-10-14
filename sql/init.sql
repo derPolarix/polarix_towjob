@@ -101,6 +101,7 @@ ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS reward_multiplier DECI
 ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS xp_multiplier DECIMAL(4,2) DEFAULT 1.00;
 ALTER TABLE polarix_towjob_areas ADD COLUMN IF NOT EXISTS note VARCHAR(140) DEFAULT NULL;
 ALTER TABLE polarix_towjob_deliveries ADD COLUMN IF NOT EXISTS mission_name VARCHAR(100);
+ALTER TABLE polarix_towjob_missions ADD COLUMN IF NOT EXISTS spawn_points JSON;
 ALTER TABLE polarix_towjob_missions ADD COLUMN IF NOT EXISTS reward_per_km INT DEFAULT 0;
 ALTER TABLE polarix_towjob_missions ADD COLUMN IF NOT EXISTS xp_per_km INT DEFAULT 0;
 ALTER TABLE polarix_towjob_deliveries ADD COLUMN IF NOT EXISTS is_test TINYINT(1) DEFAULT 0;
